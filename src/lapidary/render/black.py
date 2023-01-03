@@ -7,7 +7,7 @@ def format_code(code: str, strict: bool, is_pyi: bool) -> str:
             src_contents=code,
             fast=not strict,
             mode=Mode(
-                target_versions={TargetVersion.PY39},
+                target_versions={TargetVersion.PY38},
                 is_pyi=is_pyi,
             ),
         )

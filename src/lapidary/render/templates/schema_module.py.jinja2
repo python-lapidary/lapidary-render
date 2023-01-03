@@ -3,8 +3,11 @@
 from __future__ import annotations
 
 import typing
+
 import lapidary.runtime
 import pydantic
+import typing_extensions
+
 {%- for imp in model.imports %}
 import {{ imp }}
 {%- endfor %}
