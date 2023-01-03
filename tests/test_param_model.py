@@ -33,8 +33,10 @@ paths:
                 required:
                 - property
               required: true
-            responses: {}
-        """
+            responses:
+                default:
+                    description: ''
+"""
 
         model = openapi.OpenApiModel.parse_obj(yaml.safe_load(text))
         classes = list(get_param_model_classes(model.paths['/'].get, module_path, None))

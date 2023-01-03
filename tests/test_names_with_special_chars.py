@@ -145,7 +145,9 @@ paths:
               in: query
               schema:
                 type: string
-            responses: {}
+            responses:
+              default:
+                description: ''
         """
 
         model = openapi.OpenApiModel.parse_obj(yaml.safe_load(schema_text))

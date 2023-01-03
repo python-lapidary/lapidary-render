@@ -53,7 +53,11 @@ model = openapi.OpenApiModel(
         '/schema-request/': openapi.PathItem(
             get=openapi.Operation(
                 operationId='get_schema_request',
-                responses=openapi.Responses(),
+                responses=openapi.Responses(
+                    default=openapi.Response(
+                        description=''
+                    )
+                ),
                 requestBody=openapi.RequestBody(
                     content={'application/json': openapi.MediaType(
                         schema=openapi.Schema(
@@ -71,7 +75,11 @@ model = openapi.OpenApiModel(
         '/ignored-header/': openapi.PathItem(
             get=openapi.Operation(
                 operationId='ignored_header',
-                responses=openapi.Responses(),
+                responses=openapi.Responses(
+                    default=openapi.Response(
+                        description=''
+                    )
+                ),
                 parameters=[
                     openapi.Parameter(
                         name='accept',
