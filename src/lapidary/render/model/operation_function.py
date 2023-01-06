@@ -4,11 +4,11 @@ from dataclasses import dataclass
 from typing import Optional, Union
 
 from lapidary.runtime import openapi
-from lapidary.runtime.model.params import ParamPlacement
+from lapidary.runtime.model.params import ParamPlacement, get_param_type
 from lapidary.runtime.model.refs import ResolverFunc
-from lapidary.runtime.model.type_hint import TypeHint, resolve_type_hint, get_type_hint, GenericTypeHint
+from lapidary.runtime.model.type_hint import TypeHint, resolve_type_hint, GenericTypeHint
 from lapidary.runtime.module_path import ModulePath
-from lapidary.runtime.names import PARAM_MODEL, RESPONSE_BODY, get_subtype_name, maybe_mangle_name, response_type_name
+from lapidary.runtime.names import RESPONSE_BODY, response_type_name, get_param_python_name
 
 from .attribute import AttributeModel
 from .attribute_annotation import AttributeAnnotationModel
@@ -53,21 +53,13 @@ def get_operation_param_(
     if isinstance(param, openapi.Reference):
         param, module, _ = resolve(param, openapi.Parameter)
 
-    schema = param.schema_
-    if isinstance(schema, openapi.Reference):
-        schema, module, schema_name = resolve(schema, openapi.Schema)
-    else:
-        param_name = param.lapidary_name or param.name
-        schema_name = get_subtype_name(parent_name, param_name)
-        module = module / PARAM_MODEL
-
-    field_props = {k: (getattr(param, k) or _FIELD_PROPS[k]) for k in _FIELD_PROPS}
-    param_name = param.in_[0] + '_' + maybe_mangle_name(param.lapidary_name or param.name, False)
+    field_props = {k: getattr(param, k, default) for k, default in _FIELD_PROPS.items()}
+    param_name = get_param_python_name(param)
 
     return AttributeModel(
         name=param_name,
         annotation=AttributeAnnotationModel(
-            type=get_type_hint(schema, module, schema_name, param.required, resolve),
+            type=get_param_type(param, parent_name, module, resolve),
             field_props=field_props,
         ),
         deprecated=param.deprecated,

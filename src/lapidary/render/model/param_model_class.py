@@ -9,7 +9,7 @@ from lapidary.runtime import openapi
 from lapidary.runtime.model.refs import ResolverFunc
 from lapidary.runtime.model.type_hint import TypeHint
 from lapidary.runtime.module_path import ModulePath
-from lapidary.runtime.names import get_subtype_name, maybe_mangle_name, check_name
+from lapidary.runtime.names import get_subtype_name, check_name, get_param_python_name
 
 from .attribute import AttributeModel
 from .attribute_annotation import get_attr_annotation
@@ -23,7 +23,7 @@ def get_param_attribute(
         module: ModulePath,
         resolver: ResolverFunc,
 ) -> AttributeModel:
-    attr_name = maybe_mangle_name(param.in_[0] + '_' + (param.lapidary_name or param.name))
+    attr_name = get_param_python_name(param)
     check_name(attr_name)
 
     return AttributeModel(
