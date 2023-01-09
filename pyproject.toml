@@ -12,7 +12,14 @@ packages = [{ include = "lapidary", from = "src" }]
 readme = 'Readme.md'
 repository = 'https://github.com/python-lapidary/lapidary-render'
 include = [{ path = 'src/lapidary/render/templates' }]
-
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Topic :: Software Development :: Code Generators",
+    "Typing :: Typed",
+]
 
 [tool.poetry.dependencies]
 python = "^3.9"
