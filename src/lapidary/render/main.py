@@ -27,9 +27,9 @@ def init_project(
 
     assert not project_root.exists()
 
-    project_root.mkdir()
     (project_root / config.openapi_root).mkdir(parents=True)
-    (project_root / config.gen_root).mkdir()
+    package_path = project_root / config.gen_root / config.package
+    package_path.mkdir(parents=True)
 
     logger.info('Copy OpenAPI schema to %s', config.get_openapi(project_root))
     shutil.copyfile(schema_path, config.get_openapi(project_root))
@@ -39,6 +39,7 @@ def init_project(
     create_pyproj(project_root, config, oa_doc['info']['title'], environment())
 
     if render:
+        save_spec(oa_doc, package_path / 'openapi.yaml')
         render_client_(project_root, config, oa_doc)
     else:
         logger.info('Skip rendering client')
