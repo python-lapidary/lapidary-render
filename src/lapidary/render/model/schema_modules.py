@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_schema_modules(model: openapi.OpenApiModel, root_module: ModulePath, resolver: ResolverFunc) -> Iterable[SchemaModule]:
-    if model.components.schemas:
+    if model.components and model.components.schemas:
         logger.info('Render schema modules')
         path = root_module / 'components' / 'schemas'
         yield from get_modules_for_components_schemas(model.components.schemas, path, resolver)

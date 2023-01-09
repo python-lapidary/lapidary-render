@@ -14,11 +14,9 @@ class AuthModule(AbstractModule):
 
 
 def get_auth_module(openapi_model: openapi.OpenApiModel, module: ModulePath) -> Optional[AuthModule]:
-    if not openapi_model.components.securitySchemes:
-        return None
     schemes = {
         name: get_auth_param_type(value) for name, value in openapi_model.components.securitySchemes.items()
-    }
+    } if openapi_model.components and openapi_model.components.securitySchemes else {}
     imports = list({
         import_
         for scheme in schemes.values()
