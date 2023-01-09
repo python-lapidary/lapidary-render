@@ -57,7 +57,7 @@ def _get_schema_module(classes: list[SchemaClass], path: ModulePath) -> SchemaMo
         for schema_class in classes
         for attr in schema_class.attributes
         for import_ in attr.annotation.type.imports()
-        if import_ not in imports and import_ not in template_imports and import_ != path.str()
+        if import_ not in imports and import_ not in template_imports and import_ != str(path)
     })
     imports = sorted(imports)
 
