@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import Optional, Union
 
 from lapidary.runtime import openapi
-from lapidary.runtime.model.params import ParamPlacement, get_param_type
+from lapidary.runtime.model.params import ParamLocation, get_param_type
 from lapidary.runtime.model.refs import ResolverFunc
 from lapidary.runtime.model.type_hint import TypeHint, resolve_type_hint, GenericTypeHint
 from lapidary.runtime.module_path import ModulePath
@@ -78,7 +78,7 @@ def get_operation_func(
     params = []
     if op.parameters:
         for oapi_param in op.parameters:
-            if oapi_param.in_ == ParamPlacement.header.value and oapi_param.name.lower() in [
+            if oapi_param.in_ == ParamLocation.header.value and oapi_param.name.lower() in [
                 'accept', 'content-type', 'authorization'
             ]:
                 warnings.warn(f'Header param "{oapi_param.name}" ignored')

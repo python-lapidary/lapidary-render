@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from lapidary.runtime import openapi, ParamPlacement
+from lapidary.runtime import openapi, ParamLocation
 from lapidary.runtime.model.refs import get_resolver
 from lapidary.runtime.model.type_hint import GenericTypeHint, BuiltinTypeHint, TypeHint
 from lapidary.runtime.module_path import ModulePath
@@ -83,7 +83,7 @@ model = openapi.OpenApiModel(
                 parameters=[
                     openapi.Parameter(
                         name='accept',
-                        in_=ParamPlacement.header.value,
+                        in_=ParamLocation.header.value,
                     )
                 ]
             ),
