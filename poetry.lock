@@ -370,8 +370,11 @@ version = "0.8.0"
 description = "Python async OpenAPI client library"
 category = "main"
 optional = false
-python-versions = "^3.8"
-files = []
+python-versions = ">=3.9,<4.0"
+files = [
+    {file = "lapidary-0.8.0-py3-none-any.whl", hash = "sha256:5b6ecca944c9bc06eabdab960c8ad444cc66803d968000bcbdb243ac9f92a3e8"},
+    {file = "lapidary-0.8.0.tar.gz", hash = "sha256:efea54fb3c9b7a085b4c45de086d617604e80c02b7db0ea620a647a95ab2b40a"},
+]
 develop = false
 
 [package.dependencies]
@@ -772,4 +775,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "8721ded419fe1ef50591f2b680e256342fcbc1b98843e51f1398c5730cb46791"
+content-hash = "c9e56e7a90d53d44b705da492a26535afab1f7dfe407e0a5da51539e151d91c6"
