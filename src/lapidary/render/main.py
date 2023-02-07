@@ -1,14 +1,13 @@
 import logging
 import shutil
+from hashlib import sha3_256
 from pathlib import Path
 
 import yaml
-
 from lapidary.runtime import openapi
-from .client import render_client, environment
+
+from .client import mk_model
 from .config import Config
-from .pyproj import create_pyproj
-from .spec import load_spec, save_spec
 
 logger = logging.getLogger(__name__)
 
@@ -19,50 +18,67 @@ def init_project(
         config: Config,
         render: bool,
 ):
-    # Create a new project from scratch
-    # - Init directories
-    # - Create pyproject.toml
-    # - Copy openapi file to root/src
-    # - Call update_project
-
-    assert not project_root.exists()
-
     (project_root / config.openapi_root).mkdir(parents=True)
     package_path = project_root / config.gen_root / config.package
     package_path.mkdir(parents=True)
 
+    copy_pyproj(config, project_root, schema_path)
+    text = config.get_openapi(project_root).read_text()
+    oa_doc = yaml.safe_load(text)
+
+    excludes = ['includes']
+    if not render:
+        logger.info('Skip rendering client.')
+        excludes.extend("gen", )
+
+    from . import jinja
+    jinja.model = openapi.OpenApiModel.parse_obj(oa_doc)
+    jinja.document = oa_doc
+    jinja.package = config.package
+
+    from copier import run_copy
+
+    run_copy(
+        "/Users/matte/Documents/Projects/lapidary-template",
+        str(project_root),
+        mk_model(jinja.model, config, calculate_signture(text)),
+        exclude=excludes,
+        skip_if_exists=[
+            "pyproject.toml"
+        ],
+        vcs_ref="HEAD",
+        defaults=True,
+    )
+
+
+def copy_pyproj(config, project_root, schema_path):
     logger.info('Copy OpenAPI schema to %s', config.get_openapi(project_root))
     shutil.copyfile(schema_path, config.get_openapi(project_root))
-    with open(config.get_openapi(project_root), 'rt') as buf:
-        oa_doc = yaml.safe_load(buf)
-
-    create_pyproj(project_root, config, oa_doc['info']['title'], environment())
-
-    if render:
-        save_spec(oa_doc, package_path / 'openapi.yaml')
-        render_client_(project_root, config, oa_doc)
-    else:
-        logger.info('Skip rendering client')
 
 
 def update_project(project_root: Path, config: Config) -> None:
-    # update_pyproj(project_root, config)
+    text = config.get_openapi(project_root).read_text()
+    oa_doc = yaml.safe_load(text)
 
-    shutil.rmtree(project_root / config.gen_root)
-    (project_root / config.gen_root).mkdir()
-    oa_doc = update_openapi(project_root, config)
-    render_client_(project_root, config, oa_doc)
+    from . import jinja
+    jinja.model = openapi.OpenApiModel.parse_obj(oa_doc)
+    jinja.document = oa_doc
+    jinja.package = config.package
+
+    from copier import run_update
+
+    run_update(
+        str(project_root),
+        mk_model(jinja.model, config, calculate_signture(text)),
+        exclude=(
+            'pyproject.toml',
+            'includes',
+        ),
+        vcs_ref="HEAD",
+        defaults=True,
+        overwrite=True,
+    )
 
 
-def update_openapi(project_root: Path, config: Config) -> dict:
-    doc = load_spec(project_root, config)
-    package_path = project_root / config.gen_root / config.package
-    package_path.mkdir()
-    save_spec(doc, package_path / 'openapi.yaml')
-    return doc
-
-
-def render_client_(project_root: Path, config: Config, oa_doc: dict) -> None:
-    logger.info('Prepare model')
-    model = openapi.OpenApiModel.parse_obj(oa_doc)
-    render_client(model, project_root, config)
+def calculate_signture(text: str) -> str:
+    return sha3_256(text.encode()).hexdigest()
