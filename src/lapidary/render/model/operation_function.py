@@ -4,9 +4,10 @@ from dataclasses import dataclass
 from typing import Optional, Union
 
 from lapidary.runtime import openapi
+from lapidary.runtime.model import TypeHint, resolve_type_hint, GenericTypeHint, from_type
 from lapidary.runtime.model.params import ParamLocation, get_param_type
 from lapidary.runtime.model.refs import ResolverFunc
-from lapidary.runtime.model.type_hint import TypeHint, resolve_type_hint, GenericTypeHint
+from lapidary.runtime.model.type_hint import UnionTypeHint
 from lapidary.runtime.module_path import ModulePath
 from lapidary.runtime.names import RESPONSE_BODY, response_type_name, get_param_python_name
 
@@ -93,7 +94,7 @@ def get_operation_func(
     elif len(response_types) == 1:
         response_type = response_types.pop()
     else:
-        response_type = GenericTypeHint.union_of(tuple(response_types))
+        response_type = UnionTypeHint.of(*response_types)
 
     auth_name = None
     if op.security is not None and len(op.security) > 0:
@@ -147,10 +148,10 @@ def to_iterator(type_: TypeHint) -> TypeHint:
     if not isinstance(type_, GenericTypeHint):
         return type_
 
-    if type_.origin == TypeHint.from_type(Union):
-        return GenericTypeHint.union_of(tuple(to_iterator(targ) for targ in type_.args))
+    if type_.origin == from_type(Union):
+        return UnionTypeHint.of(*(to_iterator(targ) for targ in type_.args))
 
-    if type_.origin == TypeHint.from_type(list):
-        return GenericTypeHint(module='collections.abc', name='Iterator', args=type_.args)
+    if type_.origin == from_type(list):
+        return GenericTypeHint(module='collections.abc', type_name='Iterator', args=type_.args)
 
     return type_

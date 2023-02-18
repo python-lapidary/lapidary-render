@@ -2,8 +2,7 @@ from dataclasses import dataclass
 from typing import Any, Optional, Union
 
 from lapidary.runtime import openapi
-from lapidary.runtime.model import ResolverFunc
-from lapidary.runtime.model.type_hint import BuiltinTypeHint
+from lapidary.runtime.model import ResolverFunc, from_type
 from lapidary.runtime.module_path import ModulePath
 from lapidary.runtime.names import check_name, maybe_mangle_name
 
@@ -65,7 +64,7 @@ def get_enum_attribute(value: Any, name: str) -> AttributeModel:
     return AttributeModel(
         name=name,
         annotation=AttributeAnnotationModel(
-            type=BuiltinTypeHint.from_type(type(value)),
+            type=from_type(type(value)),
             field_props={'default': value},
         )
     )

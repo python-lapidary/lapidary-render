@@ -5,9 +5,9 @@ from typing import Any
 
 import jinja2.ext
 from lapidary.runtime import openapi
-from lapidary.runtime.model import TypeHint, ResolverFunc, get_resolver
-from lapidary.runtime.model.refs import _schema_get, resolve
-from lapidary.runtime.model.type_hint import BuiltinTypeHint
+from lapidary.runtime.model import TypeHint, ResolverFunc, get_resolver, resolve_ref
+from lapidary.runtime.model.refs import _schema_get
+from lapidary.runtime.model.type_hint import BUILTINS
 from lapidary.runtime.module_path import ModulePath
 
 from lapidary.render.model import get_client_class_module, AuthModule, get_auth_module
@@ -44,14 +44,14 @@ class LapidaryModel:
         if isinstance(type_ref, str):
             import builtins
             if type_ref in dir(builtins):
-                type_ref = BuiltinTypeHint(name=type_ref)
+                type_ref = TypeHint(module=BUILTINS, type_name=type_ref)
             else:
                 type_ref = TypeHint.from_str(type_ref)
         if isinstance(this_mod, str) and this_mod.startswith("#"):
             _, this_mod, _ = self._resolver(openapi.Reference(ref=this_mod), openapi.Schema)
         if isinstance(this_mod, ModulePath):
             this_mod = str(this_mod)
-        return type_ref.full_name(this_mod)
+        return type_ref.str(this_mod)
 
     @property
     def _root(self) -> ModulePath:

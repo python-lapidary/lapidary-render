@@ -3,8 +3,8 @@ from collections.abc import Iterator
 from typing import Optional
 
 from lapidary.runtime import openapi
+from lapidary.runtime.model import from_type, TypeHint
 from lapidary.runtime.model.refs import ResolverFunc
-from lapidary.runtime.model.type_hint import BuiltinTypeHint, TypeHint
 from lapidary.runtime.module_path import ModulePath
 from lapidary.runtime.names import get_subtype_name
 
@@ -70,9 +70,9 @@ def get_schema_class(
     logger.debug(name)
 
     base_type = (
-        BuiltinTypeHint.from_str('Exception')
+        from_type(Exception)
         if schema.lapidary_model_type is openapi.LapidaryModelType.exception
-        else TypeHint.from_str('pydantic.BaseModel')
+        else TypeHint.from_str('pydantic:BaseModel')
     )
     attributes = get_attributes(schema, name, module, resolver) if schema.properties else []
 

@@ -3,7 +3,7 @@ from typing import Optional, Iterator
 from lapidary.runtime import openapi
 from lapidary.runtime.http_consts import MIME_JSON
 from lapidary.runtime.model.refs import ResolverFunc
-from lapidary.runtime.model.type_hint import TypeHint, resolve_type_hint
+from lapidary.runtime.model import TypeHint, resolve_type_hint
 from lapidary.runtime.module_path import ModulePath
 from lapidary.runtime.names import request_type_name
 from mimeparse import best_match
