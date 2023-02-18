@@ -46,4 +46,3 @@ def load_patches(project_root: Path, cache_path, config: Config) -> Optional[Jso
 def save_spec(doc: dict, path: Path) -> None:
     with open(path, 'wt') as stream:
         yaml.safe_dump(doc, stream, allow_unicode=True)
-

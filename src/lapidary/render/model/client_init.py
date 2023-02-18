@@ -19,7 +19,6 @@ def get_client_init(openapi_model: openapi.OpenApiModel, module: ModulePath, res
     base_url = next(iter(openapi_model.servers)).url if openapi_model.servers and len(openapi_model.servers) > 0 else None
 
     response_types = get_response_types_(
-        'LapidaryGlobalResponses',
         openapi_model.lapidary_responses_global,
         module,
         resolve,

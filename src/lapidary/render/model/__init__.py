@@ -1,4 +1,6 @@
 """
+Classes in this package provide model for the template.
+
 Schema mapping
 as class:
 

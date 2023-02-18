@@ -29,7 +29,7 @@ def init_project(
     excludes = ['includes']
     if not render:
         logger.info('Skip rendering client.')
-        excludes.extend("gen", )
+        excludes.extend(("gen",))
 
     from . import jinja
     jinja.model = openapi.OpenApiModel.parse_obj(oa_doc)

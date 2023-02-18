@@ -4,7 +4,6 @@ from pathlib import Path
 from typing import Any
 
 import jinja2.ext
-from jinja2.ext import Extension
 from lapidary.runtime import openapi
 from lapidary.runtime.model import TypeHint, ResolverFunc, get_resolver
 from lapidary.runtime.model.refs import _schema_get, resolve
@@ -79,7 +78,7 @@ class LapidaryModel:
         return get_resolver(self.model, package)
 
 
-class LapidaryExtension(Extension):
+class LapidaryExtension(jinja2.ext.Extension):
     def __init__(self, env: jinja2.Environment):
         super().__init__(env)
 

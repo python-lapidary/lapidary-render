@@ -48,7 +48,6 @@ class GlobalResponsesTest(unittest.TestCase):
 
         module_path = ModulePath('test')
         module = get_client_class_module(model, module_path / 'client.py', module_path, get_resolver(model, 'test'))
-        # pp(dataclasses.asdict(module))
 
         expected = {
             TypeHint(module='test.components.schemas.gsm_tasks_error', name='GSMTasksError'),

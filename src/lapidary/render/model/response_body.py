@@ -30,5 +30,5 @@ def get_response_body_classes(
 
 
 def get_response_body_module(op: openapi.Operation, module: ModulePath, resolve: ResolverFunc) -> SchemaModule:
-    classes = [cls for cls in get_response_body_classes(op, module, resolve)]
+    classes = list(get_response_body_classes(op, module, resolve))
     return _get_schema_module(classes, module)
