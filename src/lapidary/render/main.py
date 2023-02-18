@@ -41,7 +41,7 @@ def init_project(
     run_copy(
         "/Users/matte/Documents/Projects/lapidary-template",
         str(project_root),
-        mk_model(jinja.model, config, calculate_signture(text)),
+        mk_model(jinja.model, config, calculate_signture(oa_doc)),
         exclude=excludes,
         skip_if_exists=[
             "pyproject.toml"
@@ -57,8 +57,8 @@ def copy_pyproj(config, project_root, schema_path):
 
 
 def update_project(project_root: Path, config: Config) -> None:
-    text = config.get_openapi(project_root).read_text()
-    oa_doc = yaml.safe_load(text)
+    from .spec import load_spec
+    oa_doc = load_spec(project_root, config)
 
     from . import jinja
     jinja.model = openapi.OpenApiModel.parse_obj(oa_doc)
@@ -69,7 +69,7 @@ def update_project(project_root: Path, config: Config) -> None:
 
     run_update(
         str(project_root),
-        mk_model(jinja.model, config, calculate_signture(text)),
+        mk_model(jinja.model, config, calculate_signture(oa_doc)),
         exclude=(
             'pyproject.toml',
             'includes',
@@ -80,5 +80,5 @@ def update_project(project_root: Path, config: Config) -> None:
     )
 
 
-def calculate_signture(text: str) -> str:
-    return sha3_256(text.encode()).hexdigest()
+def calculate_signture(doc: dict) -> str:
+    return sha3_256(yaml.safe_dump(doc).encode()).hexdigest()
