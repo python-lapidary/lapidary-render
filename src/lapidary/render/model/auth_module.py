@@ -11,6 +11,7 @@ from .module import AbstractModule
 @dataclass(frozen=True, kw_only=True)
 class AuthModule(AbstractModule):
     schemes: Mapping[str, TypeHint] = field()
+    model_type = 'auth'
 
 
 def get_auth_module(openapi_model: openapi.OpenApiModel, module: ModulePath) -> Optional[AuthModule]:
