@@ -24,7 +24,6 @@ def get_schema_classes(
     # First handle the enum case, so that the model class has suffixed name, and all sub-schemas use it as their prefix
     if schema.enum is not None:
         enum_class = get_enum_class(schema, name)
-        name = name + 'Value'
     else:
         enum_class = None
 

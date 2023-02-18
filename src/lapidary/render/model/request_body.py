@@ -5,7 +5,7 @@ from lapidary.runtime.http_consts import MIME_JSON
 from lapidary.runtime.model.refs import ResolverFunc
 from lapidary.runtime.model import TypeHint, resolve_type_hint
 from lapidary.runtime.module_path import ModulePath
-from lapidary.runtime.names import request_type_name
+from lapidary.runtime.names import request_type_name, REQUEST_BODY, escape_name
 from mimeparse import best_match
 
 from .schema_class import get_schema_classes
@@ -18,7 +18,7 @@ def get_request_body_type(op: openapi.Operation, module: ModulePath, resolve: Re
     if mime_json == '':
         return None
     schema = op.requestBody.content[mime_json].schema_
-    return resolve_type_hint(schema, module, request_type_name(op.operationId), resolve)
+    return resolve_type_hint(schema, module / REQUEST_BODY / "content" / escape_name(mime_json), "schema", resolve)
 
 
 def get_request_body_classes(

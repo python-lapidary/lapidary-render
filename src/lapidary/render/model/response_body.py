@@ -3,7 +3,7 @@ from collections.abc import Iterable
 from lapidary.runtime import openapi
 from lapidary.runtime.model.refs import ResolverFunc
 from lapidary.runtime.module_path import ModulePath
-from lapidary.runtime.names import response_type_name
+from lapidary.runtime.names import response_type_name, escape_name
 
 from .schema_class import get_schema_classes
 from .schema_class_model import SchemaClass
@@ -26,7 +26,12 @@ def get_response_body_classes(
                 continue
             if isinstance(schema, openapi.Reference):
                 continue
-            yield from get_schema_classes(schema, response_type_name(operation.operationId, status_code), module, resolve)
+            yield from get_schema_classes(
+                schema,
+                response_type_name(operation.operationId, status_code),
+                module / "responses" / escape_name(str(status_code)) / "content" / escape_name(_media_type_name),
+                resolve
+            )
 
 
 def get_response_body_module(op: openapi.Operation, module: ModulePath, resolve: ResolverFunc) -> SchemaModule:
