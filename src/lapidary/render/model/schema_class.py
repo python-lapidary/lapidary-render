@@ -70,7 +70,7 @@ def get_schema_class(
 
     base_type = (
         from_type(Exception)
-        if schema.lapidary_model_type is openapi.LapidaryModelType.exception
+        if schema.lapidary_model_type is openapi.LapidaryModelType.EXCEPTION
         else TypeHint.from_str('pydantic:BaseModel')
     )
     attributes = get_attributes(schema, name, module, resolver) if schema.properties else []

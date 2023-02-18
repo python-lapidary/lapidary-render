@@ -3,8 +3,8 @@ from unittest import TestCase
 
 import yaml
 from lapidary.runtime import openapi
+from lapidary.runtime.model import from_type, TypeHint
 from lapidary.runtime.model.refs import get_resolver
-from lapidary.runtime.model.type_hint import TypeHint
 from lapidary.runtime.module_path import ModulePath
 
 from lapidary.render.model.attribute import AttributeModel

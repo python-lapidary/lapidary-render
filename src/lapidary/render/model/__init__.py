@@ -64,6 +64,6 @@ as attribute
 
 from .attribute import get_attributes, get_enum_attribute, AttributeModel
 from .attribute_annotation import AttributeAnnotationModel
-from .auth_module import get_auth_module
-from .client_module import get_client_class_module
-from .schema_modules import render_schema_modules
+from .auth_module import AuthModule, get_auth_module
+from .client_module import ClientModule, get_client_class_module
+from .schema_modules import SchemaModule, get_schema_modules

@@ -133,11 +133,11 @@ def get_response_types_(responses: openapi.Responses, module: ModulePath, resolv
             else:
                 name = "schema"
                 resp_module = module / "responses" / escape_name(str(resp_code)) / "content" / escape_name(_media_type_name)
-            if schema.lapidary_model_type is openapi.LapidaryModelType.exception:
+            if schema.lapidary_model_type is openapi.LapidaryModelType.EXCEPTION:
                 continue
             typ = resolve_type_hint(schema, resp_module, name, resolve)
 
-            if schema.lapidary_model_type is openapi.LapidaryModelType.iterator:
+            if schema.lapidary_model_type is openapi.LapidaryModelType.ITERATOR:
                 typ = to_iterator(typ)
 
             response_types.add(typ)
