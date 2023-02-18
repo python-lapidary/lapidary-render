@@ -155,5 +155,5 @@ class OperationResponseTest(TestCase):
 
     def test_ignored_header(self):
         op_def = model.paths['/ignored-header/'].get
-        op_model = get_operation_func(op_def, module_path, 'op', resolve)
+        op_model = get_operation_func(op_def, module_path, resolve)
         self.assertEqual([], op_model.params)
