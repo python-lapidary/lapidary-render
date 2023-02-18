@@ -31,7 +31,7 @@ def get_request_body_classes(
         return
 
     media_map = rb.content
-    mime_json = best_match(media_map.keys(), 'application/json')
+    mime_json = best_match(media_map.keys(), MIME_JSON)
     schema = media_map[mime_json].schema_
     if isinstance(schema, openapi.Reference):
         return
