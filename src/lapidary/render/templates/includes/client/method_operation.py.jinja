@@ -1,11 +1,11 @@
-{%- from 'type_hint.py.jinja2' import type_hint %}
+{%- import 'includes/type_hint.py.jinja' as th %}
 {%- macro render_param(param) %}
-        {{ param.name }}: {{ type_hint(param.annotation.type, path) }}{% if not param.required %} = lapidary.runtime.absent.ABSENT{% endif %},
+        {{ param.name }}: {{ th.type_hint(param.annotation.type, path) }}{% if not param.required %} = lapidary.runtime.absent.ABSENT{% endif %},
 {%- endmacro %}
     async def {{ func.name }}(
         self,
 {%- if func.request_type is not none %}
-        request_body: {{ type_hint(func.request_type, path) }}, /, {% endif %}
+        request_body: {{ th.type_hint(func.request_type, path) }}, /, {% endif %}
 {%- if func.params | length > 0 %}
         *,{% endif %}
 {%- for param in func.params if param.required %}
@@ -13,5 +13,5 @@
 {%- endfor %}{% for param in func.params if not param.required %}
         {{- render_param(param) }}
 {%- endfor %}
-    ) -> {{ type_hint(func.response_type, path) }}:
+    ) -> {{ th.type_hint(func.response_type, path) }}:
         ...

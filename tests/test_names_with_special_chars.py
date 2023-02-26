@@ -3,8 +3,8 @@ from unittest import TestCase
 
 import yaml
 from lapidary.runtime import openapi
+from lapidary.runtime.model import from_type, TypeHint
 from lapidary.runtime.model.refs import get_resolver
-from lapidary.runtime.model.type_hint import TypeHint
 from lapidary.runtime.module_path import ModulePath
 
 from lapidary.render.model.attribute import AttributeModel
@@ -72,23 +72,23 @@ class NamingTest(TestCase):
             body=[
                 SchemaClass(
                     class_name='NonSpaceNameRandomProperty',
-                    base_type=TypeHint.from_str('pydantic.BaseModel'),
+                    base_type=TypeHint.from_str('pydantic:BaseModel'),
                     attributes=[
                         AttributeModel(
                             'key',
-                            AttributeAnnotationModel(TypeHint.from_type(str), {}),
+                            AttributeAnnotationModel(from_type(str), {}),
                         ),
                     ],
                 ),
                 SchemaClass(
                     has_aliases=True,
                     class_name='NonSpaceName',
-                    base_type=TypeHint.from_str('pydantic.BaseModel'),
+                    base_type=TypeHint.from_str('pydantic:BaseModel'),
                     attributes=[
                         AttributeModel(
                             'random_property',
                             AttributeAnnotationModel(
-                                TypeHint.from_str('lapidary_test.NonSpaceNameRandomProperty'),
+                                TypeHint.from_str('lapidary_test:NonSpaceNameRandomProperty'),
                                 {
                                     'alias': "'random property'",
                                 },

@@ -2,10 +2,9 @@ from dataclasses import dataclass
 from typing import Any, Optional, Union
 
 from lapidary.runtime import openapi
-from lapidary.runtime.model import ResolverFunc
-from lapidary.runtime.model.type_hint import BuiltinTypeHint
+from lapidary.runtime.model import ResolverFunc, from_type
 from lapidary.runtime.module_path import ModulePath
-from lapidary.runtime.names import check_name, maybe_mangle_name
+from lapidary.runtime.names import check_name, maybe_mangle_name, get_enum_field_name
 
 from .attribute_annotation import AttributeAnnotationModel, get_attr_annotation
 
@@ -58,14 +57,13 @@ def get_attribute(
     )
 
 
-def get_enum_attribute(value: Any, name: str) -> AttributeModel:
-    name = maybe_mangle_name(name, False)
-    check_name(name, False)
-    value = "'" + value.replace("'", r"\'") + "'" if value is not None else None
+def get_enum_attribute(value: Any, name: Optional[str]) -> AttributeModel:
+    if isinstance(value, str):
+        value = "'" + value.replace("'", r"\'") + "'" if value is not None else None
     return AttributeModel(
-        name=name,
+        name=maybe_mangle_name(name, False) if name else get_enum_field_name(value),
         annotation=AttributeAnnotationModel(
-            type=BuiltinTypeHint.from_type(type(value)),
+            type=from_type(type(value)),
             field_props={'default': value},
         )
     )

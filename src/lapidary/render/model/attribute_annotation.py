@@ -2,8 +2,8 @@ from dataclasses import dataclass
 from typing import Optional, Any
 
 from lapidary.runtime import openapi
+from lapidary.runtime.model import get_type_hint, TypeHint
 from lapidary.runtime.model.refs import SchemaOrRef, ResolverFunc
-from lapidary.runtime.model.type_hint import TypeHint, get_type_hint
 from lapidary.runtime.module_path import ModulePath
 from lapidary.runtime.names import get_subtype_name
 

@@ -1,8 +1,9 @@
 from unittest import TestCase
 
 from lapidary.runtime import Absent, openapi
+from lapidary.runtime.model import from_type
 from lapidary.runtime.model.refs import get_resolver
-from lapidary.runtime.model.type_hint import BuiltinTypeHint, TypeHint
+from lapidary.runtime.model.type_hint import TypeHint, UnionTypeHint
 from lapidary.runtime.module_path import ModulePath
 
 from lapidary.render.model.attribute import AttributeModel
@@ -58,12 +59,12 @@ class Test(TestCase):
         )
         schema = SchemaClass(
             class_name='alice',
-            base_type=TypeHint.from_str('pydantic.BaseModel'),
+            base_type=TypeHint.from_str('pydantic:BaseModel'),
             docstr=None,
             attributes=[AttributeModel(
                 name='bob',
                 annotation=AttributeAnnotationModel(
-                    type=BuiltinTypeHint.from_type(str).union_with(TypeHint.from_type(Absent)),
+                    type=UnionTypeHint.of(from_type(str), from_type(Absent)),
                     field_props={},
                     style=None,
                     explode=None,

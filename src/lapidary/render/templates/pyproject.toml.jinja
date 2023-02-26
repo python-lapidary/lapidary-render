@@ -3,8 +3,8 @@ build-backend = "poetry.core.masonry.api"
 requires = ["poetry-core>=1.3.2"]
 
 [tool.poetry]
-name = "{{ project_name }}"
-description = "Client library for {{ openapi_title }}"
+name = "{{ package }}"
+description = "Client library for {{ document.title }}"
 version = "0.1.0"
 authors = []
 license = ""
@@ -14,12 +14,12 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-pydantic = { extras = ["email"], version = "^{{ versions.pydantic }}" }
-lapidary = "{{ versions.lapidary }}"
+pydantic = { extras = ["email"], version = "^{{ get_version('pydantic') }}" }
+lapidary = "{{ get_version('lapidary') }}"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "0.990"
-lapidary-render = "{{ versions.lapidary_render }}"
+lapidary-render = "{{ get_version('lapidary_render') }}"
 taskipy = "^1.10.3"
 
 [tool.taskipy.tasks]

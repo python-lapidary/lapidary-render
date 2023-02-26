@@ -11,7 +11,7 @@ def get_enum_class(
 ):
     return SchemaClass(
         class_name=name,
-        base_type=TypeHint.from_str('enum.Enum'),
+        base_type=TypeHint.from_str('enum:Enum'),
         attributes=[get_enum_attribute(v, schema.lapidary_names.get(v, v)) for v in schema.enum],
         docstr=schema.description or None,
         model_type=ModelType.enum,

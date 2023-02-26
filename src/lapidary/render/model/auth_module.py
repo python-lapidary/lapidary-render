@@ -11,6 +11,7 @@ from .module import AbstractModule
 @dataclass(frozen=True, kw_only=True)
 class AuthModule(AbstractModule):
     schemes: Mapping[str, TypeHint] = field()
+    model_type = 'auth'
 
 
 def get_auth_module(openapi_model: openapi.OpenApiModel, module: ModulePath) -> Optional[AuthModule]:
@@ -34,6 +35,10 @@ def get_auth_param_type(security_scheme: openapi.SecurityScheme) -> TypeHint:
     if isinstance(scheme, openapi.APIKeySecurityScheme):
         return TypeHint.from_str('lapidary.runtime.auth.APIKey')
     elif isinstance(scheme, openapi.HTTPSecurityScheme):
-        return TypeHint.from_str('lapidary.runtime.auth.HTTP')
+        return TypeHint.from_str('lapidary.runtime.auth:HTTP')
+    elif isinstance(scheme, openapi.OAuth2SecurityScheme):
+        if scheme.flows.password:
+            return TypeHint.from_str('lapidary.runtime.auth:OAuth2')
+        raise NotImplementedError(type(scheme).__name__)
     else:
         raise NotImplementedError(scheme.__name__)

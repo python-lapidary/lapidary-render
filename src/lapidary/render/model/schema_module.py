@@ -19,6 +19,7 @@ class SchemaModule(AbstractModule):
     One schema module for inline request and for response body for each operation
     """
     body: list[SchemaClass] = field(default_factory=list)
+    model_type: str = 'schema'
 
 
 def get_modules_for_components_schemas(
@@ -43,7 +44,7 @@ def get_schema_module(
         return _get_schema_module(classes, path)
 
 
-def _get_schema_module(classes: list[SchemaClass], path: ModulePath) -> SchemaModule:
+def _get_schema_module(classes: list[SchemaClass], path: ModulePath, model_type="schema") -> SchemaModule:
     imports = {
         imp
         for cls in classes
@@ -65,9 +66,10 @@ def _get_schema_module(classes: list[SchemaClass], path: ModulePath) -> SchemaMo
         path=path,
         body=classes,
         imports=imports,
+        model_type=model_type,
     )
 
 
 def get_param_model_classes_module(op: openapi.Operation, module: ModulePath, resolve: ResolverFunc) -> SchemaModule:
     classes = [cls for cls in get_param_model_classes(op, module, resolve)]
-    return _get_schema_module(classes, module)
+    return _get_schema_module(classes, module, "param_model")
