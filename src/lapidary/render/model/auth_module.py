@@ -33,7 +33,7 @@ def get_auth_module(openapi_model: openapi.OpenApiModel, module: ModulePath) -> 
 def get_auth_param_type(security_scheme: openapi.SecurityScheme) -> TypeHint:
     scheme = security_scheme.__root__
     if isinstance(scheme, openapi.APIKeySecurityScheme):
-        return TypeHint.from_str('lapidary.runtime.auth.APIKey')
+        return TypeHint.from_str('lapidary.runtime.auth:APIKey')
     elif isinstance(scheme, openapi.HTTPSecurityScheme):
         return TypeHint.from_str('lapidary.runtime.auth:HTTP')
     elif isinstance(scheme, openapi.OAuth2SecurityScheme):
