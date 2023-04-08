@@ -59,11 +59,13 @@ def get_attribute(
 
 def get_enum_attribute(value: Any, name: Optional[str]) -> AttributeModel:
     if isinstance(value, str):
-        value = "'" + value.replace("'", r"\'") + "'" if value is not None else None
+        quoted_value = "'" + value.replace("'", r"\'") + "'" if value is not None else None
+    else:
+        quoted_value = value
     return AttributeModel(
         name=maybe_mangle_name(name, False) if name else get_enum_field_name(value),
         annotation=AttributeAnnotationModel(
             type=from_type(type(value)),
-            field_props={'default': value},
+            field_props={'default': quoted_value},
         )
     )
