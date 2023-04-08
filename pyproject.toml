@@ -24,10 +24,11 @@ classifiers = [
 [tool.poetry.dependencies]
 python = "^3.9"
 black = "^22.8.0"
+copier = {path = "../../copier", develop = true}
 inflection = "^0.5.1"
 Jinja2 = "^3.1.2"
 jsonpatch = "^1.32"
-lapidary = {git = "https://github.com/python-lapidary/lapidary", rev = "develop"}
+lapidary = {path = "../lapidary", develop = true}
 pydantic = "^1.10.2"
 python-mimeparse = "^1.6.0"
 PyYAML = "^6.0"
