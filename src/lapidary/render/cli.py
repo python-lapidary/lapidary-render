@@ -8,7 +8,7 @@ from .config import Config, load_config
 HELP_FORMAT_STRICT = 'Use black in slow (strict checking) mode'
 
 logging.basicConfig()
-logging.getLogger('lapidary').setLevel(logging.DEBUG)
+logging.getLogger('lapidary').setLevel(logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = typer.Typer()
@@ -52,9 +52,13 @@ def init(
         schema_path: Path,
         project_root: Path,
         package_name: str,
+        patch: list[Path] = typer.Option(
+            None,
+            help="""A JSON Patch file or a directory of thereof. Can be used multiple times,
+                     in which case only files are accepted."""),
         format_strict: bool = typer.Option(False, help=HELP_FORMAT_STRICT),
         render: bool = True,
-        cache: bool = True
+        cache: bool = True,
 ):
     """Create a new project from scratch."""
 
@@ -70,4 +74,4 @@ def init(
         cache=cache,
     )
 
-    init_project(schema_path, project_root, config, render)
+    init_project(schema_path, project_root, config, render, patch)

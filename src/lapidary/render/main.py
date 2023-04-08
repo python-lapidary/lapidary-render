@@ -1,5 +1,6 @@
 import logging
 import shutil
+from collections.abc import Collection
 from hashlib import sha3_256
 from pathlib import Path
 
@@ -8,6 +9,7 @@ from lapidary.runtime import openapi
 
 from .client import mk_model
 from .config import Config
+from .spec import load_spec
 
 logger = logging.getLogger(__name__)
 
@@ -17,14 +19,18 @@ def init_project(
         project_root: Path,
         config: Config,
         render: bool,
+        patches: Collection[Path],
 ):
     (project_root / config.openapi_root).mkdir(parents=True)
     package_path = project_root / config.gen_root / config.package
     package_path.mkdir(parents=True)
 
-    copy_pyproj(config, project_root, schema_path)
-    text = config.get_openapi(project_root).read_text()
-    oa_doc = yaml.safe_load(text)
+    copy_schema(config, project_root, schema_path)
+    if patches:
+        copy_patches(config, project_root, patches)
+
+    logger.info("Parse OpenAPI schema")
+    oa_doc = load_spec(project_root, config)
 
     excludes = ['includes']
     if not render:
@@ -38,22 +44,41 @@ def init_project(
 
     from copier import run_copy
 
+    logger.info("Pre-process model")
+    render_model = mk_model(jinja.model, config, calculate_signture(oa_doc))
+
+    logger.info("Render project")
     run_copy(
         "/Users/matte/Documents/Projects/lapidary-template",
         str(project_root),
-        mk_model(jinja.model, config, calculate_signture(oa_doc)),
+        render_model,
         exclude=excludes,
-        skip_if_exists=[
-            "pyproject.toml"
-        ],
         vcs_ref="HEAD",
         defaults=True,
     )
 
 
-def copy_pyproj(config, project_root, schema_path):
+def copy_schema(config: Config, project_root: Path, schema_path: Path):
     logger.info('Copy OpenAPI schema to %s', config.get_openapi(project_root))
     shutil.copyfile(schema_path, config.get_openapi(project_root))
+
+
+def copy_patches(config: Config, project_root: Path, patches: Collection[Path]) -> None:
+    patches_dir = config.get_patches(project_root)
+    logger.info("Copy patches to %s", patches_dir)
+    assert patches
+
+    if len(patches) > 1:
+        if not all((path.is_file() for path in patches)):
+            raise ValueError("When passing multiple patch paths, all must be files")
+
+        patches_dir.mkdir()
+
+        for file in patches:
+            shutil.copyfile(file, patches_dir / file.name)
+
+    else:
+        shutil.copytree(next(iter(patches)), patches_dir)
 
 
 def update_project(project_root: Path, config: Config) -> None:
