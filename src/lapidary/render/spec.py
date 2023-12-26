@@ -1,3 +1,4 @@
+from collections.abc import Iterable, Sequence
 import logging
 from importlib.metadata import version
 from pathlib import Path
@@ -13,32 +14,34 @@ from .config import Config
 logger = logging.getLogger(__name__)
 
 
-def load_spec(project_root: Path, config: Config) -> dict:
-    spec_path = project_root / config.openapi_root / 'openapi.yaml'
+def load_spec(schema_path: Path, patches: Iterable[Path], config: Config) -> dict:
     cache_path = platformdirs.user_cache_path('lapidary', version=version('lapidary'))
     cache_path.mkdir(parents=True, exist_ok=True)
 
     logger.info('Load schema')
-    spec_dict = load_yaml_cached(spec_path, cache_path, config.cache)
+    spec_dict = load_yaml_cached(schema_path, cache_path, config.cache)
 
-    if (patch := load_patches(project_root, cache_path, config)) is not None:
+    if (patch := load_patches(patches, cache_path, config)) is not None:
         spec_dict = patch.apply(spec_dict)
 
     return spec_dict
 
 
-def load_patches(project_root: Path, cache_path, config: Config) -> Optional[JsonPatch]:
-    if config.patches is None:
+def load_patches(patches: Sequence[Path], cache_path, config: Config) -> JsonPatch | None:
+    if not patches:
         return None
-    patches_path = config.get_patches(project_root)
-    if not patches_path.exists():
-        return None
-    if not patches_path.is_dir():
-        raise NotADirectoryError(patches_path)
+    first = patches[0]
+    if first.is_dir() and len(patches) != 1:
+        raise ValueError('Patches must be either a single directory, or one or more files')
+
+    if first.is_dir():
+        patches = first.glob('**/*.[yamljson]')
+
     logger.info('Load patches')
     return JsonPatch([
         op
-        for p in patches_path.glob('**/*.yaml')
+        for p in patches
+        if p.suffix in ('yaml', 'yml', 'json')
         for op in load_yaml_cached(p, cache_path, config.cache)
     ])
 

@@ -1,4 +1,5 @@
 from collections.abc import Iterable
+import typing as ty
 
 from lapidary.runtime import openapi
 from lapidary.runtime.model.refs import ResolverFunc
@@ -6,7 +7,9 @@ from lapidary.runtime.module_path import ModulePath
 
 from .schema_class import get_schema_classes
 from .schema_class_model import SchemaClass
-from .schema_module import _get_schema_module, SchemaModule
+
+if ty.TYPE_CHECKING:
+    from .schema_module import SchemaModule
 
 
 def get_response_body_classes(
@@ -28,6 +31,7 @@ def get_response_body_classes(
             yield from get_schema_classes(schema, 'Response', module, resolve)
 
 
-def get_response_body_module(op: openapi.Operation, module: ModulePath, resolve: ResolverFunc) -> SchemaModule:
+def get_response_body_module(op: openapi.Operation, module: ModulePath, resolve: ResolverFunc) -> 'SchemaModule':
+    from .schema_module import _get_schema_module
     classes = [cls for cls in get_response_body_classes(op, module, resolve)]
     return _get_schema_module(classes, module)

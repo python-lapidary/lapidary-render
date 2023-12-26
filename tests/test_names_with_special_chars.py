@@ -12,7 +12,7 @@ from lapidary.render.model.attribute_annotation import AttributeAnnotationModel
 from lapidary.render.model.schema_class import get_schema_classes
 from lapidary.render.model.schema_class_model import SchemaClass
 from lapidary.render.model.schema_module import SchemaModule, get_schema_module
-from lapidary.render.model.schema_modules import get_schema_modules
+from lapidary.render.model import get_schema_modules
 
 logging.getLogger('lapidary').setLevel(logging.DEBUG)
 
@@ -62,7 +62,7 @@ module_path = ModulePath('lapidary_test')
 
 class NamingTest(TestCase):
     def test_name_with_alias(self):
-        model = openapi.OpenApiModel.parse_obj(yaml.safe_load(schema))
+        model = openapi.OpenApiModel.model_validate(yaml.safe_load(schema))
         resolve = get_resolver(model, 'lapidary_test')
 
         expected = SchemaModule(
@@ -104,7 +104,7 @@ class NamingTest(TestCase):
         self.assertEqual(expected, mod)
 
     def test_name_with_space(self):
-        model = openapi.OpenApiModel.parse_obj(yaml.safe_load(schema_with_space))
+        model = openapi.OpenApiModel.model_validate(yaml.safe_load(schema_with_space))
         resolve = get_resolver(model, 'lapidary_test')
 
         with self.assertRaises(ValueError):

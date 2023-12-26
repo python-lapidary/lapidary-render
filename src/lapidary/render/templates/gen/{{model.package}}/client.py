@@ -1,4 +1,4 @@
-{% include 'includes/header.py.jinja' %}
+# {% include 'includes/header.txt' %}
 
 __all__ = [
     'ApiClient',
@@ -6,7 +6,7 @@ __all__ = [
 ]
 
 import lapidary.runtime
-from {{ package }}.auth import Auth
+from {{ model.package }}.auth import Auth
 
 
 class ApiClient(lapidary.runtime.ClientBase):

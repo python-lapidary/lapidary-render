@@ -1,7 +1,10 @@
 import dataclasses
 from pathlib import Path
-
-import tomli
+try:
+    import tomllib
+except ImportError:
+    import tomli
+    tomlib = tomli
 
 PYPROJ_TOML = 'pyproject.toml'
 

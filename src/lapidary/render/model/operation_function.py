@@ -83,7 +83,7 @@ def get_operation_func(
                 continue
             try:
                 params.append(get_operation_param(oapi_param, params_module, resolver))
-            except:
+            except Exception:
                 raise Exception("Error while handling parameter", oapi_param.name)
 
     request_type = get_request_body_type(op, module, resolver) if op.requestBody else None

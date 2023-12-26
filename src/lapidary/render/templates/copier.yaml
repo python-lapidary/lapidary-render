@@ -1,8 +1,0 @@
-_jinja_extensions:
-- lapidary.render.jinja.LapidaryExtension
-_exclude:
-- old
-- includes
-- copier.yaml
-_items: schema_modules
-_item: item

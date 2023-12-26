@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 class ClientModule(AbstractModule):
     body: ClientClass = field()
     model_type = 'client'
+    # path unused
 
 
 def get_client_class_module(model: openapi.OpenApiModel, client_module: ModulePath, root_module: ModulePath, resolver: ResolverFunc) -> ClientModule:

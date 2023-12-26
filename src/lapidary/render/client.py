@@ -14,14 +14,12 @@ logger = logging.getLogger(__name__)
 class RenderModel(TypedDict):
     package: str
     items: list[str]
-    signature: str
 
 
-def mk_model(model: openapi.OpenApiModel, config: Config, signature: str) -> RenderModel:
+def mk_model(model: openapi.OpenApiModel, config: Config) -> RenderModel:
     return RenderModel(
         package=config.package,
         items=sorted(list(extract_items(model))),
-        signature=signature,
     )
 
 

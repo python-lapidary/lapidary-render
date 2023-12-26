@@ -3,13 +3,13 @@ build-backend = "poetry.core.masonry.api"
 requires = ["poetry-core>=1.3.2"]
 
 [tool.poetry]
-name = "{{ package }}"
-description = "Client library for {{ document.title }}"
+name = "{{ model.package }}"
+description = "Client library for {{ document.info.title }}"
 version = "0.1.0"
 authors = []
 license = ""
 packages = [
-    { include = '{{ package }}', from = "gen" },
+    { include = '{{ model.package }}', from = "gen" },
 ]
 
 [tool.poetry.dependencies]
@@ -28,8 +28,8 @@ mypy = 'mypy'
 check = 'task mypy'
 
 [tool.lapidary]
-package = '{{ package }}'
+package = '{{ model.package }}'
 
 [tool.mypy]
 mypy_path = ['gen']
-packages = ['{{ package }}']
+packages = ['{{ model.package }}']

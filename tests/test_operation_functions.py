@@ -1,9 +1,9 @@
 from unittest import TestCase
 
-from lapidary.runtime import openapi, ParamLocation
+from lapidary.runtime import ParamLocation, openapi
 from lapidary.runtime.model import from_type
 from lapidary.runtime.model.refs import get_resolver
-from lapidary.runtime.model.type_hint import GenericTypeHint, TypeHint, UnionTypeHint
+from lapidary.runtime.model.type_hint import TypeHint, UnionTypeHint
 from lapidary.runtime.module_path import ModulePath
 
 from lapidary.render.model.attribute import AttributeModel
@@ -14,6 +14,7 @@ from lapidary.render.model.response_body import get_response_body_module
 from lapidary.render.model.schema_class_model import SchemaClass
 from lapidary.render.model.schema_module import SchemaModule
 
+str_schema = schema = openapi.Schema(type=openapi.Type.string)
 model = openapi.OpenApiModel(
     openapi='3.0.3',
     info=openapi.Info(title='Lapidary test schema', version='1.0.0'),
@@ -25,7 +26,7 @@ model = openapi.OpenApiModel(
                     '200': openapi.Response(
                         description='test response',
                         content={'application/json': openapi.MediaType(
-                            schema=openapi.Schema(type=openapi.Type.string),
+                            schema=str_schema,
                         )}
                     )
                 })
@@ -41,8 +42,8 @@ model = openapi.OpenApiModel(
                             schema=openapi.Schema(
                                 type=openapi.Type.object,
                                 properties=dict(
-                                    a=openapi.Schema(type=openapi.Type.string),
-                                    b=openapi.Schema(type=openapi.Type.string),
+                                    a=str_schema,
+                                    b=str_schema,
                                 ),
                                 additionalProperties=False,
                             ),
@@ -64,8 +65,8 @@ model = openapi.OpenApiModel(
                         schema=openapi.Schema(
                             type=openapi.Type.object,
                             properties=dict(
-                                a=openapi.Schema(type=openapi.Type.string),
-                                b=openapi.Schema(type=openapi.Type.string),
+                                a=str_schema,
+                                b=str_schema,
                             ),
                             additionalProperties=False,
                         ),

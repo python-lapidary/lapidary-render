@@ -1,17 +1,27 @@
-import logging
-import shutil
 from collections.abc import Collection
 from hashlib import sha3_256
+import importlib.metadata
+import logging
+import os
 from pathlib import Path
+import shutil
 
-import yaml
+import jinja2
+import jinja2.loaders
 from lapidary.runtime import openapi
+from lapidary.runtime.model import get_resolver
+from lapidary.runtime.module_path import ModulePath
+from rybak.jinja import JinjaRenderer
+import yaml
 
 from .client import mk_model
 from .config import Config
+from .model import get_auth_module
+from .model.client_model import mk_client_model
 from .spec import load_spec
 
 logger = logging.getLogger(__name__)
+logging.getLogger('rybak').setLevel(logging.DEBUG)
 
 
 def init_project(
@@ -21,40 +31,63 @@ def init_project(
         render: bool,
         patches: Collection[Path],
 ):
-    (project_root / config.openapi_root).mkdir(parents=True)
-    package_path = project_root / config.gen_root / config.package
-    package_path.mkdir(parents=True)
-
-    copy_schema(config, project_root, schema_path)
-    if patches:
-        copy_patches(config, project_root, patches)
+    # (project_root / config.openapi_root).mkdir(parents=True)
+    # package_path = project_root / config.gen_root / config.package
+    # package_path.mkdir(parents=True)
+    #
+    # copy_schema(config, project_root, schema_path)
+    # if patches:
+    #     copy_patches(config, project_root, patches)
 
     logger.info("Parse OpenAPI schema")
-    oa_doc = load_spec(project_root, config)
+    oa_doc = load_spec(schema_path, patches, config)
 
-    excludes = ['includes']
+    excludes = [
+        'includes',
+    ]
     if not render:
         logger.info('Skip rendering client.')
-        excludes.extend(("gen",))
+        excludes.append("gen")
 
-    from . import jinja
-    jinja.model = openapi.OpenApiModel.parse_obj(oa_doc)
-    jinja.document = oa_doc
-    jinja.package = config.package
+    oa_model = openapi.OpenApiModel.model_validate(oa_doc)
 
-    from copier import run_copy
+    logger.info("Prepare model")
 
-    logger.info("Pre-process model")
-    render_model = mk_model(jinja.model, config, calculate_signture(oa_doc))
+    from rybak import render
+    from importlib import resources
+
+    # model = LapidaryModel(oa_doc, oa_model, config.package)
+    model = mk_client_model(oa_model, ModulePath(config.package), get_resolver(oa_model, config.package))
+
+    from pprint import pprint
+    pprint(model)
+    # if True:
+    #     return
 
     logger.info("Render project")
-    run_copy(
-        "/Users/matte/Documents/Projects/lapidary-template",
-        str(project_root),
-        render_model,
-        exclude=excludes,
-        vcs_ref="HEAD",
-        defaults=True,
+    environment = jinja2.Environment(
+        loader=jinja2.loaders.PackageLoader('lapidary.render'),
+    )
+    environment.globals.update(dict(
+        as_module_path=ModulePath,
+        os=os,
+    ))
+    environment.filters.update(dict(
+        toyaml=yaml.safe_dump
+    ))
+    render(
+        resources.files('lapidary.render') / 'templates',
+        project_root,
+        JinjaRenderer(environment),
+        dict(
+            # **render_model,
+
+            model=model,
+            document=oa_doc,
+            get_version=importlib.metadata.version,
+            auth_module=get_auth_module(oa_model, ModulePath(config.package) / 'auth')
+        ),
+        excluded=[Path(path) for path in excludes],
     )
 
 
