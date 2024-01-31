@@ -25,7 +25,7 @@ def version():
 
 @app.command()
 def update(
-        project_root: Path = typer.Argument(Path('.')),
+        project_root: Path = typer.Argument(Path('')),
         format_strict: bool = typer.Option(False, help=HELP_FORMAT_STRICT),
         cache: bool = True
 ):
