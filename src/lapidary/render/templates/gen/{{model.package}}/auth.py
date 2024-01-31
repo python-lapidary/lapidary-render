@@ -1,5 +1,5 @@
-{% include 'header.py.jinja2' %}
-{% from 'type_hint.py.jinja2' import type_hint -%}
+# {% include 'includes/header.txt' %}
+{% set model = auth_module -%}
 
 import dataclasses
 {%- for imp in model.imports %}
@@ -9,7 +9,7 @@ import {{ imp }}
 @dataclasses.dataclass
 class Auth:
 {%- for name, auth_model in model.schemes.items() %}
-    {{ name }}: {{ type_hint(auth_model, model.path) }}
+    {{ name }}: {{ lapidary.type_hint(auth_model, model.path) }}
 {%- else %}
     pass
 {%- endfor %}

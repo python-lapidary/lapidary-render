@@ -1,11 +1,11 @@
 from unittest import TestCase
 
-from lapidary.runtime import ParamPlacement
+from lapidary.runtime.model.params import ParamLocation
+
 from lapidary.render.model import openapi
 from lapidary.render.model.refs import get_resolver
-from lapidary.render.model.python.type_hint import GenericTypeHint, BuiltinTypeHint, TypeHint
+from lapidary.render.model.python.type_hint import TypeHint, GenericTypeHint
 from lapidary.render.model.python.module_path import ModulePath
-
 from lapidary.render.model.attribute import AttributeModel
 from lapidary.render.model.attribute_annotation import AttributeAnnotationModel
 from lapidary.render.model.operation_function import get_operation_func
@@ -14,6 +14,7 @@ from lapidary.render.model.response_body import get_response_body_module
 from lapidary.render.model.schema_class_model import SchemaClass
 from lapidary.render.model.schema_module import SchemaModule
 
+str_schema = schema = openapi.Schema(type=openapi.Type.string)
 model = openapi.OpenApiModel(
     openapi='3.0.3',
     info=openapi.Info(title='Lapidary test schema', version='1.0.0'),
@@ -25,7 +26,7 @@ model = openapi.OpenApiModel(
                     '200': openapi.Response(
                         description='test response',
                         content={'application/json': openapi.MediaType(
-                            schema=openapi.Schema(type=openapi.Type.string),
+                            schema=str_schema,
                         )}
                     )
                 })
@@ -41,8 +42,8 @@ model = openapi.OpenApiModel(
                             schema=openapi.Schema(
                                 type=openapi.Type.object,
                                 properties=dict(
-                                    a=openapi.Schema(type=openapi.Type.string),
-                                    b=openapi.Schema(type=openapi.Type.string),
+                                    a=str_schema,
+                                    b=str_schema,
                                 ),
                                 additionalProperties=False,
                             ),
@@ -54,14 +55,18 @@ model = openapi.OpenApiModel(
         '/schema-request/': openapi.PathItem(
             get=openapi.Operation(
                 operationId='get_schema_request',
-                responses=openapi.Responses(),
+                responses=openapi.Responses(
+                    default=openapi.Response(
+                        description=''
+                    )
+                ),
                 requestBody=openapi.RequestBody(
                     content={'application/json': openapi.MediaType(
                         schema=openapi.Schema(
                             type=openapi.Type.object,
                             properties=dict(
-                                a=openapi.Schema(type=openapi.Type.string),
-                                b=openapi.Schema(type=openapi.Type.string),
+                                a=str_schema,
+                                b=str_schema,
                             ),
                             additionalProperties=False,
                         ),
@@ -72,11 +77,15 @@ model = openapi.OpenApiModel(
         '/ignored-header/': openapi.PathItem(
             get=openapi.Operation(
                 operationId='ignored_header',
-                responses=openapi.Responses(),
+                responses=openapi.Responses(
+                    default=openapi.Response(
+                        description=''
+                    )
+                ),
                 parameters=[
                     openapi.Parameter(
                         name='accept',
-                        in_=ParamPlacement.header.value,
+                        in_=ParamLocation.header.value,
                     )
                 ]
             ),
@@ -85,14 +94,10 @@ model = openapi.OpenApiModel(
 
 resolve = get_resolver(model, 'lapidary_test')
 module_path = ModulePath('lapidary_test')
-union_str_absent = GenericTypeHint(
-    module='typing',
-    name='Union',
-    args=[
-        BuiltinTypeHint(name='str'),
-        TypeHint.from_str('lapidary.runtime.absent.Absent')
-    ]
-)
+union_str_absent = GenericTypeHint.union_of(tuple(
+    TypeHint.from_type(str),
+    TypeHint.from_str('lapidary.runtime.absent:Absent')
+))
 common_attributes = [
     AttributeModel(
         name='a',
@@ -121,8 +126,8 @@ class OperationResponseTest(TestCase):
                 'lapidary.runtime.absent',
             ],
             body=[SchemaClass(
-                class_name='GetSchemaResponse200Response',
-                base_type=TypeHint.from_str('pydantic.BaseModel'),
+                class_name='Response',
+                base_type=TypeHint.from_str('pydantic:BaseModel'),
                 attributes=common_attributes
             )]
         )
@@ -142,7 +147,7 @@ class OperationResponseTest(TestCase):
             ],
             body=[SchemaClass(
                 class_name='GetSchemaRequestRequest',
-                base_type=TypeHint.from_str('pydantic.BaseModel'),
+                base_type=TypeHint.from_str('pydantic:BaseModel'),
                 attributes=common_attributes
             )]
         )
@@ -151,5 +156,5 @@ class OperationResponseTest(TestCase):
 
     def test_ignored_header(self):
         op_def = model.paths['/ignored-header/'].get
-        op_model = get_operation_func(op_def, module_path, 'op', resolve)
+        op_model = get_operation_func(op_def, module_path, resolve)
         self.assertEqual([], op_model.params)

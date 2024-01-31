@@ -4,7 +4,7 @@ from typing import Optional
 
 from . import openapi
 from lapidary.render.model.refs import ResolverFunc
-from lapidary.render.model.python.type_hint import BuiltinTypeHint, TypeHint
+from lapidary.render.model.python.type_hint import TypeHint
 from lapidary.render.model.python.module_path import ModulePath
 from lapidary.render.model.python.names import get_subtype_name
 from .attribute import get_attributes
@@ -20,10 +20,9 @@ def get_schema_classes(
         module: ModulePath,
         resolver: ResolverFunc,
 ) -> Iterator[SchemaClass]:
-    # First handle the enum case, so that the python class has suffixed name, and all sub-schemas use it as their prefix
+    # First handle the enum case, so that the model class has suffixed name, and all sub-schemas use it as their prefix
     if schema.enum is not None:
         enum_class = get_enum_class(schema, name)
-        name = name + 'Value'
     else:
         enum_class = None
 
@@ -69,9 +68,9 @@ def get_schema_class(
     logger.debug(name)
 
     base_type = (
-        BuiltinTypeHint.from_str('Exception')
-        if schema.lapidary_model_type is openapi.LapidaryModelType.exception
-        else TypeHint.from_str('pydantic.BaseModel')
+        from_type(Exception)
+        if schema.lapidary_model_type is openapi.LapidaryModelType.EXCEPTION
+        else TypeHint.from_str('pydantic:BaseModel')
     )
     attributes = get_attributes(schema, name, module, resolver) if schema.properties else []
 

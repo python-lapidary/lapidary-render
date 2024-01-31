@@ -1,14 +1,18 @@
 import logging
 from pathlib import Path
 
+from lapidary.runtime.model import get_resolver
+from lapidary.runtime.module_path import ModulePath
 import typer
 
 from .config import Config, load_config
+from .model.client_model import mk_client_model
+from .spec import load_spec
 
 HELP_FORMAT_STRICT = 'Use black in slow (strict checking) mode'
 
 logging.basicConfig()
-logging.getLogger('lapidary').setLevel(logging.DEBUG)
+logging.getLogger('lapidary').setLevel(logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = typer.Typer()
@@ -52,9 +56,13 @@ def init(
         schema_path: Path,
         project_root: Path,
         package_name: str,
+        patch: list[Path] = typer.Option(
+            None,
+            help="""A JSON Patch file or a directory of thereof. Can be used multiple times,
+                     in which case only files are accepted."""),
         format_strict: bool = typer.Option(False, help=HELP_FORMAT_STRICT),
         render: bool = True,
-        cache: bool = True
+        cache: bool = True,
 ):
     """Create a new project from scratch."""
 
@@ -70,4 +78,30 @@ def init(
         cache=cache,
     )
 
-    init_project(schema_path, project_root, config, render)
+    init_project(schema_path, project_root, config, render, patch)
+
+
+@app.command()
+def dump_model(
+        schema_path: Path,
+        patch: list[Path] = typer.Option(
+            None,
+            help="""A JSON Patch file or a directory of thereof. Can be used multiple times,
+              in which case only files are accepted."""),
+):
+    config = Config(
+        package='package',
+        format_strict=False,
+        cache=False,
+    )
+
+    logger.info("Parse OpenAPI schema")
+    oa_doc = load_spec(schema_path, patch, config)
+    from lapidary.runtime import openapi
+    oa_model = openapi.OpenApiModel.model_validate(oa_doc)
+
+    logger.info("Prepare model")
+    model = mk_client_model(oa_model, ModulePath(config.package), get_resolver(oa_model, config.package))
+
+    from pprint import pprint
+    pprint(model)

@@ -2,18 +2,17 @@ import logging
 from unittest import TestCase
 
 import yaml
+
 from lapidary.render.model import openapi
 from lapidary.render.model.refs import get_resolver
 from lapidary.render.model.python.type_hint import TypeHint
 from lapidary.render.model.python.module_path import ModulePath
-
 from lapidary.render.model.attribute import AttributeModel
 from lapidary.render.model.attribute_annotation import AttributeAnnotationModel
-from lapidary.render.model.param_model_class import get_param_model_classes
 from lapidary.render.model.schema_class import get_schema_classes
 from lapidary.render.model.schema_class_model import SchemaClass
 from lapidary.render.model.schema_module import SchemaModule, get_schema_module
-from lapidary.render.model.schema_modules import get_schema_modules
+from lapidary.render.model import get_schema_modules
 
 logging.getLogger('lapidary').setLevel(logging.DEBUG)
 
@@ -63,7 +62,7 @@ module_path = ModulePath('lapidary_test')
 
 class NamingTest(TestCase):
     def test_name_with_alias(self):
-        model = openapi.OpenApiModel.parse_obj(yaml.safe_load(schema))
+        model = openapi.OpenApiModel.model_validate(yaml.safe_load(schema))
         resolve = get_resolver(model, 'lapidary_test')
 
         expected = SchemaModule(
@@ -73,7 +72,7 @@ class NamingTest(TestCase):
             body=[
                 SchemaClass(
                     class_name='NonSpaceNameRandomProperty',
-                    base_type=TypeHint.from_str('pydantic.BaseModel'),
+                    base_type=TypeHint.from_str('pydantic:BaseModel'),
                     attributes=[
                         AttributeModel(
                             'key',
@@ -84,12 +83,12 @@ class NamingTest(TestCase):
                 SchemaClass(
                     has_aliases=True,
                     class_name='NonSpaceName',
-                    base_type=TypeHint.from_str('pydantic.BaseModel'),
+                    base_type=TypeHint.from_str('pydantic:BaseModel'),
                     attributes=[
                         AttributeModel(
                             'random_property',
                             AttributeAnnotationModel(
-                                TypeHint.from_str('lapidary_test.NonSpaceNameRandomProperty'),
+                                TypeHint.from_str('lapidary_test:NonSpaceNameRandomProperty'),
                                 {
                                     'alias': "'random property'",
                                 },
@@ -105,7 +104,7 @@ class NamingTest(TestCase):
         self.assertEqual(expected, mod)
 
     def test_name_with_space(self):
-        model = openapi.OpenApiModel.parse_obj(yaml.safe_load(schema_with_space))
+        model = openapi.OpenApiModel.model_validate(yaml.safe_load(schema_with_space))
         resolve = get_resolver(model, 'lapidary_test')
 
         with self.assertRaises(ValueError):
@@ -129,29 +128,3 @@ class NamingTest(TestCase):
         )
         result = [c for c in get_schema_classes(model, 'test', module_path, None)]
         self.assertEqual('null', result[0].attributes[0].name)
-
-    def test_param_name_with_space(self):
-        schema_text = """
-openapi: '3.0.3'
-info:
-    title: Lapidary test schema
-    version: 1.0.0
-paths:
-    /:
-        get:
-            operationId: testOp
-            parameters:
-            - name: test param
-              in: query
-              schema:
-                type: string
-            responses: {}
-        """
-
-        model = openapi.OpenApiModel.parse_obj(yaml.safe_load(schema_text))
-        param_model_class = next(get_param_model_classes(model.paths['/'].get, module_path, None))
-
-        attr = param_model_class.attributes[0]
-
-        self.assertEqual('q_testu_000020param', attr.name)
-        self.assertEqual("'test param'", attr.annotation.field_props['alias'])

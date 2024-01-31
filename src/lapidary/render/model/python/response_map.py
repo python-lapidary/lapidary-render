@@ -4,7 +4,7 @@ from typing import Union, TypeVar, NamedTuple
 
 from lapidary.render.model.refs import ResolverFunc, get_resolver
 from .type_hint import get_type_hint
-from ...render.model import openapi
+from ...model import openapi
 from lapidary.render.model.python.module_path import ModulePath
 from lapidary.render.model.python.names import RESPONSE_BODY, response_type_name
 from lapidary.render.model.openapi import model as openapi, LapidaryModelType

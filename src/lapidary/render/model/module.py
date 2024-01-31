@@ -6,6 +6,7 @@ template_imports = [
     'builtins',
     'pydantic',
     'typing',
+    'typing_extensions'
 ]
 
 

@@ -1,11 +1,11 @@
 from unittest import TestCase
 
 from lapidary.runtime import Absent
+
 from lapidary.render.model import openapi
 from lapidary.render.model.refs import get_resolver
-from lapidary.render.model.python.type_hint import BuiltinTypeHint, TypeHint
+from lapidary.render.model.python.type_hint import TypeHint, GenericTypeHint
 from lapidary.render.model.python.module_path import ModulePath
-
 from lapidary.render.model.attribute import AttributeModel
 from lapidary.render.model.attribute_annotation import AttributeAnnotationModel
 from lapidary.render.model.schema_class import get_schema_class, get_schema_classes
@@ -59,12 +59,12 @@ class Test(TestCase):
         )
         schema = SchemaClass(
             class_name='alice',
-            base_type=TypeHint.from_str('pydantic.BaseModel'),
+            base_type=TypeHint.from_str('pydantic:BaseModel'),
             docstr=None,
             attributes=[AttributeModel(
                 name='bob',
                 annotation=AttributeAnnotationModel(
-                    type=BuiltinTypeHint.from_type(str).union_with(TypeHint.from_type(Absent)),
+                    type=GenericTypeHint.union_of((TypeHint.from_type(str), TypeHint.from_type(Absent))),
                     field_props={},
                     style=None,
                     explode=None,

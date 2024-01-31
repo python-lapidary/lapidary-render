@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional, Any
 
-from lapidary.render.model import openapi
+from . import openapi
 from lapidary.render.model.refs import SchemaOrRef, ResolverFunc
 from lapidary.render.model.python.type_hint import TypeHint, get_type_hint
 from lapidary.render.model.python.module_path import ModulePath

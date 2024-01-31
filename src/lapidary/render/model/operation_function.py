@@ -4,11 +4,11 @@ from dataclasses import dataclass
 from typing import Optional, Union
 
 from . import openapi
-from lapidary.render.model.python.params import ParamPlacement
+from lapidary.render.model.python.params import ParamLocation
 from lapidary.render.model.refs import ResolverFunc
-from lapidary.render.model.python.type_hint import TypeHint, resolve_type_hint, get_type_hint, GenericTypeHint
+from lapidary.render.model.python.type_hint import TypeHint, resolve_type_hint, GenericTypeHint
 from lapidary.render.model.python.module_path import ModulePath
-from lapidary.render.model.python.names import PARAM_MODEL, RESPONSE_BODY, get_subtype_name, maybe_mangle_name, response_type_name
+from lapidary.render.model.python.names import PARAM_MODEL, get_param_python_name, get_param_type, escape_name
 
 from .attribute import AttributeModel
 from .attribute_annotation import AttributeAnnotationModel
@@ -38,36 +38,24 @@ _FIELD_PROPS = dict(
 
 
 def get_operation_param(
-        param: Union[openapi.Parameter, openapi.Reference], parent_name: str, module: ModulePath, resolve: ResolverFunc
-) -> AttributeModel:
-    try:
-        return get_operation_param_(param, parent_name, module, resolve)
-    except:
-        logger.warning("Error while handling parameter %s/%s", parent_name, param.name)
-        raise
-
-
-def get_operation_param_(
-        param: Union[openapi.Parameter, openapi.Reference], parent_name: str, module: ModulePath, resolve: ResolverFunc
+        param: Union[openapi.Parameter, openapi.Reference], module: ModulePath, resolve: ResolverFunc
 ) -> AttributeModel:
     if isinstance(param, openapi.Reference):
         param, module, _ = resolve(param, openapi.Parameter)
 
-    schema = param.schema_
-    if isinstance(schema, openapi.Reference):
-        schema, module, schema_name = resolve(schema, openapi.Schema)
-    else:
-        param_name = param.lapidary_name or param.name
-        schema_name = get_subtype_name(parent_name, param_name)
-        module = module / PARAM_MODEL
+    return get_operation_param_(param, module, resolve)
 
-    field_props = {k: (getattr(param, k) or _FIELD_PROPS[k]) for k in _FIELD_PROPS}
-    param_name = param.in_[0] + '_' + maybe_mangle_name(param.lapidary_name or param.name, False)
+
+def get_operation_param_(
+        param: openapi.Parameter, parent_module: ModulePath, resolve: ResolverFunc
+) -> AttributeModel:
+    field_props = {k: getattr(param, k, default) for k, default in _FIELD_PROPS.items()}
+    param_name = get_param_python_name(param)
 
     return AttributeModel(
         name=param_name,
         annotation=AttributeAnnotationModel(
-            type=get_type_hint(schema, module, schema_name, param.required, resolve),
+            type=get_param_type(param, parent_module, resolve),
             field_props=field_props,
         ),
         deprecated=param.deprecated,
@@ -76,22 +64,26 @@ def get_operation_param_(
 
 
 def get_operation_func(
-        op: openapi.Operation, root: ModulePath, operation_id: Optional[str], resolver: ResolverFunc
+        op: openapi.Operation, parent: ModulePath, resolver: ResolverFunc
 ) -> OperationFunctionModel:
-    if not operation_id:
+    if not op.operationId:
         raise ValueError('operationId is required')
 
-    module = root / 'paths' / op.operationId
+    module = parent / op.operationId
 
     params = []
     if op.parameters:
+        params_module = module / PARAM_MODEL
         for oapi_param in op.parameters:
-            if oapi_param.in_ == ParamPlacement.header.value and oapi_param.name.lower() in [
+            if oapi_param.in_ == ParamLocation.header.value and oapi_param.name.lower() in [
                 'accept', 'content-type', 'authorization'
             ]:
                 warnings.warn(f'Header param "{oapi_param.name}" ignored')
                 continue
-            params.append(get_operation_param(oapi_param, op.operationId, module, resolver))
+            try:
+                params.append(get_operation_param(oapi_param, params_module, resolver))
+            except Exception:
+                raise Exception("Error while handling parameter", oapi_param.name)
 
     request_type = get_request_body_type(op, module, resolver) if op.requestBody else None
 
@@ -123,23 +115,23 @@ def get_response_types(op: openapi.Operation, module: ModulePath, resolve: Resol
     Generate unique collection of types that may be returned by the operation. Skip types that are marked as exceptions as those are raised instead.
     """
 
-    return get_response_types_(op.operationId, op.responses, module, resolve)
+    return get_response_types_(op.responses, module, resolve)
 
 
-def get_response_types_(op_name: Optional[str], responses: openapi.Responses, module: ModulePath, resolve: ResolverFunc) -> set[TypeHint]:
+def get_response_types_(responses: openapi.Responses, module: ModulePath, resolve: ResolverFunc) -> set[TypeHint]:
     response_types = set()
     for resp_code, response in responses.items():
         if isinstance(response, openapi.Reference):
             response, module, name = resolve(response, openapi.Response)
         if response.content is None:
             continue
-        for media_type in response.content.values():
+        for _media_type_name, media_type in response.content.items():
             schema = media_type.schema_
             if isinstance(schema, openapi.Reference):
                 schema, resp_module, name = resolve(schema, openapi.Schema)
             else:
-                name = response_type_name(op_name, resp_code)
-                resp_module = module / RESPONSE_BODY
+                name = "schema"
+                resp_module = module / "responses" / escape_name(str(resp_code)) / "content" / escape_name(_media_type_name)
             if schema.lapidary_model_type is openapi.LapidaryModelType.exception:
                 continue
             typ = resolve_type_hint(schema, resp_module, name, resolve)
@@ -155,10 +147,10 @@ def to_iterator(type_: TypeHint) -> TypeHint:
     if not isinstance(type_, GenericTypeHint):
         return type_
 
-    if type_.origin == TypeHint.from_type(Union):
+    if type_.origin == TypeHint.from_str('typing.Union'):
         return GenericTypeHint.union_of(tuple(to_iterator(targ) for targ in type_.args))
 
     if type_.origin == TypeHint.from_type(list):
-        return GenericTypeHint(module='collections.abc', name='Iterator', args=type_.args)
+        return GenericTypeHint(module='collections.abc', type_name='Iterator', args=type_.args)
 
     return type_

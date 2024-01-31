@@ -1,9 +1,9 @@
 {%- macro type_hint(type_ref, module_path) %}
     {%- if type_ref is none %}{{ None }}
-    {%- elif type_ref.module == module_path.str() %}
+    {%- elif type_ref.module == module_path | string %}
         {{- type_ref.name }}
     {%- else %}
-        {%- if type_ref.module != 'builtins' %}{{ type_ref.module }}.{% endif %}{{ type_ref.name }}
+        {%- if type_ref.module != 'builtins' %}{{ type_ref.module }}.{% endif %}{{ type_ref.type_name }}
     {%- endif %}
     {%- if type_ref.args is defined %}[
         {%- for arg in type_ref.args %}

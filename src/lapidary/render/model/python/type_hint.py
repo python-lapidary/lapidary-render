@@ -9,7 +9,7 @@ from uuid import UUID
 from pydantic import BaseModel, Extra
 
 from lapidary.render.model.refs import ResolverFunc
-from ...render.model import openapi
+from ...model import openapi
 from lapidary.runtime.absent import Absent
 from lapidary.render.model.python.module_path import ModulePath
 

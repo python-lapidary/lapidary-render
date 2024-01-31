@@ -1,4 +1,4 @@
-from typing import Optional, Iterator
+import typing as ty
 
 from mimeparse import best_match
 
@@ -7,31 +7,33 @@ from lapidary.runtime.http_consts import MIME_JSON
 from lapidary.render.model.refs import ResolverFunc
 from lapidary.render.model.python.type_hint import TypeHint, resolve_type_hint
 from lapidary.render.model.python.module_path import ModulePath
-from lapidary.render.model.python.names import request_type_name
+from lapidary.render.model.python.names import escape_name, REQUEST_BODY, request_type_name
 from .schema_class import get_schema_classes
 from .schema_class_model import SchemaClass
-from .schema_module import SchemaModule, _get_schema_module
+
+if ty.TYPE_CHECKING:
+    from .schema_module import SchemaModule
 
 
-def get_request_body_type(op: openapi.Operation, module: ModulePath, resolve: ResolverFunc) -> Optional[TypeHint]:
+def get_request_body_type(op: openapi.Operation, module: ModulePath, resolve: ResolverFunc) -> ty.Optional[TypeHint]:
     mime_json = best_match(op.requestBody.content.keys(), MIME_JSON)
     if mime_json == '':
         return None
     schema = op.requestBody.content[mime_json].schema_
-    return resolve_type_hint(schema, module, request_type_name(op.operationId), resolve)
+    return resolve_type_hint(schema, module / REQUEST_BODY / "content" / escape_name(mime_json), "schema", resolve)
 
 
 def get_request_body_classes(
         operation: openapi.Operation,
         module: ModulePath,
         resolve: ResolverFunc,
-) -> Iterator[SchemaClass]:
+) -> ty.Iterator[SchemaClass]:
     rb = operation.requestBody
     if isinstance(rb, openapi.Reference):
         return
 
     media_map = rb.content
-    mime_json = best_match(media_map.keys(), 'application/json')
+    mime_json = best_match(media_map.keys(), MIME_JSON)
     schema = media_map[mime_json].schema_
     if isinstance(schema, openapi.Reference):
         return
@@ -39,6 +41,7 @@ def get_request_body_classes(
     yield from get_schema_classes(schema, request_type_name(operation.operationId), module, resolve)
 
 
-def get_request_body_module(op: openapi.Operation, module: ModulePath, resolve: ResolverFunc) -> SchemaModule:
+def get_request_body_module(op: openapi.Operation, module: ModulePath, resolve: ResolverFunc) -> 'SchemaModule':
+    from .schema_module import _get_schema_module
     classes = [cls for cls in get_request_body_classes(op, module, resolve)]
     return _get_schema_module(classes, module)
