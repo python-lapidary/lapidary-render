@@ -1,11 +1,10 @@
 from dataclasses import dataclass, field
 from typing import Union, Optional
 
-from lapidary.runtime import openapi
-from lapidary.runtime.model.refs import ResolverFunc
-from lapidary.runtime.module_path import ModulePath
-from lapidary.runtime.names import check_name, get_schema_module_name
-
+from . import openapi
+from lapidary.render.model.refs import ResolverFunc
+from lapidary.render.model.python.module_path import ModulePath
+from lapidary.render.model.python.names import check_name, get_schema_module_name
 from .module import AbstractModule, template_imports
 from .param_model_class import get_param_model_classes
 from .schema_class import get_schema_classes

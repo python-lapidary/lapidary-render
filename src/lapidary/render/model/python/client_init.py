@@ -4,8 +4,8 @@ from typing import Optional, Union
 
 from .auth import AuthModel, get_auth_models
 from .response_map import get_api_responses, ResponseMap
-from ..module_path import ModulePath
-from ..openapi import model as openapi
+from lapidary.render.model.python.module_path import ModulePath
+from lapidary.render.model.openapi import model as openapi
 
 
 @dataclass(frozen=True)

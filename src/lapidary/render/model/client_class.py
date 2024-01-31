@@ -1,9 +1,9 @@
 from dataclasses import dataclass, field
 
-from lapidary.runtime import openapi
-from lapidary.runtime.model.refs import ResolverFunc
-from lapidary.runtime.module_path import ModulePath
-from lapidary.runtime.openapi.utils import get_operations
+from . import openapi
+from lapidary.render.model.refs import ResolverFunc
+from lapidary.render.model.python.module_path import ModulePath
+from lapidary.render.model.openapi.utils import get_operations
 
 from .client_init import ClientInit, get_client_init
 from .operation_function import OperationFunctionModel, get_operation_func

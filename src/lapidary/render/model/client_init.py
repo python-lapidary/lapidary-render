@@ -1,9 +1,9 @@
 from typing import Optional, Annotated
 
-from lapidary.runtime import openapi
-from lapidary.runtime.model.refs import ResolverFunc
-from lapidary.runtime.model.type_hint import TypeHint
-from lapidary.runtime.module_path import ModulePath
+from . import openapi
+from lapidary.render.model.refs import ResolverFunc
+from lapidary.render.model.python.type_hint import TypeHint
+from lapidary.render.model.python.module_path import ModulePath
 from pydantic import BaseModel, Field
 
 from .operation_function import get_response_types_

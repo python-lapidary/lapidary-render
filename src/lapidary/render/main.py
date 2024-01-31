@@ -4,7 +4,7 @@ from pathlib import Path
 
 import yaml
 
-from lapidary.runtime import openapi
+from .model import openapi
 from .client import render_client, environment
 from .config import Config
 from .pyproj import create_pyproj

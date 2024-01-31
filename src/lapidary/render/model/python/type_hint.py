@@ -8,10 +8,10 @@ from uuid import UUID
 
 from pydantic import BaseModel, Extra
 
-from .refs import ResolverFunc
-from .. import openapi
-from ..absent import Absent
-from ..module_path import ModulePath
+from lapidary.render.model.refs import ResolverFunc
+from ...render.model import openapi
+from lapidary.runtime.absent import Absent
+from lapidary.render.model.python.module_path import ModulePath
 
 logger = logging.getLogger(__name__)
 

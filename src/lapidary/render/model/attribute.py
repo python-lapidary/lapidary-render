@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 from typing import Any, Optional, Union
 
-from lapidary.runtime import openapi
-from lapidary.runtime.model import ResolverFunc
-from lapidary.runtime.model.type_hint import BuiltinTypeHint
-from lapidary.runtime.module_path import ModulePath
-from lapidary.runtime.names import check_name, maybe_mangle_name
+from . import openapi
+from lapidary.render.model import ResolverFunc
+from lapidary.render.model.python.type_hint import BuiltinTypeHint
+from lapidary.render.model.python.module_path import ModulePath
+from lapidary.render.model.python.names import check_name, maybe_mangle_name
 
 from .attribute_annotation import AttributeAnnotationModel, get_attr_annotation
 

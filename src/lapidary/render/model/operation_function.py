@@ -3,12 +3,12 @@ import warnings
 from dataclasses import dataclass
 from typing import Optional, Union
 
-from lapidary.runtime import openapi
-from lapidary.runtime.model.params import ParamPlacement
-from lapidary.runtime.model.refs import ResolverFunc
-from lapidary.runtime.model.type_hint import TypeHint, resolve_type_hint, get_type_hint, GenericTypeHint
-from lapidary.runtime.module_path import ModulePath
-from lapidary.runtime.names import PARAM_MODEL, RESPONSE_BODY, get_subtype_name, maybe_mangle_name, response_type_name
+from . import openapi
+from lapidary.render.model.python.params import ParamPlacement
+from lapidary.render.model.refs import ResolverFunc
+from lapidary.render.model.python.type_hint import TypeHint, resolve_type_hint, get_type_hint, GenericTypeHint
+from lapidary.render.model.python.module_path import ModulePath
+from lapidary.render.model.python.names import PARAM_MODEL, RESPONSE_BODY, get_subtype_name, maybe_mangle_name, response_type_name
 
 from .attribute import AttributeModel
 from .attribute_annotation import AttributeAnnotationModel

@@ -1,9 +1,9 @@
 import unittest
 
 import yaml
-from lapidary.runtime import openapi
-from lapidary.runtime.model.type_hint import TypeHint
-from lapidary.runtime.module_path import ModulePath
+from lapidary.render.model import openapi
+from lapidary.render.model.python.type_hint import TypeHint
+from lapidary.render.model.python.module_path import ModulePath
 
 from lapidary.render.model.param_model_class import get_param_model_classes
 

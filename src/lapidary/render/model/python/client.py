@@ -3,9 +3,9 @@ from dataclasses import dataclass, field
 
 from .client_init import get_client_init, ClientInit
 from .op import OperationModel, get_operation_functions
-from .refs import ResolverFunc
-from ..module_path import ModulePath
-from ..openapi import model as openapi
+from lapidary.render.model.refs import ResolverFunc
+from lapidary.render.model.python.module_path import ModulePath
+from lapidary.render.model.openapi import model as openapi
 
 
 @dataclass(frozen=True)

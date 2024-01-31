@@ -5,12 +5,12 @@ from dataclasses import dataclass
 from typing import Optional, Type
 
 from .plugins import PagingPlugin
-from .refs import ResolverFunc
+from lapidary.render.model.refs import ResolverFunc
 from .response_map import get_response_map, ResponseMap
-from .. import names
-from ..module_path import ModulePath
-from ..openapi import model as openapi, PluginModel
-from ..openapi.utils import get_operations
+from . import names
+from lapidary.render.model.python.module_path import ModulePath
+from lapidary.render.model.openapi import model as openapi, PluginModel
+from lapidary.render.model.openapi import get_operations
 
 
 @dataclass(frozen=True)

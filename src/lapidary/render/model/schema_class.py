@@ -2,12 +2,11 @@ import logging
 from collections.abc import Iterator
 from typing import Optional
 
-from lapidary.runtime import openapi
-from lapidary.runtime.model.refs import ResolverFunc
-from lapidary.runtime.model.type_hint import BuiltinTypeHint, TypeHint
-from lapidary.runtime.module_path import ModulePath
-from lapidary.runtime.names import get_subtype_name
-
+from . import openapi
+from lapidary.render.model.refs import ResolverFunc
+from lapidary.render.model.python.type_hint import BuiltinTypeHint, TypeHint
+from lapidary.render.model.python.module_path import ModulePath
+from lapidary.render.model.python.names import get_subtype_name
 from .attribute import get_attributes
 from .schema_class_enum import get_enum_class
 from .schema_class_model import SchemaClass, ModelType
@@ -21,7 +20,7 @@ def get_schema_classes(
         module: ModulePath,
         resolver: ResolverFunc,
 ) -> Iterator[SchemaClass]:
-    # First handle the enum case, so that the model class has suffixed name, and all sub-schemas use it as their prefix
+    # First handle the enum case, so that the python class has suffixed name, and all sub-schemas use it as their prefix
     if schema.enum is not None:
         enum_class = get_enum_class(schema, name)
         name = name + 'Value'

@@ -4,7 +4,7 @@ from typing import Optional, Union, Any, Mapping
 from pydantic import BaseModel
 
 from .params import ParamLocation
-from ..openapi import model as openapi
+from lapidary.render.model.openapi import model as openapi
 
 
 class AuthModel(BaseModel):

@@ -3,10 +3,10 @@ from collections.abc import Iterable
 from concurrent.futures import Executor, Future
 from pathlib import Path
 
-from lapidary.runtime import openapi, names as mod_name
-from lapidary.runtime.model.refs import ResolverFunc
-from lapidary.runtime.module_path import ModulePath
-
+from .python import names as mod_name
+from . import openapi
+from lapidary.render.model.refs import ResolverFunc
+from lapidary.render.model.python.module_path import ModulePath
 from .client_class import get_operations
 from .request_body import get_request_body_module
 from .response_body import get_response_body_module
