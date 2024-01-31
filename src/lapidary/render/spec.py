@@ -7,7 +7,7 @@ import platformdirs
 import yaml
 from jsonpatch import JsonPatch
 
-from lapidary.runtime.load import load_yaml_cached
+from .load import load_yaml_cached
 from .config import Config
 
 logger = logging.getLogger(__name__)

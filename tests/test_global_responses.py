@@ -50,7 +50,7 @@ class GlobalResponsesTest(unittest.TestCase):
         module = get_client_class_module(model, module_path / 'client.py', module_path, get_resolver(model, 'test'))
 
         expected = {
-            TypeHint(module='test.components.schemas.GSMTasksError', type_name='GSMTasksError'),
+            TypeHint(module='test.components.schemas', name='GSMTasksError'),
         }
 
         self.assertEqual(expected, module.body.init_method.response_types)
@@ -101,7 +101,7 @@ class GlobalResponsesTest(unittest.TestCase):
         # pp(dataclasses.asdict(module))
 
         expected = {
-            TypeHint(module='test.components.schemas.GSMTasksError', type_name='GSMTasksError'),
+            TypeHint(module='test.components.schemas', name='GSMTasksError'),
         }
 
         self.assertEqual(expected, module.body.init_method.response_types)
@@ -151,7 +151,7 @@ class GlobalResponsesTest(unittest.TestCase):
         module = get_client_class_module(model, module_path / 'client.py', module_path, get_resolver(model, 'test'))
 
         expected = {
-            TypeHint(module='test.components.schemas.GSMTasksError', type_name='GSMTasksError'),
+            TypeHint(module='test.components.schemas', name='GSMTasksError'),
         }
 
         self.assertEqual(expected, module.body.init_method.response_types)

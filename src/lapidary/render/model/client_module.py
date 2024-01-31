@@ -3,7 +3,7 @@ import logging
 from dataclasses import dataclass, field
 
 from . import openapi
-from lapidary.render.model import ResolverFunc
+from lapidary.render.model.refs import ResolverFunc
 from lapidary.render.model.python.module_path import ModulePath
 
 from .client_class import ClientClass, get_client_class

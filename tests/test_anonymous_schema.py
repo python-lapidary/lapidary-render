@@ -78,11 +78,11 @@ class Test(TestCase):
         self.assertEqual(schema, a)
 
     def test_schema_type_name(self):
-        classes = [cls for cls in get_schema_classes(
+        classes = list(get_schema_classes(
             model.components.schemas['charlie'],
             'alice',
             ModulePath('test'),
             get_resolver(model, 'test'),
-        )]
+        ))
         class_names = [cls.class_name for cls in classes]
         self.assertEqual(class_names, ['FirstSchemaClass', 'SecondSchemaClass'])

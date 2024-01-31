@@ -71,7 +71,7 @@ class NamingTest(TestCase):
             ],
             body=[
                 SchemaClass(
-                    class_name='NonSpaceNameRandomProperty',
+                    class_name='NonSpaceNameRandomu_000020property',
                     base_type=TypeHint.from_str('pydantic:BaseModel'),
                     attributes=[
                         AttributeModel(
@@ -86,9 +86,9 @@ class NamingTest(TestCase):
                     base_type=TypeHint.from_str('pydantic:BaseModel'),
                     attributes=[
                         AttributeModel(
-                            'random_property',
+                            'randomu_000020property',
                             AttributeAnnotationModel(
-                                TypeHint.from_str('lapidary_test:NonSpaceNameRandomProperty'),
+                                TypeHint.from_str('lapidary_test:NonSpaceNameRandomu000020property'),
                                 {
                                     'alias': "'random property'",
                                 },

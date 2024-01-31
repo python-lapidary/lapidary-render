@@ -91,7 +91,7 @@ def _get_type_hint(schema: openapi.Schema, module: ModulePath, name: str, resolv
     elif schema.allOf:
         return _get_composite_type_hint(schema.allOf, module, class_name, resolver)
     elif schema.type is None:
-        return TypeHint.from_str('typing.Any')
+        return TypeHint.from_str('typing:Any')
     else:
         raise NotImplementedError
 
@@ -130,7 +130,7 @@ class TypeHint(BaseModel):
 
     @staticmethod
     def from_str(path: str) -> TypeHint:
-        module, name = path.rsplit('.', 1)
+        module, name = path.split(':')
         return TypeHint(module=module, name=name)
 
     @staticmethod
@@ -213,7 +213,7 @@ class GenericTypeHint(TypeHint):
                 args.update(typ.args)
             else:
                 args.add(typ)
-        return GenericTypeHint(module='typing', name='Union', args=args)
+        return GenericTypeHint(module='typing', name='Union', args=sorted(args, key=lambda t: str(t)))
 
     def imports(self) -> list[str]:
         return [

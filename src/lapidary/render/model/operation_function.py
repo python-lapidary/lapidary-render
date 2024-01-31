@@ -4,11 +4,11 @@ from dataclasses import dataclass
 from typing import Optional, Union
 
 from . import openapi
-from lapidary.render.model.python.params import ParamLocation
+from lapidary.render.model.python.params import ParamLocation, get_param_type
 from lapidary.render.model.refs import ResolverFunc
 from lapidary.render.model.python.type_hint import TypeHint, resolve_type_hint, GenericTypeHint
 from lapidary.render.model.python.module_path import ModulePath
-from lapidary.render.model.python.names import PARAM_MODEL, get_param_python_name, get_param_type, escape_name
+from lapidary.render.model.python.names import PARAM_MODEL, param_model_name, escape_name
 
 from .attribute import AttributeModel
 from .attribute_annotation import AttributeAnnotationModel
@@ -50,7 +50,7 @@ def get_operation_param_(
         param: openapi.Parameter, parent_module: ModulePath, resolve: ResolverFunc
 ) -> AttributeModel:
     field_props = {k: getattr(param, k, default) for k, default in _FIELD_PROPS.items()}
-    param_name = get_param_python_name(param)
+    param_name = param_model_name(param)
 
     return AttributeModel(
         name=param_name,
@@ -120,7 +120,7 @@ def get_response_types(op: openapi.Operation, module: ModulePath, resolve: Resol
 
 def get_response_types_(responses: openapi.Responses, module: ModulePath, resolve: ResolverFunc) -> set[TypeHint]:
     response_types = set()
-    for resp_code, response in responses.items():
+    for resp_code, response in responses.model_extra.items():
         if isinstance(response, openapi.Reference):
             response, module, name = resolve(response, openapi.Response)
         if response.content is None:

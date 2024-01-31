@@ -4,7 +4,6 @@ import functools
 import logging
 from typing import Callable, TypeVar, Union, cast, Optional, Any, Mapping
 
-import inflection
 from typing_extensions import TypeAlias
 
 from lapidary.render.model.python.module_path import ModulePath
@@ -31,7 +30,7 @@ def resolve(model: openapi.OpenApiModel, root_package: str, ref: openapi.Referen
         if op.operationId:
             path[2:4] = op.operationId
 
-    module = ModulePath(root_package) / path[:-1] / inflection.underscore(path[-1])
+    module = ModulePath(root_package) / path[:-1]
     result = resolve_ref(model, _mkref(path), typ)
     assert isinstance(result, typ)
     return result, module, path[-1]

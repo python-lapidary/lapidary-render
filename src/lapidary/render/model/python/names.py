@@ -2,10 +2,12 @@ import builtins
 import keyword
 import logging
 import re
+import typing
 
 import inflection
 
 from lapidary.render.model.python.module_path import ModulePath
+from .. import openapi
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +43,7 @@ def _escape_char(s: str) -> str:
     return 'u_{x:06x}'.format(x=ord(s))
 
 
-def _mangle_name(name: str) -> str:
+def escape_name(name: str) -> str:
     name = name.replace('u_', 'u' + _escape_char('_'))
     return (
             re.sub('[^a-zA-Z]', lambda match: _escape_char(match.group()), name[0])
@@ -65,7 +67,7 @@ def maybe_mangle_name(name: str, check_builtins=True) -> str:
     ):
         return name + '_'
     elif not VALID_IDENTIFIER_RE.match(name) or 'u_' in name:
-        return _mangle_name(name)
+        return escape_name(name)
     else:
         return name
 
@@ -83,5 +85,21 @@ def request_type_name(name):
     return inflection.camelize(name) + 'Request'
 
 
+def get_param_python_name(param: openapi.Parameter) -> str:
+    return maybe_mangle_name(param.effective_name, False) + "_" + param.in_[0]
+
+
 def param_model_name(module: ModulePath, op_id: str) -> str:
     return (module / PARAM_MODEL).str() + ':' + inflection.camelize(op_id)
+
+
+def get_enum_field_name(value: typing.Any) -> str:
+    if isinstance(value, (str, int, float)):
+        return maybe_mangle_name(str(value), False)
+    else:
+        raise ValueError("Can't determine field name")
+
+
+def get_ops_module(module: ModulePath) -> ModulePath:
+    return module / 'ops'
+

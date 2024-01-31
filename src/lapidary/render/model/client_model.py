@@ -1,11 +1,10 @@
 from collections.abc import Iterable
 import dataclasses as dc
 
-from lapidary.runtime.model import ResolverFunc
-from lapidary.runtime.module_path import ModulePath
-from lapidary.runtime.openapi import OpenApiModel
-
+from . import ResolverFunc
 from .client_module import ClientModule, get_client_class_module
+from .openapi import OpenApiModel
+from .python.module_path import ModulePath
 from .schema_module import SchemaModule, get_schema_modules
 
 
