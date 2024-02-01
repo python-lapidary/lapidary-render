@@ -8,12 +8,12 @@ import shutil
 
 import jinja2
 import jinja2.loaders
-from lapidary.runtime import openapi
-from lapidary.runtime.model import get_resolver
-from lapidary.runtime.module_path import ModulePath
 from rybak.jinja import JinjaRenderer
 import yaml
 
+from .model import openapi
+from lapidary.render.model.refs import get_resolver
+from lapidary.render.model.python.module_path import ModulePath
 from .client import mk_model
 from .config import Config
 from .model import get_auth_module

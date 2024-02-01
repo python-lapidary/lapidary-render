@@ -67,3 +67,4 @@ from .attribute_annotation import AttributeAnnotationModel
 from .auth_module import AuthModule, get_auth_module
 from .client_module import ClientModule, get_client_class_module
 from .schema_module import get_schema_modules, SchemaModule
+from .refs import ResolverFunc

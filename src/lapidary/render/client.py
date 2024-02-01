@@ -3,10 +3,9 @@ import os
 from pathlib import Path
 from typing import TypedDict
 
-from lapidary.runtime import openapi
-
+from .model import openapi
 from .config import Config
-from .items import extract_items
+from lapidary.render.items import extract_items
 
 logger = logging.getLogger(__name__)
 

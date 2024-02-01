@@ -2,9 +2,9 @@ import itertools
 import logging
 from dataclasses import dataclass, field
 
-from lapidary.runtime import openapi
-from lapidary.runtime.model import ResolverFunc
-from lapidary.runtime.module_path import ModulePath
+from . import openapi
+from lapidary.render.model.refs import ResolverFunc
+from lapidary.render.model.python.module_path import ModulePath
 
 from .client_class import ClientClass, get_client_class
 from .module import AbstractModule, template_imports

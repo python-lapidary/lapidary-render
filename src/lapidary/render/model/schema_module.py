@@ -2,10 +2,10 @@ import dataclasses as dc
 import logging
 import typing as ty
 
-from lapidary.runtime import names as mod_name, openapi
-from lapidary.runtime.model.refs import ResolverFunc
-from lapidary.runtime.module_path import ModulePath
-
+from . import openapi
+from lapidary.render.model.refs import ResolverFunc
+from lapidary.render.model.python.module_path import ModulePath
+from lapidary.render.model.python.names import check_name, get_schema_module_name, PARAM_MODEL, REQUEST_BODY, RESPONSE_BODY
 from .module import AbstractModule, template_imports
 from .param_model_class import get_param_model_classes
 from .request_body import get_request_body_module
@@ -33,8 +33,8 @@ def get_modules_for_components_schemas(
     for name, schema in schemas.items():
         if isinstance(schema, openapi.Schema):
             name = schema.lapidary_name or name
-            mod_name.check_name(name)
-            module = get_schema_module(schema, name, root_package / mod_name.get_schema_module_name(name), resolver)
+            check_name(name)
+            module = get_schema_module(schema, name, root_package / get_schema_module_name(name), resolver)
             if module is not None:
                 modules.append(module)
     return modules
@@ -90,14 +90,14 @@ def get_schema_modules(model: openapi.OpenApiModel, root_module: ModulePath, res
             _, op = tpl
             op_root_module = root_module / 'paths' / op.operationId
             if op.parameters:
-                mod = get_param_model_classes_module(op, op_root_module / mod_name.PARAM_MODEL, resolver)
+                mod = get_param_model_classes_module(op, op_root_module / PARAM_MODEL, resolver)
                 if len(mod.body) > 0:
                     yield mod
             if op.requestBody:
-                mod = get_request_body_module(op, op_root_module / mod_name.REQUEST_BODY, resolver)
+                mod = get_request_body_module(op, op_root_module / REQUEST_BODY, resolver)
                 if len(mod.body) > 0:
                     yield mod
             if len(op.responses.items()):
-                mod = get_response_body_module(op, op_root_module / mod_name.RESPONSE_BODY, resolver)
+                mod = get_response_body_module(op, op_root_module / RESPONSE_BODY, resolver)
                 if len(mod.body) > 0:
                     yield mod

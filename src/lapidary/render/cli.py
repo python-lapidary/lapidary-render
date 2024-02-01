@@ -1,12 +1,12 @@
 import logging
 from pathlib import Path
 
-from lapidary.runtime.model import get_resolver
-from lapidary.runtime.module_path import ModulePath
 import typer
 
 from .config import Config, load_config
 from .model.client_model import mk_client_model
+from .model.python.module_path import ModulePath
+from .model.refs import get_resolver
 from .spec import load_spec
 
 HELP_FORMAT_STRICT = 'Use black in slow (strict checking) mode'
@@ -29,7 +29,7 @@ def version():
 
 @app.command()
 def update(
-        project_root: Path = typer.Argument(Path('.')),
+        project_root: Path = typer.Argument(Path('')),
         format_strict: bool = typer.Option(False, help=HELP_FORMAT_STRICT),
         cache: bool = True
 ):
@@ -97,7 +97,7 @@ def dump_model(
 
     logger.info("Parse OpenAPI schema")
     oa_doc = load_spec(schema_path, patch, config)
-    from lapidary.runtime import openapi
+    from lapidary.render.model import openapi
     oa_model = openapi.OpenApiModel.model_validate(oa_doc)
 
     logger.info("Prepare model")

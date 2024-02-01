@@ -1,9 +1,9 @@
 import logging
 from typing import Mapping, Any, TypeAlias, TypeVar, Callable, Iterable
 
-from lapidary.runtime import openapi
-from lapidary.runtime.json_pointer import encode_json_pointer
-from lapidary.runtime.model import resolve_ref
+from lapidary.render.model.json_pointer import encode_json_pointer
+from lapidary.render.model import openapi
+from lapidary.render.model.refs import resolve_ref
 
 
 logger = logging.getLogger(__name__)

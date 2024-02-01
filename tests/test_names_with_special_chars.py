@@ -2,11 +2,11 @@ import logging
 from unittest import TestCase
 
 import yaml
-from lapidary.runtime import openapi
-from lapidary.runtime.model import from_type, TypeHint
-from lapidary.runtime.model.refs import get_resolver
-from lapidary.runtime.module_path import ModulePath
 
+from lapidary.render.model import openapi
+from lapidary.render.model.refs import get_resolver
+from lapidary.render.model.python.type_hint import TypeHint
+from lapidary.render.model.python.module_path import ModulePath
 from lapidary.render.model.attribute import AttributeModel
 from lapidary.render.model.attribute_annotation import AttributeAnnotationModel
 from lapidary.render.model.schema_class import get_schema_classes
@@ -71,12 +71,12 @@ class NamingTest(TestCase):
             ],
             body=[
                 SchemaClass(
-                    class_name='NonSpaceNameRandomProperty',
+                    class_name='NonSpaceNameRandomu_000020property',
                     base_type=TypeHint.from_str('pydantic:BaseModel'),
                     attributes=[
                         AttributeModel(
                             'key',
-                            AttributeAnnotationModel(from_type(str), {}),
+                            AttributeAnnotationModel(TypeHint.from_type(str), {}),
                         ),
                     ],
                 ),
@@ -86,9 +86,9 @@ class NamingTest(TestCase):
                     base_type=TypeHint.from_str('pydantic:BaseModel'),
                     attributes=[
                         AttributeModel(
-                            'random_property',
+                            'randomu_000020property',
                             AttributeAnnotationModel(
-                                TypeHint.from_str('lapidary_test:NonSpaceNameRandomProperty'),
+                                TypeHint.from_str('lapidary_test:NonSpaceNameRandomu000020property'),
                                 {
                                     'alias': "'random property'",
                                 },

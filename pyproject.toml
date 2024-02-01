@@ -10,7 +10,7 @@ name = "lapidary-render"
 version = "0.8.0"
 packages = [{ include = "lapidary", from = "src" }]
 readme = 'Readme.md'
-repository = 'https://github.com/python-lapidary/lapidary-render'
+repository = 'https://github.com/python-lapidary/lapidary'
 include = [{ path = 'src/lapidary/render/templates' }]
 classifiers = [
     "Development Status :: 3 - Alpha",

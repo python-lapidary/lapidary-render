@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from typing import Any, Optional, Union
 
-from lapidary.runtime import openapi
-from lapidary.runtime.model import ResolverFunc, from_type
-from lapidary.runtime.module_path import ModulePath
-from lapidary.runtime.names import check_name, maybe_mangle_name, get_enum_field_name
+from . import openapi
+from lapidary.render.model.python.type_hint import ResolverFunc, TypeHint
+from lapidary.render.model.python.module_path import ModulePath
+from lapidary.render.model.python.names import check_name, maybe_mangle_name, get_enum_field_name
 
 from .attribute_annotation import AttributeAnnotationModel, get_attr_annotation
 
@@ -65,7 +65,7 @@ def get_enum_attribute(value: Any, name: Optional[str]) -> AttributeModel:
     return AttributeModel(
         name=maybe_mangle_name(name, False) if name else get_enum_field_name(value),
         annotation=AttributeAnnotationModel(
-            type=from_type(type(value)),
+            type=TypeHint.from_type(type(value)),
             field_props={'default': quoted_value},
         )
     )

@@ -3,13 +3,12 @@ import warnings
 from dataclasses import dataclass
 from typing import Optional, Union
 
-from lapidary.runtime import openapi
-from lapidary.runtime.model import TypeHint, resolve_type_hint, GenericTypeHint, from_type
-from lapidary.runtime.model.params import ParamLocation, get_param_type
-from lapidary.runtime.model.refs import ResolverFunc
-from lapidary.runtime.model.type_hint import UnionTypeHint
-from lapidary.runtime.module_path import ModulePath
-from lapidary.runtime.names import get_param_python_name, escape_name, PARAM_MODEL
+from . import openapi
+from lapidary.render.model.python.params import ParamLocation, get_param_type
+from lapidary.render.model.refs import ResolverFunc
+from lapidary.render.model.python.type_hint import TypeHint, resolve_type_hint, GenericTypeHint
+from lapidary.render.model.python.module_path import ModulePath
+from lapidary.render.model.python.names import PARAM_MODEL, param_model_name, escape_name
 
 from .attribute import AttributeModel
 from .attribute_annotation import AttributeAnnotationModel
@@ -51,7 +50,7 @@ def get_operation_param_(
         param: openapi.Parameter, parent_module: ModulePath, resolve: ResolverFunc
 ) -> AttributeModel:
     field_props = {k: getattr(param, k, default) for k, default in _FIELD_PROPS.items()}
-    param_name = get_param_python_name(param)
+    param_name = param_model_name(param)
 
     return AttributeModel(
         name=param_name,
@@ -94,7 +93,7 @@ def get_operation_func(
     elif len(response_types) == 1:
         response_type = response_types.pop()
     else:
-        response_type = UnionTypeHint.of(*response_types)
+        response_type = GenericTypeHint.union_of(tuple(response_types))
 
     auth_name = None
     if op.security is not None and len(op.security) > 0:
@@ -121,7 +120,7 @@ def get_response_types(op: openapi.Operation, module: ModulePath, resolve: Resol
 
 def get_response_types_(responses: openapi.Responses, module: ModulePath, resolve: ResolverFunc) -> set[TypeHint]:
     response_types = set()
-    for resp_code, response in responses.items():
+    for resp_code, response in responses.model_extra.items():
         if isinstance(response, openapi.Reference):
             response, module, name = resolve(response, openapi.Response)
         if response.content is None:
@@ -133,11 +132,11 @@ def get_response_types_(responses: openapi.Responses, module: ModulePath, resolv
             else:
                 name = "schema"
                 resp_module = module / "responses" / escape_name(str(resp_code)) / "content" / escape_name(_media_type_name)
-            if schema.lapidary_model_type is openapi.LapidaryModelType.EXCEPTION:
+            if schema.lapidary_model_type is openapi.LapidaryModelType.exception:
                 continue
             typ = resolve_type_hint(schema, resp_module, name, resolve)
 
-            if schema.lapidary_model_type is openapi.LapidaryModelType.ITERATOR:
+            if schema.lapidary_model_type is openapi.LapidaryModelType.iterator:
                 typ = to_iterator(typ)
 
             response_types.add(typ)
@@ -148,10 +147,10 @@ def to_iterator(type_: TypeHint) -> TypeHint:
     if not isinstance(type_, GenericTypeHint):
         return type_
 
-    if type_.origin == from_type(Union):
-        return UnionTypeHint.of(*(to_iterator(targ) for targ in type_.args))
+    if type_.origin == TypeHint.from_str('typing.Union'):
+        return GenericTypeHint.union_of(tuple(to_iterator(targ) for targ in type_.args))
 
-    if type_.origin == from_type(list):
+    if type_.origin == TypeHint.from_type(list):
         return GenericTypeHint(module='collections.abc', type_name='Iterator', args=type_.args)
 
     return type_

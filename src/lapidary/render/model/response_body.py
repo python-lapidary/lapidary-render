@@ -1,10 +1,9 @@
 from collections.abc import Iterable
 import typing as ty
 
-from lapidary.runtime import openapi
-from lapidary.runtime.model.refs import ResolverFunc
-from lapidary.runtime.module_path import ModulePath
-
+from . import openapi
+from lapidary.render.model.refs import ResolverFunc
+from lapidary.render.model.python.module_path import ModulePath
 from .schema_class import get_schema_classes
 from .schema_class_model import SchemaClass
 
@@ -17,7 +16,7 @@ def get_response_body_classes(
         module: ModulePath,
         resolve: ResolverFunc,
 ) -> Iterable[SchemaClass]:
-    for status_code, response in operation.responses.items():
+    for status_code, response in operation.responses.model_extra.items():
         if isinstance(response, openapi.Reference):
             continue
         if response.content is None:

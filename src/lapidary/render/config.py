@@ -1,10 +1,10 @@
 import dataclasses
 from pathlib import Path
+
 try:
     import tomllib
 except ImportError:
-    import tomli
-    tomlib = tomli
+    import tomli as tomllib
 
 PYPROJ_TOML = 'pyproject.toml'
 
@@ -32,6 +32,6 @@ def load_config(project_root: Path) -> Config:
         raise FileNotFoundError(pyproj_path)
 
     with open(pyproj_path, 'br') as fb:
-        pyproj = tomli.load(fb)
+        pyproj = tomllib.load(fb)
     pyproj_dict = pyproj['tool']['lapidary']
     return Config(**pyproj_dict)

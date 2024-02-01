@@ -223,13 +223,13 @@ trio = ["trio (>=0.22.0,<0.23.0)"]
 
 [[package]]
 name = "httpx"
-version = "0.25.2"
+version = "0.26.0"
 description = "The next generation HTTP client."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "httpx-0.25.2-py3-none-any.whl", hash = "sha256:a05d3d052d9b2dfce0e3896636467f8a5342fb2b902c819428e1ac65413ca118"},
-    {file = "httpx-0.25.2.tar.gz", hash = "sha256:8b8fcaa0c8ea7b05edd69a094e63a2094c4efcb48129fb757361bc423c0ad9e8"},
+    {file = "httpx-0.26.0-py3-none-any.whl", hash = "sha256:8915f5a3627c4d47b73e8202457cb28f1266982d1159bd5779d86a80c0eab1cd"},
+    {file = "httpx-0.26.0.tar.gz", hash = "sha256:451b55c30d5185ea6b23c2c793abf9bb237d2a7dfb901ced6ff69ad37ec1dfaf"},
 ]
 
 [package.dependencies]
@@ -248,20 +248,20 @@ socks = ["socksio (==1.*)"]
 
 [[package]]
 name = "httpx-auth"
-version = "0.18.0"
+version = "0.19.0"
 description = "Authentication for HTTPX"
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "httpx_auth-0.18.0-py3-none-any.whl", hash = "sha256:e0b3c3439d8de6c4ff9e74787f5cd99575fab5085f3616a3d03228ca03ec213b"},
-    {file = "httpx_auth-0.18.0.tar.gz", hash = "sha256:22826b4b9c3d76523e9f4797769cafcc46f0d2e02f5e56856d5d996e7b925654"},
+    {file = "httpx_auth-0.19.0-py3-none-any.whl", hash = "sha256:6735fff47571fddb25cbcadd8f012b09fe27a171ba114001c82bfb536789a28f"},
+    {file = "httpx_auth-0.19.0.tar.gz", hash = "sha256:b834fd7e257d7d389054fec9a48a9cdc646c9aa90c519f9b02e4b0a95afe0c19"},
 ]
 
 [package.dependencies]
-httpx = "==0.25.*"
+httpx = "==0.26.*"
 
 [package.extras]
-testing = ["pyjwt (==2.*)", "pytest-cov (==4.*)", "pytest-httpx (==0.25.*)"]
+testing = ["pyjwt (==2.*)", "pytest-cov (==4.*)", "pytest-httpx (==0.28.*)"]
 
 [[package]]
 name = "hyperframe"
@@ -284,24 +284,6 @@ files = [
     {file = "idna-3.6-py3-none-any.whl", hash = "sha256:c05567e9c24a6b9faaa835c4821bad0590fbb9d5779e7caa6e1cc4978e7eb24f"},
     {file = "idna-3.6.tar.gz", hash = "sha256:9ecdbbd083b06798ae1e86adcbfe8ab1479cf864e4ee30fe4e46a003d12491ca"},
 ]
-
-[[package]]
-name = "importlib-resources"
-version = "5.13.0"
-description = "Read resources from Python packages"
-optional = false
-python-versions = ">=3.8"
-files = [
-    {file = "importlib_resources-5.13.0-py3-none-any.whl", hash = "sha256:9f7bd0c97b79972a6cce36a366356d16d5e13b09679c11a58f1014bfdf8e64b2"},
-    {file = "importlib_resources-5.13.0.tar.gz", hash = "sha256:82d5c6cca930697dbbd86c93333bb2c2e72861d4789a11c2662b933e5ad2b528"},
-]
-
-[package.dependencies]
-zipp = {version = ">=3.1.0", markers = "python_version < \"3.10\""}
-
-[package.extras]
-docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "sphinx (>=3.5)", "sphinx-lint"]
-testing = ["pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-mypy (>=0.9.1)", "pytest-ruff"]
 
 [[package]]
 name = "inflection"
@@ -377,14 +359,12 @@ files = []
 develop = true
 
 [package.dependencies]
-httpx = {version = "^0.25.0", extras = ["http2"]}
-httpx-auth = "^0.18.0"
-importlib-resources = {version = "^5.10.2", markers = "python_version < \"3.10\""}
-inflection = "^0.5.1"
-platformdirs = "^3.11.0"
+httpx = {version = "^0.26.0", extras = ["http2"]}
+httpx-auth = "^0.19.0"
 pydantic = {version = "^2.5.2", extras = ["email"]}
+pytest-asyncio = "^0.23.3"
 python-mimeparse = "^1.6.0"
-pyyaml = "^6.0"
+typing-extensions = {version = "^4.9.0", markers = "python_version < \"3.12\""}
 
 [package.source]
 type = "directory"
@@ -682,6 +662,24 @@ tomli = {version = ">=1.0.0", markers = "python_version < \"3.11\""}
 testing = ["argcomplete", "attrs (>=19.2.0)", "hypothesis (>=3.56)", "mock", "nose", "pygments (>=2.7.2)", "requests", "setuptools", "xmlschema"]
 
 [[package]]
+name = "pytest-asyncio"
+version = "0.23.4"
+description = "Pytest support for asyncio"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "pytest-asyncio-0.23.4.tar.gz", hash = "sha256:2143d9d9375bf372a73260e4114541485e84fca350b0b6b92674ca56ff5f7ea2"},
+    {file = "pytest_asyncio-0.23.4-py3-none-any.whl", hash = "sha256:b0079dfac14b60cd1ce4691fbfb1748fe939db7d0234b5aba97197d10fbe0fef"},
+]
+
+[package.dependencies]
+pytest = ">=7.0.0,<8"
+
+[package.extras]
+docs = ["sphinx (>=5.3)", "sphinx-rtd-theme (>=1.0)"]
+testing = ["coverage (>=6.2)", "hypothesis (>=5.7.1)"]
+
+[[package]]
 name = "python-mimeparse"
 version = "1.6.0"
 description = "A module provides basic functions for parsing mime-type names and matching them against a list of media-ranges."
@@ -744,11 +742,19 @@ files = [
 [[package]]
 name = "rybak"
 version = "0.1.0"
-description = "Project generator leveraging Mako Templates"
+description = "Project generator"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = []
 develop = true
+
+[package.dependencies]
+jinja2 = {version = "^3.1.2", optional = true}
+
+[package.extras]
+jinja = ["jinja2 (>=3.1.2,<4.0.0)"]
+mako = ["mako (>=1.2.4,<2.0.0)"]
+tornado = ["tornado (>=6.3.3,<7.0.0)"]
 
 [package.source]
 type = "directory"
@@ -817,21 +823,6 @@ files = [
     {file = "typing_extensions-4.9.0-py3-none-any.whl", hash = "sha256:af72aea155e91adfc61c3ae9e0e342dbc0cba726d6cba4b6c72c1f34e47291cd"},
     {file = "typing_extensions-4.9.0.tar.gz", hash = "sha256:23478f88c37f27d76ac8aee6c905017a143b0b1b886c3c9f66bc2fd94f9f5783"},
 ]
-
-[[package]]
-name = "zipp"
-version = "3.17.0"
-description = "Backport of pathlib-compatible object wrapper for zip files"
-optional = false
-python-versions = ">=3.8"
-files = [
-    {file = "zipp-3.17.0-py3-none-any.whl", hash = "sha256:0e923e726174922dce09c53c59ad483ff7bbb8e572e00c7f7c46b88556409f31"},
-    {file = "zipp-3.17.0.tar.gz", hash = "sha256:84e64a1c28cf7e91ed2078bb8cc8c259cb19b76942096c8d7b84947690cabaf0"},
-]
-
-[package.extras]
-docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "sphinx (<7.2.5)", "sphinx (>=3.5)", "sphinx-lint"]
-testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-ignore-flaky", "pytest-mypy (>=0.9.1)", "pytest-ruff"]
 
 [metadata]
 lock-version = "2.0"

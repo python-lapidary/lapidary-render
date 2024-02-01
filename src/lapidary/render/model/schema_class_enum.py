@@ -1,6 +1,5 @@
-from lapidary.runtime import openapi
-from lapidary.render.model import get_enum_attribute
-from lapidary.runtime.model.type_hint import TypeHint
+from lapidary.render.model import get_enum_attribute, openapi
+from lapidary.render.model.python.type_hint import TypeHint
 
 from .schema_class_model import SchemaClass, ModelType
 

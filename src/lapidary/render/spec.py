@@ -2,13 +2,12 @@ from collections.abc import Iterable, Sequence
 import logging
 from importlib.metadata import version
 from pathlib import Path
-from typing import Optional
 
 import platformdirs
 import yaml
 from jsonpatch import JsonPatch
 
-from lapidary.runtime.load import load_yaml_cached
+from .load import load_yaml_cached
 from .config import Config
 
 logger = logging.getLogger(__name__)

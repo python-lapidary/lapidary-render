@@ -1,11 +1,11 @@
 from unittest import TestCase
 
-from lapidary.runtime import Absent, openapi
-from lapidary.runtime.model import from_type
-from lapidary.runtime.model.refs import get_resolver
-from lapidary.runtime.model.type_hint import TypeHint, UnionTypeHint
-from lapidary.runtime.module_path import ModulePath
+from lapidary.runtime import Absent
 
+from lapidary.render.model import openapi
+from lapidary.render.model.refs import get_resolver
+from lapidary.render.model.python.type_hint import TypeHint, GenericTypeHint
+from lapidary.render.model.python.module_path import ModulePath
 from lapidary.render.model.attribute import AttributeModel
 from lapidary.render.model.attribute_annotation import AttributeAnnotationModel
 from lapidary.render.model.schema_class import get_schema_class, get_schema_classes
@@ -64,7 +64,7 @@ class Test(TestCase):
             attributes=[AttributeModel(
                 name='bob',
                 annotation=AttributeAnnotationModel(
-                    type=UnionTypeHint.of(from_type(str), from_type(Absent)),
+                    type=GenericTypeHint.union_of((TypeHint.from_type(str), TypeHint.from_type(Absent))),
                     field_props={},
                     style=None,
                     explode=None,
@@ -78,11 +78,11 @@ class Test(TestCase):
         self.assertEqual(schema, a)
 
     def test_schema_type_name(self):
-        classes = [cls for cls in get_schema_classes(
+        classes = list(get_schema_classes(
             model.components.schemas['charlie'],
             'alice',
             ModulePath('test'),
             get_resolver(model, 'test'),
-        )]
+        ))
         class_names = [cls.class_name for cls in classes]
         self.assertEqual(class_names, ['FirstSchemaClass', 'SecondSchemaClass'])
