@@ -1,23 +1,22 @@
-from collections.abc import Collection
-from hashlib import sha3_256
 import importlib.metadata
 import logging
 import os
-from pathlib import Path
 import shutil
+from collections.abc import Collection
+from hashlib import sha3_256
+from pathlib import Path
 
 import jinja2
 import jinja2.loaders
-from rybak.jinja import JinjaRenderer
 import yaml
+from rybak.jinja import JinjaRenderer
 
-from .model import openapi
-from lapidary.render.model.refs import get_resolver
-from lapidary.render.model.python.module_path import ModulePath
 from .client import mk_model
 from .config import Config
-from .model import get_auth_module
+from .model import get_auth_module, openapi
 from .model.client_model import mk_client_model
+from .model.python.module_path import ModulePath
+from .model.refs import get_resolver
 from .spec import load_spec
 
 logger = logging.getLogger(__name__)
@@ -53,8 +52,9 @@ def init_project(
 
     logger.info("Prepare model")
 
-    from rybak import render
     from importlib import resources
+
+    from rybak import render
 
     # model = LapidaryModel(oa_doc, oa_model, config.package)
     model = mk_client_model(oa_model, ModulePath(config.package), get_resolver(oa_model, config.package))

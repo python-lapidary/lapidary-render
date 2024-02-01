@@ -1,11 +1,11 @@
-from collections.abc import Mapping, Collection
+from collections.abc import Collection, Mapping
 from dataclasses import dataclass, field
 from typing import Optional, Union
 
+from ..openapi import model as openapi
 from .auth import AuthModel, get_auth_models
-from .response_map import get_api_responses, ResponseMap
-from lapidary.render.model.python.module_path import ModulePath
-from lapidary.render.model.openapi import model as openapi
+from .module_path import ModulePath
+from .response_map import ResponseMap, get_api_responses
 
 
 @dataclass(frozen=True)

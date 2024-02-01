@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import pathlib
-from typing import Union, Iterable
+from typing import Iterable, Union
 
 
 class ModulePath:

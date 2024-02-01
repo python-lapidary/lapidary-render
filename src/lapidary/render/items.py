@@ -1,10 +1,9 @@
 import logging
-from typing import Mapping, Any, TypeAlias, TypeVar, Callable, Iterable
+from typing import Any, Callable, Iterable, Mapping, TypeAlias, TypeVar
 
-from lapidary.render.model.json_pointer import encode_json_pointer
-from lapidary.render.model import openapi
-from lapidary.render.model.refs import resolve_ref
-
+from .model import openapi
+from .model.json_pointer import encode_json_pointer
+from .model.refs import resolve_ref
 
 logger = logging.getLogger(__name__)
 Document: TypeAlias = Mapping[str, Any]

@@ -1,13 +1,13 @@
 import typing as ty
 
+from lapidary.runtime.http_consts import MIME_JSON
 from mimeparse import best_match
 
 from . import openapi
-from lapidary.runtime.http_consts import MIME_JSON
-from lapidary.render.model.refs import ResolverFunc
-from lapidary.render.model.python.type_hint import TypeHint, resolve_type_hint
-from lapidary.render.model.python.module_path import ModulePath
-from lapidary.render.model.python.names import escape_name, REQUEST_BODY, request_type_name
+from .python.module_path import ModulePath
+from .python.names import REQUEST_BODY, escape_name, request_type_name
+from .python.type_hint import TypeHint, resolve_type_hint
+from .refs import ResolverFunc
 from .schema_class import get_schema_classes
 from .schema_class_model import SchemaClass
 

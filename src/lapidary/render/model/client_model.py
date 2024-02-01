@@ -1,5 +1,5 @@
-from collections.abc import Iterable
 import dataclasses as dc
+from collections.abc import Iterable
 
 from . import ResolverFunc
 from .client_module import ClientModule, get_client_class_module

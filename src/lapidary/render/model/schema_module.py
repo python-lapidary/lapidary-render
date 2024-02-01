@@ -3,11 +3,17 @@ import logging
 import typing as ty
 
 from . import openapi
-from lapidary.render.model.refs import ResolverFunc
-from lapidary.render.model.python.module_path import ModulePath
-from lapidary.render.model.python.names import check_name, get_schema_module_name, PARAM_MODEL, REQUEST_BODY, RESPONSE_BODY
 from .module import AbstractModule, template_imports
 from .param_model_class import get_param_model_classes
+from .python.module_path import ModulePath
+from .python.names import (
+    PARAM_MODEL,
+    REQUEST_BODY,
+    RESPONSE_BODY,
+    check_name,
+    get_schema_module_name,
+)
+from .refs import ResolverFunc
 from .request_body import get_request_body_module
 from .response_body import get_response_body_module
 from .schema_class import get_schema_classes

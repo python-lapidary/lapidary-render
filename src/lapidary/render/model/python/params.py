@@ -1,10 +1,10 @@
 import enum
 
+from .. import openapi
+from ..refs import ResolverFunc
 from .module_path import ModulePath
 from .names import PARAM_MODEL
 from .type_hint import TypeHint, get_type_hint
-from .. import openapi
-from ..refs import ResolverFunc
 
 
 class ParamDirection(enum.Flag):

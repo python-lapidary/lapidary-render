@@ -1,12 +1,11 @@
-from typing import Optional, Annotated
+from typing import Annotated, Optional
 
-from . import openapi
-from lapidary.render.model.refs import ResolverFunc
-from lapidary.render.model.python.type_hint import TypeHint
-from lapidary.render.model.python.module_path import ModulePath
 from pydantic import BaseModel, Field
 
+from . import openapi
 from .operation_function import get_response_types_
+from .python import ModulePath, TypeHint
+from .refs import ResolverFunc
 
 
 class ClientInit(BaseModel):

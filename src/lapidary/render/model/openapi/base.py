@@ -1,19 +1,17 @@
-
 from abc import abstractmethod
 from collections.abc import ItemsView
-from typing import Mapping, Any, TypeVar, Generic
+from typing import Any, Generic, Mapping, TypeVar
 
 import pydantic
-from pydantic import BaseModel, Extra, BaseConfig, model_validator
 
 
-class ExtendableModel(BaseModel):
+class ExtendableModel(pydantic.BaseModel):
     """Base model class for model classes that accept extension fields, i.e. with keys start with 'x-'"""
 
-    class Config(BaseConfig):
-        extra = Extra.allow
+    class Config(pydantic.BaseConfig):
+        extra = pydantic.Extra.allow
 
-    @model_validator(mode='before')
+    @pydantic.model_validator(mode='before')
     @classmethod
     def validate_extras(cls, values: Mapping[str, Any]) -> Mapping[str, Any]:
         if not values or not isinstance(values, Mapping):
@@ -39,7 +37,7 @@ class ExtendableModel(BaseModel):
 T = TypeVar('T')
 
 
-class DynamicExtendableModel(Generic[T], BaseModel):
+class DynamicExtendableModel(Generic[T], pydantic.BaseModel):
     """
     Base model class for classes with patterned fields of type T, ond extension fields (x-) of any type.
     This is equivalent of pydantic custom root type, where __root__: dict[str, T] but for keys starting with 'x-',
@@ -53,7 +51,7 @@ class DynamicExtendableModel(Generic[T], BaseModel):
         extra='allow',
     )
 
-    @model_validator(mode='before')
+    @pydantic.model_validator(mode='before')
     @classmethod
     def _validate_model(cls, values: Mapping[str, Any]):
         for key, value in values.items():

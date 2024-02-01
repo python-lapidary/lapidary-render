@@ -2,11 +2,10 @@ from dataclasses import dataclass
 from typing import Any, Optional, Union
 
 from . import openapi
-from lapidary.render.model.python.type_hint import ResolverFunc, TypeHint
-from lapidary.render.model.python.module_path import ModulePath
-from lapidary.render.model.python.names import check_name, maybe_mangle_name, get_enum_field_name
-
 from .attribute_annotation import AttributeAnnotationModel, get_attr_annotation
+from .python import ModulePath, TypeHint
+from .python.names import check_name, get_enum_field_name, maybe_mangle_name
+from .python.type_hint import ResolverFunc
 
 
 @dataclass(frozen=True)

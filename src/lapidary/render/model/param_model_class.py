@@ -1,15 +1,15 @@
 """
-Param python is a synthetic (from the perspective of OpenAPI specification) object that holds and validates all Operation
+Param model is a synthetic (from the perspective of OpenAPI specification) object that holds and validates all Operation
 parameters.
 """
 from collections.abc import Iterator
 
 from . import openapi
-from lapidary.render.model.refs import ResolverFunc
-from lapidary.render.model.python.module_path import ModulePath
-from lapidary.render.model.python.names import get_subtype_name, check_name, get_param_python_name
 from .attribute import AttributeModel
 from .attribute_annotation import get_attr_annotation
+from .python.module_path import ModulePath
+from .python.names import check_name, get_param_python_name, get_subtype_name
+from .refs import ResolverFunc
 from .schema_class import get_schema_classes
 from .schema_class_model import SchemaClass
 

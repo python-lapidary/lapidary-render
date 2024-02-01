@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import functools
 import logging
-from typing import Callable, TypeVar, Union, cast, Optional, Any, Mapping
+from typing import Any, Callable, Mapping, Optional, TypeVar, Union, cast
 
 from typing_extensions import TypeAlias
 
-from lapidary.render.model.python.module_path import ModulePath
-from lapidary.render.model.openapi import model as openapi
+from .openapi import model as openapi
+from .python.module_path import ModulePath
 
 logger = logging.getLogger(__name__)
 

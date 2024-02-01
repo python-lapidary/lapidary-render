@@ -4,14 +4,13 @@ from dataclasses import dataclass
 from typing import Optional, Union
 
 from . import openapi
-from lapidary.render.model.python.params import ParamLocation, get_param_type
-from lapidary.render.model.refs import ResolverFunc
-from lapidary.render.model.python.type_hint import TypeHint, resolve_type_hint, GenericTypeHint
-from lapidary.render.model.python.module_path import ModulePath
-from lapidary.render.model.python.names import PARAM_MODEL, param_model_name, escape_name
-
 from .attribute import AttributeModel
 from .attribute_annotation import AttributeAnnotationModel
+from .python.module_path import ModulePath
+from .python.names import PARAM_MODEL, escape_name, param_model_name
+from .python.params import ParamLocation, get_param_type
+from .python.type_hint import GenericTypeHint, TypeHint, resolve_type_hint
+from .refs import ResolverFunc
 from .request_body import get_request_body_type
 
 logger = logging.getLogger(__name__)

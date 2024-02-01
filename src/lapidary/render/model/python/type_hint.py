@@ -6,12 +6,12 @@ import logging
 from typing import Union
 from uuid import UUID
 
+from lapidary.runtime.absent import Absent
 from pydantic import BaseModel, Extra
 
-from lapidary.render.model.refs import ResolverFunc
 from ...model import openapi
-from lapidary.runtime.absent import Absent
-from lapidary.render.model.python.module_path import ModulePath
+from ..refs import ResolverFunc
+from .module_path import ModulePath
 
 logger = logging.getLogger(__name__)
 

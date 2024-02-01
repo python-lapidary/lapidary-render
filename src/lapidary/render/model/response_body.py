@@ -1,13 +1,13 @@
 from collections.abc import Iterable
-import typing as ty
+from typing import TYPE_CHECKING
 
 from . import openapi
-from lapidary.render.model.refs import ResolverFunc
-from lapidary.render.model.python.module_path import ModulePath
+from .python.module_path import ModulePath
+from .refs import ResolverFunc
 from .schema_class import get_schema_classes
 from .schema_class_model import SchemaClass
 
-if ty.TYPE_CHECKING:
+if TYPE_CHECKING:
     from .schema_module import SchemaModule
 
 

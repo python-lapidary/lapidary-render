@@ -2,8 +2,8 @@ import enum
 from dataclasses import dataclass, field
 from typing import Optional
 
-from lapidary.render.model.python.type_hint import TypeHint
 from ..model.attribute import AttributeModel
+from .python.type_hint import TypeHint
 
 
 class ModelType(enum.Enum):

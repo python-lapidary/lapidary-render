@@ -1,5 +1,5 @@
 import abc
-from typing import Generic, TypeVar, Generator
+from typing import Generator, Generic, TypeVar
 
 import httpx
 

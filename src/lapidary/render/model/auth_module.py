@@ -2,10 +2,8 @@ from dataclasses import dataclass, field
 from typing import Mapping, Optional
 
 from . import openapi
-from lapidary.render.model.python.type_hint import TypeHint
-from lapidary.render.model.python.module_path import ModulePath
-
 from .module import AbstractModule
+from .python import ModulePath, TypeHint
 
 
 @dataclass(frozen=True, kw_only=True)

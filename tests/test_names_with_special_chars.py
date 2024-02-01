@@ -2,17 +2,15 @@ import logging
 from unittest import TestCase
 
 import yaml
-
-from lapidary.render.model import openapi
-from lapidary.render.model.refs import get_resolver
-from lapidary.render.model.python.type_hint import TypeHint
-from lapidary.render.model.python.module_path import ModulePath
+from lapidary.render.model import get_schema_modules, openapi
 from lapidary.render.model.attribute import AttributeModel
 from lapidary.render.model.attribute_annotation import AttributeAnnotationModel
+from lapidary.render.model.python.module_path import ModulePath
+from lapidary.render.model.python.type_hint import TypeHint
+from lapidary.render.model.refs import get_resolver
 from lapidary.render.model.schema_class import get_schema_classes
 from lapidary.render.model.schema_class_model import SchemaClass
 from lapidary.render.model.schema_module import SchemaModule, get_schema_module
-from lapidary.render.model import get_schema_modules
 
 logging.getLogger('lapidary').setLevel(logging.DEBUG)
 
@@ -34,9 +32,9 @@ components:
                     properties:
                         key:
                             type: string
-                    required: 
+                    required:
                     - key
-            required: 
+            required:
             - random property
             x-lapidary-names:
                 random property: random_property

@@ -1,13 +1,12 @@
 from dataclasses import dataclass, field
 
 from . import openapi
-from lapidary.render.model.refs import ResolverFunc
-from lapidary.render.model.python.module_path import ModulePath
-from lapidary.render.model.python.names import get_ops_module
-from lapidary.render.model.openapi.utils import get_operations
-
 from .client_init import ClientInit, get_client_init
+from .openapi.utils import get_operations
 from .operation_function import OperationFunctionModel, get_operation_func
+from .python import ModulePath
+from .python.names import get_ops_module
+from .refs import ResolverFunc
 
 
 @dataclass(frozen=True)

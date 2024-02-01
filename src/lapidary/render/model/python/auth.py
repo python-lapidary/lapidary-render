@@ -1,13 +1,13 @@
 from functools import singledispatch
-from typing import Optional, Union, Any, Mapping
+from typing import Any, Mapping, Optional, Union
 
-from pydantic import BaseModel
+import pydantic
 
+from ..openapi import model as openapi
 from .params import ParamLocation
-from lapidary.render.model.openapi import model as openapi
 
 
-class AuthModel(BaseModel):
+class AuthModel(pydantic.BaseModel):
     pass
 
 

@@ -1,4 +1,4 @@
-from black import Mode, format_file_contents, TargetVersion, NothingChanged
+from black import Mode, NothingChanged, TargetVersion, format_file_contents
 
 
 def format_code(code: str, strict: bool, is_pyi: bool) -> str:

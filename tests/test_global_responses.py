@@ -1,11 +1,10 @@
 import unittest
 
 from lapidary.render.model import openapi
-from lapidary.render.model.refs import get_resolver
-from lapidary.render.model.python.type_hint import TypeHint
-from lapidary.render.model.python.module_path import ModulePath
-
 from lapidary.render.model.client_module import get_client_class_module
+from lapidary.render.model.python.module_path import ModulePath
+from lapidary.render.model.python.type_hint import TypeHint
+from lapidary.render.model.refs import get_resolver
 
 
 class GlobalResponsesTest(unittest.TestCase):

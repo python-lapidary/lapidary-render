@@ -1,13 +1,13 @@
 import pkgutil
 from collections.abc import Mapping
-from typing import Union, TypeVar, NamedTuple
+from typing import NamedTuple, TypeVar, Union
 
-from lapidary.render.model.refs import ResolverFunc, get_resolver
+from ..openapi import LapidaryModelType
+from ..openapi import model as openapi
+from ..refs import ResolverFunc, get_resolver
+from .module_path import ModulePath
+from .names import RESPONSE_BODY, response_type_name
 from .type_hint import get_type_hint
-from ...model import openapi
-from lapidary.render.model.python.module_path import ModulePath
-from lapidary.render.model.python.names import RESPONSE_BODY, response_type_name
-from lapidary.render.model.openapi import model as openapi, LapidaryModelType
 
 T = TypeVar('T')
 MimeType = ResponseCode = str

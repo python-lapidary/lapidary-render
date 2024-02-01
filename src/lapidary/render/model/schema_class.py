@@ -3,13 +3,13 @@ from collections.abc import Iterator
 from typing import Optional
 
 from . import openapi
-from lapidary.render.model.refs import ResolverFunc
-from lapidary.render.model.python.type_hint import TypeHint
-from lapidary.render.model.python.module_path import ModulePath
-from lapidary.render.model.python.names import get_subtype_name
 from .attribute import get_attributes
+from .python.module_path import ModulePath
+from .python.names import get_subtype_name
+from .python.type_hint import TypeHint
+from .refs import ResolverFunc
 from .schema_class_enum import get_enum_class
-from .schema_class_model import SchemaClass, ModelType
+from .schema_class_model import ModelType, SchemaClass
 
 logger = logging.getLogger(__name__)
 

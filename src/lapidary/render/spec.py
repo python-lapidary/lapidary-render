@@ -1,5 +1,5 @@
-from collections.abc import Iterable, Sequence
 import logging
+from collections.abc import Iterable, Sequence
 from importlib.metadata import version
 from pathlib import Path
 
@@ -7,8 +7,8 @@ import platformdirs
 import yaml
 from jsonpatch import JsonPatch
 
-from .load import load_yaml_cached
 from .config import Config
+from .load import load_yaml_cached
 
 logger = logging.getLogger(__name__)
 

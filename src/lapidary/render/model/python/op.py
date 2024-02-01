@@ -4,13 +4,13 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Optional, Type
 
-from .plugins import PagingPlugin
-from lapidary.render.model.refs import ResolverFunc
-from .response_map import get_response_map, ResponseMap
+from ..openapi import PluginModel, get_operations
+from ..openapi import model as openapi
+from ..refs import ResolverFunc
 from . import names
-from lapidary.render.model.python.module_path import ModulePath
-from lapidary.render.model.openapi import model as openapi, PluginModel
-from lapidary.render.model.openapi import get_operations
+from .module_path import ModulePath
+from .plugins import PagingPlugin
+from .response_map import ResponseMap, get_response_map
 
 
 @dataclass(frozen=True)
