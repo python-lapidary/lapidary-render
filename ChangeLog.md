@@ -12,7 +12,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Replaced --format flag with --format-strict. The code is always formatted with black, --format-strict disables the fast mode.
 - Changed the default openapi directory to src/openapi.
 - Changed x-lapidary-model-type to x-lapidary-modelType, more in-line with OpenAPI naming.
-- Changed generated package to a namespace to allow manual extensions packages. ApiClient and Auth import are now available form client module. 
+- Changed generated package to a namespace to allow manual extensions packages. ApiClient and Auth import are now available form client module.
 - Better reporting of missing operationId.
 
 ## [0.7.3](https://github.com/python-lapidary/lapidary/releases/tag/v0.7.3) - 2022-12-15
@@ -121,4 +121,3 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Generate classes for schemas under components/schemas
 - Generate partial client class with methods based on /paths/*/*
-

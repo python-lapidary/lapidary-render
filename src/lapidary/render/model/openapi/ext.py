@@ -26,6 +26,6 @@ class LapidaryModelType(enum.Enum):
     """
     If the received object is an Iterable, it's returned as an Iterator.
     Mappings are returned as an iterators of tuples of the keys-value pairs.
-    
+
     Particularly useful in combination with a paging plugin.
     """

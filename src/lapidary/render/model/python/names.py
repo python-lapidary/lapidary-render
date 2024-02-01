@@ -102,4 +102,3 @@ def get_enum_field_name(value: typing.Any) -> str:
 
 def get_ops_module(module: ModulePath) -> ModulePath:
     return module / 'ops'
-

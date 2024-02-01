@@ -17,7 +17,7 @@ You can set python version for lapidary with `pipx install --python [path-to-pyt
 
 `lapidary init [--[no-]format-strict] [--[no-]render] SCHEMA_PATH PROJECT_ROOT PACKAGE_NAME`
 
-Lapidary will create 
+Lapidary will create
 - PROJECT_ROOT and all necessary directories,
 - \_\_init\_\_.py files,
 - pyproject.toml with [poetry](https://python-poetry.org/) configured,
@@ -55,7 +55,7 @@ Lapidary can be configured with a pyproject.yaml file, under [tool.lapidary] pat
 
 Only `package` value is required, and it's set by `lapidary init`.
 
-- package [str] - root package name 
+- package [str] - root package name
 - format [bool] - whether to format the generated code with black [default = True].
 - cache [bool] - whether to cache openapi and patches as pickle files. Only files larger than 50kB are cached [default = True].
 - src_root [str] - sources root, in PROJECT_ROOT [default = 'src'].

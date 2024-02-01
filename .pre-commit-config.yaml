@@ -1,0 +1,33 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v4.5.0
+  hooks:
+  - id: trailing-whitespace
+  - id: end-of-file-fixer
+  - id: check-added-large-files
+  - id: check-toml
+  - id: debug-statements
+    exclude: src/lapidary/render/templates
+  - id: check-yaml
+    exclude: src/lapidary/render/templates
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.1.14
+  hooks:
+  - id: ruff
+    name: ruff check
+    #
+    pass_filenames: false
+#  - id: ruff-format
+#    pass_filenames: false
+#    args:
+#    - --check
+#- repo: local
+#  hooks:
+#  - id: mypy
+#    name: mypy
+#    language: system
+#    types: [ python ]
+#    entry: poetry run mypy --explicit-package-bases -p lapidary
+#    pass_filenames: false
