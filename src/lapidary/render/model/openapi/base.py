@@ -16,12 +16,12 @@ class ExtendableModel(pydantic.BaseModel):
     def validate_extras(cls, values: Mapping[str, Any]) -> Mapping[str, Any]:
         if not values or not isinstance(values, Mapping):
             return values
-        aliases = (info.alias for info in cls.__fields__.values() if info.alias)
+        aliases = (info.alias for info in cls.model_fields.values() if info.alias)
 
         for key, value in values.items():
             key: str
             if not (
-                    key in cls.__fields__
+                    key in cls.model_fields
                     or key in aliases
                     or key.startswith('x-')
             ):

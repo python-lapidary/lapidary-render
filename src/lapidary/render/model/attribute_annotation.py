@@ -67,7 +67,7 @@ def _get_attr_annotation(
         name: Optional[str],
         alias: Optional[str],
 ) -> AttributeAnnotationModel:
-    field_props = {FIELD_PROPS[k]: getattr(schema, k) for k in schema.__fields_set__ if k in FIELD_PROPS}
+    field_props = {FIELD_PROPS[k]: getattr(schema, k) for k in schema.model_fields_set if k in FIELD_PROPS}
     for k, v in field_props.items():
         if isinstance(v, str):
             field_props[k] = f"'{v}'"
@@ -79,7 +79,7 @@ def _get_attr_annotation(
     if alias is not None:
         field_props['alias'] = "'" + alias + "'"
 
-    if 'pattern' in schema.__fields_set__:
+    if 'pattern' in schema.model_fields_set:
         field_props['regex'] = f"r'{schema.pattern}'"
 
     direction = get_direction(schema.readOnly, schema.writeOnly)
