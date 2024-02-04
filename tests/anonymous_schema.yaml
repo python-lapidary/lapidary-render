@@ -1,0 +1,23 @@
+openapi: 3.0.3
+info:
+  version: ""
+  title: ""
+paths: { }
+components:
+  schemas:
+    alice:
+      type: object
+      properties:
+        bob:
+          type: string
+      additionalProperties: false
+    charlie:
+      oneOf:
+      - type: object
+        x-lapidary-type-name: FirstSchemaClass
+        properties:
+          a: { }
+      - type: object
+        x-lapidary-type-name: SecondSchemaClass
+        properties:
+          a: { }

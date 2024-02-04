@@ -1,5 +1,6 @@
 from unittest import TestCase
 
+import yaml
 from lapidary.render.model import openapi
 from lapidary.render.model.attribute import AttributeModel
 from lapidary.render.model.attribute_annotation import AttributeAnnotationModel
@@ -10,42 +11,9 @@ from lapidary.render.model.schema_class import get_schema_class, get_schema_clas
 from lapidary.render.model.schema_class_model import SchemaClass
 from lapidary.runtime import Absent
 
-model = openapi.OpenApiModel(
-    openapi='3.0.3',
-    info=openapi.Info(title='', version=''),
-    paths=openapi.Paths(),
-    components=openapi.Components(
-        schemas={
-            'alice': openapi.Schema(
-                type=openapi.Type.object,
-                properties={
-                    'bob': openapi.Schema(
-                        type=openapi.Type.string
-                    )
-                },
-                additionalProperties=False,
-            ),
-            'charlie': openapi.Schema(
-                oneOf=[
-                    openapi.Schema(
-                        type=openapi.Type.object,
-                        lapidary_name='FirstSchemaClass',
-                        properties={
-                            'a': openapi.Schema()
-                        },
-                    ),
-                    openapi.Schema(
-                        lapidary_name='SecondSchemaClass',
-                        type=openapi.Type.object,
-                        properties={
-                            'a': openapi.Schema()
-                        },
-                    ),
-                ]
-            )
-        }
-    )
-)
+with open('anonymous_schema.yaml', 'r') as document_file:
+    doc = yaml.safe_load(document_file)
+model = openapi.OpenApiModel.model_validate(doc)
 
 
 class Test(TestCase):

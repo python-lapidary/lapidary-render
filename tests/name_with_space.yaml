@@ -1,0 +1,12 @@
+openapi: '3.0.3'
+info:
+  title: Lapidary test schema
+  version: 1.0.0
+paths: { }
+components:
+  schemas:
+    random name:
+      type: object
+      properties:
+        key:
+          type: string

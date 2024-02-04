@@ -1,0 +1,26 @@
+openapi: 3.0.3
+info:
+  title: ''
+  version: ''
+paths: { }
+components:
+  schemas:
+    GSMTasksError:
+      type: object
+      properties:
+        detail:
+          type: string
+      required:
+      - detail
+  responses:
+    error-response:
+      description: Client error
+      content:
+        application/json; version=2.3.5:
+          schema:
+            $ref: '#/components/schemas/GSMTasksError'
+x-lapidary-responses-global:
+  4XX:
+    $ref: '#/components/responses/error-response'
+  5XX:
+    $ref: '#/components/responses/error-response'
