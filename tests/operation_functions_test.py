@@ -58,13 +58,13 @@ class OperationResponseTest(TestCase):
             )]
         )
 
-        mod = get_response_body_module(model.paths.model_extra['/schema-response/'].get, module_path, resolve)
+        mod = get_response_body_module(model.paths.paths['/schema-response/'].get, module_path, resolve)
         # pp(mod)
 
         self.assertEqual(expected, mod)
 
     def test_request_body_schema_class(self):
-        mod = get_request_body_module(model.paths.model_extra['/schema-request/'].get, module_path, resolve)
+        mod = get_request_body_module(model.paths.paths['/schema-request/'].get, module_path, resolve)
 
         expected = SchemaModule(
             path=module_path,
@@ -81,6 +81,6 @@ class OperationResponseTest(TestCase):
         self.assertEqual(expected, mod)
 
     def test_ignored_header(self):
-        op_def = model.paths.model_extra['/ignored-header/'].get
+        op_def = model.paths.paths['/ignored-header/'].get
         op_model = get_operation_func(op_def, module_path, resolve)
         self.assertEqual([], op_model.params)

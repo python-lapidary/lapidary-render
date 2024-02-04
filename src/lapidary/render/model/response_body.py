@@ -16,7 +16,7 @@ def get_response_body_classes(
         module: ModulePath,
         resolve: ResolverFunc,
 ) -> Iterable[SchemaClass]:
-    for status_code, response in operation.responses.model_extra.items():
+    for status_code, response in operation.responses.responses.items():
         if isinstance(response, openapi.Reference):
             continue
         if response.content is None:

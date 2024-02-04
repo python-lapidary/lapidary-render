@@ -1,8 +1,8 @@
-from abc import abstractmethod
-from collections.abc import ItemsView
-from typing import Any, Generic, Mapping, TypeVar
+import re
+from typing import Any
 
 import pydantic
+from lapidary.render.pydantic_utils import find_annotation_optional
 
 
 class ExtendableModel(pydantic.BaseModel):
@@ -15,49 +15,47 @@ class ExtendableModel(pydantic.BaseModel):
     )
 
 
-T = TypeVar('T')
-
-
-class DynamicExtendableModel(Generic[T], pydantic.BaseModel):
-    """
-    Base model class for classes with patterned fields of type T, ond extension fields (x-) of any type.
-    This is equivalent of pydantic custom root type, where __root__: dict[str, T] but for keys starting with 'x-',
-    it's __root__: dict[str, Any].
-
-    Instances support accessing fields by index (e.g. paths['/']), which can return any existing attribute,
-    as well as items() wich returns ItemsView with only pattern attributes.
-    """
-
+class BaseModel(pydantic.BaseModel):
     model_config = pydantic.ConfigDict(
-        extra='allow',
         populate_by_name=True,
+        extra='allow',
     )
 
+
+class ExtensibleModel(BaseModel):
+    model_config = pydantic.ConfigDict(
+        extra='ignore',
+    )
+
+
+class PropertyPattern:
+    def __init__(self, pattern: str) -> None:
+        self.pattern = pattern
+
+
+class ModelWithAdditionalProperties(BaseModel):
+    model_config = pydantic.ConfigDict(
+        extra='allow',
+    )
+
+
+class ModelWithPatternProperties(BaseModel):
     @pydantic.model_validator(mode='before')
     @classmethod
-    def _validate_model(cls, values: Mapping[str, Any]):
-        for key, value in values.items():
-            if not key.startswith('x-'):
-                if not cls._validate_key(key):
-                    raise ValueError(f'{key} field not permitted')
+    def validate(cls, value: Any, info: pydantic.ValidationInfo):
+        for field_name, field_info in cls.model_fields.items():
+            pattern_anno = find_annotation_optional(field_info.metadata, PropertyPattern)
+            if not pattern_anno:
+                continue
 
-        return values
+            pattern = re.compile(pattern_anno.pattern)
 
-    @classmethod
-    @abstractmethod
-    def _validate_key(cls, key: str) -> bool:
-        pass
+            pattern_props = {}
+            for key, item in value.items():
+                if pattern.search(key):
+                    pattern_props[key] = item
+            for key in pattern_props:
+                del value[key]
+            value[field_name] = pattern_props
 
-    def __getitem__(self, item: str) -> Any:
-        return self.__dict__[item]
-
-    def items(self) -> ItemsView[str, T]:
-        """:returns: ItemsView (just like dict.items()) that excludes extension fields (those with keys starting with
-        'x-')"""
-        return {key: value for key, value in self.__dict__.items() if not key.startswith('x-')}.items()
-
-    def __contains__(self, item: str) -> bool:
-        return item in self.__dict__
-
-    def get(self, key: str, default_value: Any) -> Any:
-        return self.__dict__.get(key, default_value)
+        return value

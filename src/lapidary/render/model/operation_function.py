@@ -119,7 +119,7 @@ def get_response_types(op: openapi.Operation, module: ModulePath, resolve: Resol
 
 def get_response_types_(responses: openapi.Responses, module: ModulePath, resolve: ResolverFunc) -> set[TypeHint]:
     response_types = set()
-    for resp_code, response in responses.model_extra.items():
+    for resp_code, response in responses.responses.items():
         if isinstance(response, openapi.Reference):
             response, module, name = resolve(response, openapi.Response)
         if response.content is None:

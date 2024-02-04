@@ -46,7 +46,7 @@ class _ItemListExtractor:
         if operation.requestBody:
             self._process_model_or_ref(operation.requestBody, path + "/requestBody", self._process_request_body)
 
-        for response_code, response_or_ref in operation.responses.items():
+        for response_code, response_or_ref in operation.responses.responses.items():
             self._process_model_or_ref(response_or_ref, f"{path}/responses/{str(response_code)}", self._process_response)
 
     def _process_parameter(self, parameter: openapi.Parameter, path: str) -> None:

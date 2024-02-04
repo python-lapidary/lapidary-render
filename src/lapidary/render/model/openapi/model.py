@@ -1,4 +1,3 @@
-import re
 import typing
 from collections.abc import Iterable, Mapping
 from enum import Enum
@@ -6,7 +5,12 @@ from typing import Annotated, Any, Dict, List, Optional, Union
 
 import pydantic
 
-from .base import DynamicExtendableModel, ExtendableModel
+from .base import (
+    ExtendableModel,
+    ModelWithAdditionalProperties,
+    ModelWithPatternProperties,
+    PropertyPattern,
+)
 from .ext import LapidaryModelType, PluginModel
 
 __all__ = [
@@ -494,19 +498,12 @@ class Response(ExtendableModel):
     links: Optional[Dict[str, Union[Reference, Link]]] = None
 
 
-class Responses(DynamicExtendableModel[Union[Reference, Response]]):
-    __pydantic_extra__: Dict[str, Union[Reference, Response]]
-
-
-    @classmethod
-    def _validate_key(cls, key: str) -> bool:
-        return key == 'default' or re.match(r'^[1-5](?:\d{2}|XX)$', key)
-
-    @pydantic.model_validator(mode='before')
-    def _validate_min_properties(cls, values):
-        if not values:
-            raise ValueError('minProperties')
-        return values
+class Responses(ExtendableModel, ModelWithPatternProperties):
+    responses: Annotated[
+        Dict[str, Union[Reference, Response]],
+        pydantic.Field(default_factory=dict, min_items=1),
+        PropertyPattern(r'^[1-5](?:\d{2}|XX)|default$'),
+    ]
 
 
 class Parameter(ExtendableModel):
@@ -614,18 +611,12 @@ class PathItem(ExtendableModel):
     trace: Optional[Operation] = None
 
 
-class Paths(DynamicExtendableModel[Union[Reference, PathItem]]):
-    __pydantic_extra__: dict[str, Union[Reference, PathItem]]
-
-    @classmethod
-    def _validate_key(cls, key: str) -> bool:
-        return key.startswith('/')
+class Paths(ModelWithPatternProperties):
+    paths: Annotated[dict[str, PathItem], pydantic.Field(default_factory=dict), PropertyPattern('^/')]
 
 
-class Callback(DynamicExtendableModel[Union[Reference, PathItem]]):
-    @classmethod
-    def _validate_key(cls, key: str) -> bool:
-        return True
+class Callback(ModelWithAdditionalProperties):
+    __pydantic_extra__ = dict[str, Union[Reference, PathItem]]
 
 
 class Components(ExtendableModel):
