@@ -52,7 +52,8 @@ class DynamicExtendableModel(Generic[T], pydantic.BaseModel):
         return self.__dict__[item]
 
     def items(self) -> ItemsView[str, T]:
-        """:returns: ItemsView (just like dict.items()) that excludes extension fields (those with keys starting with 'x-')"""
+        """:returns: ItemsView (just like dict.items()) that excludes extension fields (those with keys starting with
+        'x-')"""
         return {key: value for key, value in self.__dict__.items() if not key.startswith('x-')}.items()
 
     def __contains__(self, item: str) -> bool:

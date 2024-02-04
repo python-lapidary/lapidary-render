@@ -5,11 +5,6 @@ from pathlib import Path
 
 import yaml
 
-from .model.openapi import model as openapi
-from .model.python import ClientModel, get_client_model
-from .model.python.module_path import ModulePath
-from .model.refs import get_resolver
-
 logger = logging.getLogger(__name__)
 
 
@@ -35,20 +30,3 @@ def load_yaml_cached_(text: str, cache_root: Path, use_cache: bool) -> dict:
             pickle.dump(d, fb, pickle.HIGHEST_PROTOCOL)
 
     return d
-
-
-def load_model(mod: str) -> openapi.OpenApiModel:
-    from importlib.resources import open_text
-
-    logger.debug("Loading OpenAPI from %s", mod)
-    with open_text(mod, 'openapi.yaml') as stream:
-        text = stream.read()
-
-    import platformdirs
-    d = load_yaml_cached_(text, platformdirs.user_cache_path(), True)
-    return openapi.OpenApiModel.parse_obj(d)
-
-
-def get_model(package: ModulePath) -> ClientModel:
-    openapi_model = load_model(str(package))
-    return get_client_model(openapi_model, package, get_resolver(openapi_model, str(package)))

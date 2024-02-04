@@ -80,8 +80,6 @@ def init_project(
         project_root,
         JinjaRenderer(environment),
         dict(
-            # **render_model,
-
             model=model,
             document=oa_doc,
             get_version=importlib.metadata.version,
