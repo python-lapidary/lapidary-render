@@ -260,9 +260,6 @@ class In4(Enum):
 
 
 class APIKeySecurityScheme(ExtendableModel):
-    class Config(ExtendableModel.Config):
-        allow_population_by_field_name = True
-
     type: Type1
     name: str
     in_: Annotated[In4, pydantic.Field(alias='in')]
@@ -361,9 +358,6 @@ UniqueListValidator = pydantic.AfterValidator(validate_list_unique)
 
 
 class Schema(ExtendableModel):
-    class Config(ExtendableModel.Config):
-        allow_population_by_field_name = True
-
     title: Optional[str] = None
     type: Optional[Type] = None
 
@@ -380,7 +374,7 @@ class Schema(ExtendableModel):
     pattern: Optional[str] = None
 
     # type == array
-    items: 'Optional[Union[Schema, Reference]]' = None
+    items: 'Union[None, Reference, Schema]' = None
     maxItems: Annotated[Optional[int], pydantic.Field(ge=0)] = None
     minItems: Annotated[Optional[int], pydantic.Field(ge=0)] = 0
     uniqueItems: Optional[bool] = False
@@ -389,18 +383,18 @@ class Schema(ExtendableModel):
     maxProperties: Annotated[Optional[int], pydantic.Field(ge=0)] = None
     minProperties: Annotated[Optional[int], pydantic.Field(ge=0)] = 0
     required: Annotated[Optional[List[str]], pydantic.Field(min_items=1), UniqueListValidator] = None
-    properties: 'Optional[Dict[str, Union[Schema, Reference]]]' = None
-    additionalProperties: 'Optional[Union[Schema, Reference, bool]]' = True
+    properties: 'Optional[Dict[str, Union[Reference, Schema]]]' = None
+    additionalProperties: 'Union[Reference, Schema, bool]' = True
 
     # type == string or type = number or type == integer
     format: Optional[str] = None
 
     enum: Annotated[Optional[List], pydantic.Field(min_items=1),] = None
 
-    not_: 'Annotated[Optional[Union[Schema, Reference]], pydantic.Field(alias="not")]' = None
-    allOf: 'Optional[List[Union[Schema, Reference]]]' = None
-    oneOf: 'Optional[List[Union[Schema, Reference]]]' = None
-    anyOf: 'Optional[List[Union[Schema, Reference]]]' = None
+    not_: 'Annotated[Union[None, Reference, Schema], pydantic.Field(alias="not")]' = None
+    allOf: 'Optional[List[Union[Reference, Schema]]]' = None
+    oneOf: 'Optional[List[Union[Reference, Schema]]]' = None
+    anyOf: 'Optional[List[Union[Reference, Schema]]]' = None
 
     description: Optional[str] = None
     default: Optional[Any] = None
@@ -416,14 +410,14 @@ class Schema(ExtendableModel):
     lapidary_names: Annotated[
         Optional[dict[Union[str, None], Any]],
         pydantic.Field(
-            serialization_alias='x-lapidary-names',
+            alias='x-lapidary-names',
             default_factory=dict,
             description="Mapping of keys used in the JSON document and variable names in the generated Python code. "
                         "Applicable to enum values or object properties."
         )
     ] = None
-    lapidary_name: Annotated[Optional[str], pydantic.Field(serialization_alias='x-lapidary-type-name')] = None
-    lapidary_model_type: Annotated[Optional[LapidaryModelType], pydantic.Field(serialization_alias='x-lapidary-modelType')] = None
+    lapidary_name: Annotated[Optional[str], pydantic.Field(alias='x-lapidary-type-name')] = None
+    lapidary_model_type: Annotated[Optional[LapidaryModelType], pydantic.Field(alias='x-lapidary-modelType')] = None
 
 
 class Tag(ExtendableModel):
@@ -478,9 +472,9 @@ class Header(ExtendableModel):
     style: Optional[Style] = 'simple'
     explode: Optional[bool] = None
     allowReserved: Optional[bool] = False
-    schema_: Annotated[Optional[Union[Schema, Reference]], pydantic.Field(serialization_alias='schema')] = None
+    schema_: Annotated[Union[None, Reference, Schema], pydantic.Field(alias='schema')] = None
     example: Optional[Any] = None
-    examples: Optional[Dict[str, Union[Example, Reference]]] = None
+    examples: Optional[Dict[str, Union[Reference, Example]]] = None
 
     @pydantic.model_validator(mode='before')
     @staticmethod
@@ -495,13 +489,13 @@ class Header(ExtendableModel):
 
 class Response(ExtendableModel):
     description: str
-    headers: Optional[Dict[str, Union[Header, Reference]]] = None
+    headers: Optional[Dict[str, Union[Reference, Header]]] = None
     content: 'Optional[Dict[str, MediaType]]' = None
-    links: Optional[Dict[str, Union[Link, Reference]]] = None
+    links: Optional[Dict[str, Union[Reference, Link]]] = None
 
 
-class Responses(DynamicExtendableModel[Union[Response, Reference]]):
-    __pydantic_extra__: Dict[str, Union[Response, Reference]]
+class Responses(DynamicExtendableModel[Union[Reference, Response]]):
+    __pydantic_extra__: Dict[str, Union[Reference, Response]]
 
 
     @classmethod
@@ -522,7 +516,7 @@ class Parameter(ExtendableModel):
     )
 
     name: str
-    in_: Annotated[str, pydantic.Field(serialization_alias='in')]
+    in_: Annotated[str, pydantic.Field(alias='in')]
     description: Optional[str] = None
     required: bool = False
     deprecated: bool = False
@@ -531,11 +525,11 @@ class Parameter(ExtendableModel):
     style: Optional[str] = None
     explode: Optional[bool] = None
     allowReserved: Optional[bool] = False
-    schema_: Annotated[Optional[Union[Schema, Reference]], pydantic.Field(serialization_alias='schema')] = None
+    schema_: Annotated[Union[None, Reference, Schema], pydantic.Field(alias='schema')] = None
     example: Optional[Any] = None
-    examples: Optional[Dict[str, Union[Example, Reference]]] = None
+    examples: Optional[Dict[str, Union[Reference, Example]]] = None
 
-    lapidary_name: Annotated[Union[str, None], pydantic.Field(serialization_alias='x-lapidary-name')] = None
+    lapidary_name: Annotated[Union[str, None], pydantic.Field(alias='x-lapidary-name')] = None
 
     @pydantic.model_validator(mode='before')
     @staticmethod
@@ -567,12 +561,9 @@ class Encoding(ExtendableModel):
 
 
 class MediaType(ExtendableModel):
-    class Config(ExtendableModel.Config):
-        allow_population_by_field_name = True
-
-    schema_: Annotated[Optional[Union[Schema, Reference]], pydantic.Field(alias='schema')] = None
+    schema_: Annotated[Union[Reference, Schema, None], pydantic.Field(alias='schema')] = None
     example: Optional[Any] = None
-    examples: Optional[Dict[str, Union[Example, Reference]]] = None
+    examples: Optional[Dict[str, Union[Reference, Example]]] = None
     encoding: Optional[Dict[str, Encoding]] = None
 
     @pydantic.model_validator(mode='before')
@@ -592,17 +583,17 @@ class Operation(ExtendableModel):
     externalDocs: Optional[ExternalDocumentation] = None
     operationId: Optional[str] = None
     parameters: Annotated[
-        Optional[List[Union[Parameter, Reference]]],
+        Optional[List[Union[Reference, Parameter]]],
         UniqueListValidator,
     ] = None
-    requestBody: Optional[Union[RequestBody, Reference]] = None
+    requestBody: Union[None, Reference, RequestBody] = None
     responses: Responses
-    callbacks: 'Optional[Dict[str, Union[Callback, Reference]]]' = None
+    callbacks: 'Optional[Dict[str, Union[Reference, Callback]]]' = None
     deprecated: Optional[bool] = False
     security: Optional[List[SecurityRequirement]] = None
     servers: Optional[List[Server]] = None
 
-    paging: Annotated[Optional[PluginModel], pydantic.Field(serialization_alias='x-lapidary-pagingPlugin')] = None
+    paging: Annotated[Optional[PluginModel], pydantic.Field(alias='x-lapidary-pagingPlugin')] = None
 
 
 class PathItem(ExtendableModel):
@@ -610,7 +601,7 @@ class PathItem(ExtendableModel):
     description: Optional[str] = None
     servers: Optional[List[Server]] = None
     parameters: Annotated[
-        Optional[List[Union[Parameter, Reference]]],
+        Optional[List[Union[Reference, Parameter]]],
         UniqueListValidator,
     ] = None
     get: Optional[Operation] = None
@@ -623,20 +614,22 @@ class PathItem(ExtendableModel):
     trace: Optional[Operation] = None
 
 
-class Paths(DynamicExtendableModel[Union[PathItem, Reference]]):
+class Paths(DynamicExtendableModel[Union[Reference, PathItem]]):
+    __pydantic_extra__: dict[str, Union[Reference, PathItem]]
+
     @classmethod
     def _validate_key(cls, key: str) -> bool:
         return key.startswith('/')
 
 
-class Callback(DynamicExtendableModel[Union[PathItem, Reference]]):
+class Callback(DynamicExtendableModel[Union[Reference, PathItem]]):
     @classmethod
     def _validate_key(cls, key: str) -> bool:
         return True
 
 
 class Components(ExtendableModel):
-    schemas: Optional[Dict[str, Union[Schema, Reference]]] = None
+    schemas: Optional[Dict[str, Union[Reference, Schema]]] = None
     responses: Optional[Dict[str, Union[Reference, Response]]] = None
     parameters: Optional[Dict[str, Union[Reference, Parameter]]] = None
     examples: Optional[Dict[str, Union[Reference, Example]]] = None
@@ -653,7 +646,7 @@ class OpenApiModel(ExtendableModel):
     """
 
     model_config = pydantic.ConfigDict(
-        extra='allow',
+        extra='forbid',
         populate_by_name=True,
     )
 
@@ -672,13 +665,14 @@ class OpenApiModel(ExtendableModel):
             list[tuple[str, str]]
         ]],
         pydantic.Field(
-            serialization_alias='x-lapidary-headers-global',
-            description='Headers to add to every request.'
+            alias='x-lapidary-headers-global',
+            description='Headers to add to every request.',
+            default=None,
         )
-    ] = None
+    ]
 
-    lapidary_responses_global: Optional[Responses] = pydantic.Field(
+    lapidary_responses_global: Annotated[Optional[Responses], pydantic.Field(
         alias='x-lapidary-responses-global',
         description='Base Responses. Values in Responses declared in Operations override values in this one.',
         default=None,
-    )
+    )]

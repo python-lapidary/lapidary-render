@@ -8,30 +8,11 @@ import pydantic
 class ExtendableModel(pydantic.BaseModel):
     """Base model class for model classes that accept extension fields, i.e. with keys start with 'x-'"""
 
-    class Config(pydantic.BaseConfig):
-        extra = pydantic.Extra.allow
-
-    @pydantic.model_validator(mode='before')
-    @classmethod
-    def validate_extras(cls, values: Mapping[str, Any]) -> Mapping[str, Any]:
-        if not values or not isinstance(values, Mapping):
-            return values
-        aliases = (info.alias for info in cls.model_fields.values() if info.alias)
-
-        for key, value in values.items():
-            key: str
-            if not (
-                    key in cls.model_fields
-                    or key in aliases
-                    or key.startswith('x-')
-            ):
-                raise ValueError(f'{key} field not permitted')
-        return values
-
-    def __getitem__(self, item: str) -> Any:
-        if not item.startswith('x-'):
-            raise KeyError(item)
-        return self.__dict__[item]
+    model_config = pydantic.ConfigDict(
+        # Allow extra properties, but we doesn't need it.
+        extra='ignore',
+        populate_by_name=True,
+    )
 
 
 T = TypeVar('T')
@@ -49,6 +30,7 @@ class DynamicExtendableModel(Generic[T], pydantic.BaseModel):
 
     model_config = pydantic.ConfigDict(
         extra='allow',
+        populate_by_name=True,
     )
 
     @pydantic.model_validator(mode='before')
