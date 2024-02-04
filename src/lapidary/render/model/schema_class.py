@@ -45,7 +45,7 @@ def get_schema_classes(
             for idx, sub_schema in enumerate(inheritance_elem):
                 if not isinstance(sub_schema, openapi.Schema):
                     continue
-                yield from get_schema_classes(sub_schema, name + str(idx), module, resolver)
+                yield from get_schema_classes(sub_schema, sub_schema.lapidary_name or name + str(idx), module, resolver)
 
     if schema.type is openapi.Type.object:
         yield get_schema_class(schema, name, module, resolver)
