@@ -1,4 +1,4 @@
-from typing import Iterator, Union
+from collections.abc import Iterator
 
 from . import model as openapi
 
@@ -6,7 +6,7 @@ from . import model as openapi
 def get_operations(
         path_item: openapi.PathItem,
         skip_reference=False,
-) -> Iterator[tuple[str, Union[openapi.Operation, openapi.Reference]]]:
+) -> Iterator[tuple[str, openapi.Operation | openapi.Reference]]:
     for op_name in path_item.model_fields_set:
         v = getattr(path_item, op_name)
         if (

@@ -1,5 +1,3 @@
-import typing
-
 from ..names import get_subtype_name
 from . import openapi, python
 from .refs import ResolverFunc
@@ -13,8 +11,8 @@ def get_attr_annotation(
         required: bool,
         module: python.ModulePath,
         resolve: ResolverFunc,
-        in_: typing.Optional[str] = None,
-        alias: typing.Optional[str] = None
+        in_: str | None = None,
+        alias: str | None = None
 ) -> python.AttributeAnnotationModel:
     """
     if typ is a schema, then it's a nested schema. Name should be parent_class_name+prop_name, and module is the same.
@@ -50,9 +48,9 @@ def _get_attr_annotation(
         required: bool,
         module: python.ModulePath,
         resolve: ResolverFunc,
-        in_: typing.Optional[str],
-        name: typing.Optional[str],
-        alias: typing.Optional[str],
+        in_: str | None,
+        name: str | None,
+        alias: str | None,
 ) -> python.attribute.AttributeAnnotationModel:
     field_props = {FIELD_PROPS[k]: getattr(schema, k) for k in schema.model_fields_set if k in FIELD_PROPS}
     for k, v in field_props.items():
@@ -84,7 +82,7 @@ def _get_attr_annotation(
     )
 
 
-def get_direction(read_only: typing.Optional[bool], write_only: typing.Optional[bool]) -> typing.Optional[str]:
+def get_direction(read_only: bool | None, write_only: bool | None) -> str | None:
     if read_only:
         if write_only:
             raise ValueError()

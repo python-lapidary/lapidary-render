@@ -7,7 +7,7 @@ from lapidary.render.model.refs import get_resolver
 from lapidary.render.model.request_body import get_request_body_module
 from lapidary.render.model.response_body import get_response_body_module
 
-with open('operation_functions.yaml', 'r') as doc_file:
+with open('operation_functions.yaml') as doc_file:
     doc = yaml.safe_load(doc_file)
 model = openapi.OpenApiModel.model_validate(doc)
 

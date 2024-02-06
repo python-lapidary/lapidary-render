@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 def load_yaml_cached(path: Path, cache_root: Path, use_cache: bool) -> dict:
-    with open(path, 'rt') as fb:
+    with open(path) as fb:
         text = fb.read()
 
     return load_yaml_cached_(text, cache_root, use_cache)

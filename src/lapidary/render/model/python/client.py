@@ -10,18 +10,17 @@ from .schema_class import SchemaModule
 
 @dc.dataclass(frozen=True)
 class ClientInit:
-    default_auth: typing.Optional[str]
+    default_auth: str | None
     auth_models: typing.Mapping[str, AuthModel] = dc.field(default_factory=dict)
-    base_url: typing.Optional[str] = None
+    base_url: str | None = None
     headers: list[tuple[str, str]] = dc.field(default_factory=list)
-    response_map: typing.Optional[ResponseMap] = dc.field(default_factory=dict)
+    response_map: ResponseMap | None = dc.field(default_factory=dict)
 
 
 @dc.dataclass(frozen=True)
 class ClientClass:
     init_method: ClientInit
     methods: list[OperationFunctionModel] = dc.field(default_factory=list)
-
 
 
 @dc.dataclass(frozen=True, kw_only=True)

@@ -30,10 +30,7 @@ def get_client_init(openapi_model: openapi.OpenApiModel, module: python.ModulePa
     )
 
 
-def get_global_headers(global_headers: typing.Optional[typing.Union[
-    dict[str, typing.Union[str, list[str]]],
-    list[tuple[str, str]]
-]]) -> list[tuple[str, str]]:
+def get_global_headers(global_headers: dict[str, str | list[str]] | list[tuple[str, str]] | None) -> list[tuple[str, str]]:
     """Normalize headers structure"""
     if global_headers is None:
         return []

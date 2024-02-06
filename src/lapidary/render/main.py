@@ -100,7 +100,7 @@ def copy_patches(config: Config, project_root: Path, patches: Collection[Path]) 
     assert patches
 
     if len(patches) > 1:
-        if not all((path.is_file() for path in patches)):
+        if not all(path.is_file() for path in patches):
             raise ValueError("When passing multiple patch paths, all must be files")
 
         patches_dir.mkdir()

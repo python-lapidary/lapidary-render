@@ -1,5 +1,5 @@
+from collections.abc import Mapping
 from dataclasses import dataclass, field
-from typing import Mapping, Optional
 
 import pydantic
 
@@ -19,7 +19,7 @@ class ApiKeyAuthModel(AuthModel):
 
 class HttpAuthModel(AuthModel):
     scheme: str
-    bearer_format: Optional[str]
+    bearer_format: str | None
 
 
 @dataclass(frozen=True, kw_only=True)

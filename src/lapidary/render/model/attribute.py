@@ -28,7 +28,7 @@ def get_attributes(
 
 
 def get_attribute(
-        typ: typing.Union[model.Schema, model.Reference], name: str, alias: str, parent_name: str, required: bool, module: python.ModulePath,
+        typ: model.Schema | model.Reference, name: str, alias: str, parent_name: str, required: bool, module: python.ModulePath,
         resolve: ResolverFunc
 ) -> python.AttributeModel:
     alias = alias or name
@@ -42,7 +42,7 @@ def get_attribute(
     )
 
 
-def get_enum_attribute(value: typing.Any, name: typing.Optional[str]) -> python.AttributeModel:
+def get_enum_attribute(value: typing.Any, name: str | None) -> python.AttributeModel:
     if isinstance(value, str):
         quoted_value = "'" + value.replace("'", r"\'") + "'" if value is not None else None
     else:

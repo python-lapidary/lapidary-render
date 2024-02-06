@@ -1,7 +1,6 @@
 import dataclasses
-from pathlib import Path
-
 import tomllib
+from pathlib import Path
 
 PYPROJ_TOML = 'pyproject.toml'
 

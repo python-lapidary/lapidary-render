@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 __all__ = [
     'APIKeySecurityScheme',
     'AuthorizationCodeOAuthFlow',
@@ -60,13 +58,8 @@ __all__ = [
     'XML'
 ]
 
-
-import typing
-
-from typing_extensions import TypeAlias
-
 from .ext import *
 from .model import *
 from .utils import get_operations
 
-SchemaOrRef: TypeAlias = typing.Union[Schema, Reference]
+type SchemaOrRef = Schema | Reference

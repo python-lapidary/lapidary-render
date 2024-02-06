@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_modules_for_components_schemas(
-        schemas: dict[str, typing.Union[openapi.Schema, openapi.Reference]], root_package: python.ModulePath, resolver: ResolverFunc
+        schemas: dict[str, openapi.Schema | openapi.Reference], root_package: python.ModulePath, resolver: ResolverFunc
 ) -> list[python.SchemaModule]:
     modules = []
     for name, schema in schemas.items():
@@ -35,7 +35,7 @@ def get_modules_for_components_schemas(
 
 def get_schema_module(
         schema: openapi.Schema, name: str, path: python.ModulePath, resolver: ResolverFunc
-) -> typing.Optional[python.SchemaModule]:
+) -> python.SchemaModule | None:
     classes = [cls for cls in get_schema_classes(schema, name, path, resolver)]
     if len(classes) > 0:
         return _get_schema_module(classes, path)

@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Optional, Type
 
 from .attribute import AttributeModel
 from .response import ResponseMap
@@ -10,15 +9,15 @@ from .type_hint import TypeHint
 class OperationModel:
     method: str
     path: str
-    params_model: Optional[Type]
-    response_map: Optional[ResponseMap]
+    params_model: type | None
+    response_map: ResponseMap | None
 
 
 @dataclass(frozen=True)
 class OperationFunctionModel:
     name: str
-    request_type: Optional[TypeHint]
+    request_type: TypeHint | None
     params: list[AttributeModel]
-    response_type: Optional[TypeHint]
-    auth_name: Optional[str]
-    docstr: Optional[str] = None
+    response_type: TypeHint | None
+    auth_name: str | None
+    docstr: str | None = None

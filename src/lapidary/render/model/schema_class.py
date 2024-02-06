@@ -1,5 +1,4 @@
 import logging
-import typing
 from collections.abc import Iterator
 
 from ..names import get_subtype_name
@@ -56,7 +55,7 @@ def get_schema_class(
         name: str,
         module: python.ModulePath,
         resolver: ResolverFunc,
-) -> typing.Optional[python.SchemaClass]:
+) -> python.SchemaClass | None:
     assert isinstance(schema, openapi.Schema)
 
     if schema.lapidary_name is not None:

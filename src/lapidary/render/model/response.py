@@ -1,5 +1,4 @@
 import pkgutil
-import typing
 
 from ..names import RESPONSE_BODY, response_type_name
 from . import openapi, python
@@ -34,7 +33,7 @@ def get_response_map(
 
 def resolve_response(
         resp_code: str,
-        response: typing.Union[openapi.Response, openapi.Reference],
+        response: openapi.Response | openapi.Reference,
         op_name: str,
         module: python.ModulePath,
         resolve_ref: ResolverFunc
@@ -49,15 +48,15 @@ def resolve_response(
 
 
 def get_api_responses(model: openapi.OpenApiModel, module: python.ModulePath) -> python.ResponseMap:
-    resolve_ref = get_resolver(model, module.str())
+    resolve_ref = get_resolver(model, str(module))
     return get_response_map(model.lapidary_responses_global, 'API', module, resolve_ref)
 
 
-def resolve_type(schema: typing.Union[openapi.Schema, openapi.Reference], module: python.ModulePath, resolve_ref: ResolverFunc) -> type:
+def resolve_type(schema: openapi.Schema | openapi.Reference, module: python.ModulePath, resolve_ref: ResolverFunc) -> type:
     if isinstance(schema, openapi.Reference):
         _, module, name = resolve_ref(schema, openapi.Schema)
     elif schema.lapidary_name is not None:
         name = schema.lapidary_name
     else:
         raise NotImplementedError('Schema needs name')
-    return pkgutil.resolve_name(module.str() + ':' + name)
+    return pkgutil.resolve_name(str(module) + ':' + name)

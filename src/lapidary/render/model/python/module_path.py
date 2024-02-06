@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import pathlib
-from typing import Iterable, Union
+import typing
+from collections.abc import Iterable
 
 
 class ModulePath:
     _SEP = '.'
 
-    def __init__(self, module: Union[str, list[str]]):
+    def __init__(self, module: str | Iterable[str]):
         if isinstance(module, str):
             module = module.strip()
             if module == "" or module.strip() != module:
@@ -23,9 +24,6 @@ class ModulePath:
         else:
             raise ValueError(module)
 
-    def str(self):
-        return ModulePath._SEP.join(self.parts)
-
     def to_path(self, root: pathlib.Path, is_module=True):
         path = root.joinpath(*self.parts)
         if is_module:
@@ -35,16 +33,16 @@ class ModulePath:
             path = path.with_suffix(suffix)
         return path
 
-    def parent(self) -> ModulePath:
+    def parent(self) -> typing.Self:
         return ModulePath(self.parts[:-1])
 
-    def __truediv__(self, other: Union[str, Iterable[str]]):
+    def __truediv__(self, other: str | Iterable[__str__]):
         if isinstance(other, str):
             other = [other]
         return ModulePath([*self.parts, *other])
 
-    def __repr__(self):
-        return self.str()
+    def __str__(self):
+        return ModulePath._SEP.join(self.parts)
 
-    def __eq__(self, other: ModulePath):
+    def __eq__(self, other: typing.Self):
         return self.parts == other.parts

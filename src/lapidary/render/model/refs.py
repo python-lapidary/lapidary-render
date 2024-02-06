@@ -14,11 +14,11 @@ ResolverFunc = typing.Callable[['openapi.Reference', type[T]], tuple[T, 'python.
 
 
 def resolve(
-    model: 'openapi.OpenApiModel',
+    model: openapi.OpenApiModel,
     root_package: str,
-    ref: 'openapi.Reference',
+    ref: openapi.Reference,
     typ: type[T],
-) -> tuple[T, 'python.ModulePath', str]:
+) -> tuple[T, python.ModulePath, str]:
     """
     module = {root_package}.{path[0:4]}
     name = path[4:]

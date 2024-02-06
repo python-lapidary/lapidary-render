@@ -1,6 +1,5 @@
 import dataclasses as dc
 import enum
-from typing import Optional
 
 from .attribute import AttributeModel
 from .module import AbstractModule
@@ -21,7 +20,7 @@ class SchemaClass:
 
     allow_extra: bool = False
     has_aliases: bool = False
-    docstr: Optional[str] = None
+    docstr: str | None = None
     attributes: list[AttributeModel] = dc.field(default_factory=list)
     model_type: ModelType = ModelType.model
 

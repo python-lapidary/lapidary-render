@@ -6,7 +6,7 @@ from lapidary.render.model.refs import get_resolver
 from lapidary.render.model.schema_class import get_schema_class, get_schema_classes
 from lapidary.runtime import Absent
 
-with open('anonymous_schema.yaml', 'r') as document_file:
+with open('anonymous_schema.yaml') as document_file:
     doc = yaml.safe_load(document_file)
 model = openapi.OpenApiModel.model_validate(doc)
 

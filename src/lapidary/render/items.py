@@ -6,7 +6,7 @@ from .model import openapi
 from .model.refs import resolve_ref
 
 logger = logging.getLogger(__name__)
-Document: typing.TypeAlias = typing.Mapping[str, typing.Any]
+type Document = typing.Mapping[str, typing.Any]
 T = typing.TypeVar('T')
 
 

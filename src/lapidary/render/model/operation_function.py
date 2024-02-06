@@ -26,7 +26,7 @@ _FIELD_PROPS = dict(
 
 
 def get_operation_param(
-        param: typing.Union[openapi.Parameter, openapi.Reference], module: python.ModulePath, resolve: ResolverFunc
+        param: openapi.Parameter | openapi.Reference, module: python.ModulePath, resolve: ResolverFunc
 ) -> python.attribute.AttributeModel:
     if isinstance(param, openapi.Reference):
         param, module, _ = resolve(param, openapi.Parameter)

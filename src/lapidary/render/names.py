@@ -39,7 +39,7 @@ def check_name(name: str, check_builtins=True) -> None:
 
 
 def _escape_char(s: str) -> str:
-    return 'u_{x:06x}'.format(x=ord(s))
+    return f'u_{ord(s):06x}'
 
 
 def escape_name(name: str) -> str:
@@ -89,11 +89,11 @@ def get_param_python_name(param: openapi.Parameter) -> str:
 
 
 def param_model_name(module: python.ModulePath, op_id: str) -> str:
-    return (module / PARAM_MODEL).str() + ':' + inflection.camelize(op_id)
+    return str(module / PARAM_MODEL) + ':' + inflection.camelize(op_id)
 
 
 def get_enum_field_name(value: typing.Any) -> str:
-    if isinstance(value, (str, int, float)):
+    if isinstance(value, str | int | float):
         return maybe_mangle_name(str(value), False)
     else:
         raise ValueError("Can't determine field name")
