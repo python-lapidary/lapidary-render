@@ -4,8 +4,8 @@ from pathlib import Path
 import typer
 
 from .config import Config, load_config
+from .model import python
 from .model.client_model import mk_client_model
-from .model.python.module_path import ModulePath
 from .model.refs import get_resolver
 from .spec import load_spec
 
@@ -97,11 +97,11 @@ def dump_model(
 
     logger.info("Parse OpenAPI schema")
     oa_doc = load_spec(schema_path, patch, config)
-    from lapidary.render.model import openapi
+    from .model import openapi
     oa_model = openapi.OpenApiModel.model_validate(oa_doc)
 
     logger.info("Prepare model")
-    model = mk_client_model(oa_model, ModulePath(config.package), get_resolver(oa_model, config.package))
+    model = mk_client_model(oa_model, python.ModulePath(config.package), get_resolver(oa_model, config.package))
 
     from pprint import pprint
     pprint(model)

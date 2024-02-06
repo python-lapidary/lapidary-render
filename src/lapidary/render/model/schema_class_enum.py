@@ -1,6 +1,5 @@
-from . import get_enum_attribute, openapi
-from .python.type_hint import TypeHint
-from .schema_class_model import ModelType, SchemaClass
+from . import openapi, python
+from .attribute import get_enum_attribute
 
 
 def get_enum_class(
@@ -13,10 +12,10 @@ def get_enum_class(
             enum_fields.append(get_enum_attribute(v, schema.lapidary_names.get(v, v)))
         except Exception as error:
             raise ValueError(f"Could not prepare enum field for value '{v}' of {name}") from error
-    return SchemaClass(
+    return python.SchemaClass(
         class_name=name,
-        base_type=TypeHint.from_str('enum:Enum'),
+        base_type=python.TypeHint.from_str('enum:Enum'),
         attributes=enum_fields,
         docstr=schema.description or None,
-        model_type=ModelType.enum,
+        model_type=python.ModelType.enum,
     )

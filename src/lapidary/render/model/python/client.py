@@ -1,24 +1,38 @@
-import dataclasses
-from collections.abc import Mapping
+import dataclasses as dc
+import typing
 
-from ..openapi import model as openapi
-from ..refs import ResolverFunc
-from .client_init import ClientInit, get_client_init
-from .module_path import ModulePath
-from .op import OperationModel, get_operation_functions
+from .auth import AuthModel
+from .module import AbstractModule
+from .op import OperationFunctionModel
+from .response import ResponseMap
+from .schema_class import SchemaModule
 
 
-@dataclasses.dataclass(frozen=True)
-class ClientModel:
+@dc.dataclass(frozen=True)
+class ClientInit:
+    default_auth: typing.Optional[str]
+    auth_models: typing.Mapping[str, AuthModel] = dc.field(default_factory=dict)
+    base_url: typing.Optional[str] = None
+    headers: list[tuple[str, str]] = dc.field(default_factory=list)
+    response_map: typing.Optional[ResponseMap] = dc.field(default_factory=dict)
+
+
+@dc.dataclass(frozen=True)
+class ClientClass:
     init_method: ClientInit
-    methods: Mapping[str, OperationModel] = dataclasses.field(default_factory=dict)
+    methods: list[OperationFunctionModel] = dc.field(default_factory=list)
 
 
-def get_client_model(openapi_model: openapi.OpenApiModel, module: ModulePath, resolve: ResolverFunc) -> ClientModel:
-    return ClientModel(
-        init_method=get_client_init(
-            openapi_model,
-            module,
-        ),
-        methods=get_operation_functions(openapi_model, module, resolve),
-    )
+
+@dc.dataclass(frozen=True, kw_only=True)
+class ClientModule(AbstractModule):
+    body: ClientClass = dc.field()
+    model_type = 'client'
+    # path unused
+
+
+@dc.dataclass
+class ClientModel:
+    client: ClientModule
+    package: str
+    schemas: typing.Iterable[SchemaModule]

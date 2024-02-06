@@ -1,21 +1,15 @@
 from collections.abc import Iterable
-from typing import TYPE_CHECKING
 
-from . import openapi
-from .python.module_path import ModulePath
+from . import openapi, python
 from .refs import ResolverFunc
 from .schema_class import get_schema_classes
-from .schema_class_model import SchemaClass
-
-if TYPE_CHECKING:
-    from .schema_module import SchemaModule
 
 
 def get_response_body_classes(
         operation: openapi.Operation,
-        module: ModulePath,
+        module: python.ModulePath,
         resolve: ResolverFunc,
-) -> Iterable[SchemaClass]:
+) -> Iterable[python.SchemaClass]:
     for status_code, response in operation.responses.responses.items():
         if isinstance(response, openapi.Reference):
             continue
@@ -30,7 +24,7 @@ def get_response_body_classes(
             yield from get_schema_classes(schema, 'Response', module, resolve)
 
 
-def get_response_body_module(op: openapi.Operation, module: ModulePath, resolve: ResolverFunc) -> 'SchemaModule':
+def get_response_body_module(op: openapi.Operation, module: python.ModulePath, resolve: ResolverFunc) -> python.SchemaModule:
     from .schema_module import _get_schema_module
     classes = [cls for cls in get_response_body_classes(op, module, resolve)]
     return _get_schema_module(classes, module)

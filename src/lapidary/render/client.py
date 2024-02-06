@@ -1,7 +1,7 @@
 import logging
 import os
+import typing
 from pathlib import Path
-from typing import TypedDict
 
 from .config import Config
 from .items import extract_items
@@ -10,7 +10,7 @@ from .model import openapi
 logger = logging.getLogger(__name__)
 
 
-class RenderModel(TypedDict):
+class RenderModel(typing.TypedDict):
     package: str
     items: list[str]
 

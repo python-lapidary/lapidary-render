@@ -3,19 +3,17 @@ import typing as ty
 from lapidary.runtime.http_consts import MIME_JSON
 from mimeparse import best_match
 
-from . import openapi
-from .python.module_path import ModulePath
-from .python.names import REQUEST_BODY, escape_name, request_type_name
-from .python.type_hint import TypeHint, resolve_type_hint
+from ..names import REQUEST_BODY, escape_name, request_type_name
+from . import openapi, python
 from .refs import ResolverFunc
 from .schema_class import get_schema_classes
-from .schema_class_model import SchemaClass
+from .type_hint import resolve_type_hint
 
 if ty.TYPE_CHECKING:
-    from .schema_module import SchemaModule
+    pass
 
 
-def get_request_body_type(op: openapi.Operation, module: ModulePath, resolve: ResolverFunc) -> ty.Optional[TypeHint]:
+def get_request_body_type(op: openapi.Operation, module: python.ModulePath, resolve: ResolverFunc) -> ty.Optional[python.TypeHint]:
     mime_json = best_match(op.requestBody.content.keys(), MIME_JSON)
     if mime_json == '':
         return None
@@ -25,9 +23,9 @@ def get_request_body_type(op: openapi.Operation, module: ModulePath, resolve: Re
 
 def get_request_body_classes(
         operation: openapi.Operation,
-        module: ModulePath,
+        module: python.ModulePath,
         resolve: ResolverFunc,
-) -> ty.Iterator[SchemaClass]:
+) -> ty.Iterator[python.SchemaClass]:
     rb = operation.requestBody
     if isinstance(rb, openapi.Reference):
         return
@@ -41,7 +39,7 @@ def get_request_body_classes(
     yield from get_schema_classes(schema, request_type_name(operation.operationId), module, resolve)
 
 
-def get_request_body_module(op: openapi.Operation, module: ModulePath, resolve: ResolverFunc) -> 'SchemaModule':
+def get_request_body_module(op: openapi.Operation, module: python.ModulePath, resolve: ResolverFunc) -> 'python.SchemaModule':
     from .schema_module import _get_schema_module
     classes = [cls for cls in get_request_body_classes(op, module, resolve)]
     return _get_schema_module(classes, module)

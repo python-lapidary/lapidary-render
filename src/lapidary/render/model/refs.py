@@ -2,26 +2,29 @@ from __future__ import annotations
 
 import functools
 import logging
-from typing import Any, Callable, Mapping, Optional, TypeVar, Union, cast
+import typing
 
-from typing_extensions import TypeAlias
-
-from .openapi import model as openapi
-from .python.module_path import ModulePath
+if typing.TYPE_CHECKING:
+    from . import openapi, python
 
 logger = logging.getLogger(__name__)
 
-T = TypeVar('T', openapi.Schema, openapi.Parameter, openapi.SecurityScheme, openapi.Response)
-ResolverFunc = Callable[[openapi.Reference, type[T]], tuple[T, ModulePath, str]]
-
-SchemaOrRef: TypeAlias = Union[openapi.Schema, openapi.Reference]
+T = typing.TypeVar('T', 'openapi.Schema', 'openapi.Parameter', 'openapi.SecurityScheme', 'openapi.Response', 'openapi.Operation')
+ResolverFunc = typing.Callable[['openapi.Reference', type[T]], tuple[T, 'python.ModulePath', str]]
 
 
-def resolve(model: openapi.OpenApiModel, root_package: str, ref: openapi.Reference, typ: type[T]) -> tuple[T, ModulePath, str]:
+def resolve(
+    model: 'openapi.OpenApiModel',
+    root_package: str,
+    ref: 'openapi.Reference',
+    typ: type[T],
+) -> tuple[T, 'python.ModulePath', str]:
     """
     module = {root_package}.{path[0:4]}
     name = path[4:]
     """
+
+    from . import openapi, python
 
     path = ref_to_path(recursive_resolve(model, ref.ref))
 
@@ -30,14 +33,14 @@ def resolve(model: openapi.OpenApiModel, root_package: str, ref: openapi.Referen
         if op.operationId:
             path[2:4] = op.operationId
 
-    module = ModulePath(root_package) / path[:-1]
+    module = python.ModulePath(root_package) / path[:-1]
     result = resolve_ref(model, _mkref(path), typ)
     assert isinstance(result, typ)
     return result, module, path[-1]
 
 
 def get_resolver(model: openapi.OpenApiModel, package: str) -> ResolverFunc:
-    return cast(ResolverFunc, functools.partial(resolve, model, package))
+    return typing.cast(ResolverFunc, functools.partial(resolve, model, package))
 
 
 def _mkref(s: list[str]) -> str:
@@ -48,9 +51,9 @@ def ref_to_path(ref: str) -> list[str]:
     return ref.split('/')[1:]
 
 
-def resolve_ref(model: openapi.OpenApiModel, ref: str, t: Optional[type]) -> Any:
+def resolve_ref(model: openapi.OpenApiModel, ref: str, t: type[T] = typing.Any) -> T:
     result = _schema_get(model, recursive_resolve(model, ref))
-    if t is not None and not isinstance(result, t):
+    if not isinstance(result, t):
         raise TypeError(ref, t, type(result))
     else:
         return result
@@ -61,6 +64,8 @@ def recursive_resolve(model: openapi.OpenApiModel, ref: str) -> str:
     Resolve recursive references
     :return: The last reference, which points to a non-reference object
     """
+
+    from . import openapi
 
     stack = [ref]
 
@@ -76,8 +81,8 @@ def recursive_resolve(model: openapi.OpenApiModel, ref: str) -> str:
             return ref
 
 
-def _schema_get(model: openapi.OpenApiModel, ref: str) -> Any:
+def _schema_get(model: openapi.OpenApiModel, ref: str) -> typing.Any:
     path = ref_to_path(ref)
     for part in path:
-        model = model[part] if isinstance(model, Mapping) else getattr(model, part)
+        model = model[part] if isinstance(model, typing.Mapping) else getattr(model, part)
     return model

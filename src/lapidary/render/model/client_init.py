@@ -1,29 +1,49 @@
-from typing import Annotated, Optional
+import typing
 
-from pydantic import BaseModel, Field
-
-from . import openapi
-from .operation_function import get_response_types_
-from .python import ModulePath, TypeHint
-from .refs import ResolverFunc
+from . import openapi, python
+from .auth_module import get_auth_models
+from .response import get_api_responses
 
 
-class ClientInit(BaseModel):
-    base_url: Optional[str]
-    response_types: Annotated[set[TypeHint], Field(default_factory=set)]
-    """ApiResponses types to import in the client module."""
+def get_client_init(openapi_model: openapi.OpenApiModel, module: python.ModulePath) -> python.ClientInit:
+    default_auth = next(iter(openapi_model.security[0].__root__.keys())) if openapi_model.security else None
 
-
-def get_client_init(openapi_model: openapi.OpenApiModel, module: ModulePath, resolve: ResolverFunc) -> ClientInit:
-    base_url = next(iter(openapi_model.servers)).url if openapi_model.servers and len(openapi_model.servers) > 0 else None
-
-    response_types = get_response_types_(
-        openapi_model.lapidary_responses_global,
-        module,
-        resolve,
-    ) if openapi_model.lapidary_responses_global else set()
-
-    return ClientInit(
-        base_url=base_url,
-        response_types=response_types,
+    base_url = (
+        openapi_model.servers[0].url if openapi_model.servers and openapi_model.servers
+        else None
     )
+
+    auth_models = (
+        get_auth_models(openapi_model.components.securitySchemes)
+        if openapi_model.components and openapi_model.components.securitySchemes
+        else {}
+    )
+
+    api_responses = get_api_responses(openapi_model, module) if openapi_model.lapidary_responses_global else {}
+
+    return python.ClientInit(
+        base_url=base_url,
+        headers=get_global_headers(openapi_model.lapidary_headers_global),
+        default_auth=default_auth,
+        response_map=api_responses,
+        auth_models=auth_models,
+    )
+
+
+def get_global_headers(global_headers: typing.Optional[typing.Union[
+    dict[str, typing.Union[str, list[str]]],
+    list[tuple[str, str]]
+]]) -> list[tuple[str, str]]:
+    """Normalize headers structure"""
+    if global_headers is None:
+        return []
+
+    result_headers = []
+    input_header_list = global_headers.items() if isinstance(global_headers, typing.Mapping) else global_headers
+    for key, values in input_header_list:
+        if not isinstance(values, typing.Collection) or isinstance(values, str):
+            values = [values]
+        for value in values:
+            result_headers.append((key, value,))
+
+    return result_headers

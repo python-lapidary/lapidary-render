@@ -1,15 +1,12 @@
 import logging
+import typing
 from collections.abc import Iterator
-from typing import Optional
 
-from . import openapi
+from ..names import get_subtype_name
+from . import openapi, python
 from .attribute import get_attributes
-from .python.module_path import ModulePath
-from .python.names import get_subtype_name
-from .python.type_hint import TypeHint
 from .refs import ResolverFunc
 from .schema_class_enum import get_enum_class
-from .schema_class_model import ModelType, SchemaClass
 
 logger = logging.getLogger(__name__)
 
@@ -17,9 +14,9 @@ logger = logging.getLogger(__name__)
 def get_schema_classes(
         schema: openapi.Schema,
         name: str,
-        module: ModulePath,
+        module: python.ModulePath,
         resolver: ResolverFunc,
-) -> Iterator[SchemaClass]:
+) -> Iterator[python.SchemaClass]:
     # First handle the enum case, so that the model class has suffixed name, and all sub-schemas use it as their prefix
     if schema.enum is not None:
         enum_class = get_enum_class(schema, name)
@@ -57,9 +54,9 @@ def get_schema_classes(
 def get_schema_class(
         schema: openapi.Schema,
         name: str,
-        module: ModulePath,
+        module: python.ModulePath,
         resolver: ResolverFunc,
-) -> Optional[SchemaClass]:
+) -> typing.Optional[python.SchemaClass]:
     assert isinstance(schema, openapi.Schema)
 
     if schema.lapidary_name is not None:
@@ -68,18 +65,18 @@ def get_schema_class(
     logger.debug(name)
 
     base_type = (
-        TypeHint.from_type(Exception)
+        python.TypeHint.from_type(Exception)
         if schema.lapidary_model_type is openapi.LapidaryModelType.exception
-        else TypeHint.from_str('pydantic:BaseModel')
+        else python.TypeHint.from_str('pydantic:BaseModel')
     )
     attributes = get_attributes(schema, name, module, resolver) if schema.properties else []
 
-    return SchemaClass(
+    return python.SchemaClass(
         class_name=name,
         base_type=base_type,
         allow_extra=schema.additionalProperties is not False,
         has_aliases=any(['alias' in attr.annotation.field_props for attr in attributes]),
         attributes=attributes,
         docstr=schema.description or None,
-        model_type=ModelType[schema.lapidary_model_type.name] if schema.lapidary_model_type else ModelType.model,
+        model_type=python.ModelType[schema.lapidary_model_type.name] if schema.lapidary_model_type else python.ModelType.model,
     )

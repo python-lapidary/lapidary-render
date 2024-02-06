@@ -1,21 +1,13 @@
 import itertools
 import logging
-from dataclasses import dataclass, field
 
 from . import openapi
-from .client_class import ClientClass, get_client_class
-from .module import AbstractModule, template_imports
-from .python.module_path import ModulePath
+from .client_class import get_client_class
+from .python import ClientModule, ModulePath
+from .python.module import template_imports
 from .refs import ResolverFunc
 
 logger = logging.getLogger(__name__)
-
-
-@dataclass(frozen=True, kw_only=True)
-class ClientModule(AbstractModule):
-    body: ClientClass = field()
-    model_type = 'client'
-    # path unused
 
 
 def get_client_class_module(model: openapi.OpenApiModel, client_module: ModulePath, root_module: ModulePath, resolver: ResolverFunc) -> ClientModule:

@@ -1,7 +1,6 @@
 from unittest import TestCase
 
-from lapidary.render.model import openapi
-from lapidary.render.model.python.module_path import ModulePath
+from lapidary.render.model import openapi, python
 from lapidary.render.model.response_body import get_response_body_classes
 
 
@@ -20,5 +19,5 @@ class TestResponseBody(TestCase):
         )
         self.assertEqual(
             [],
-            list(get_response_body_classes(op, ModulePath('test'), None))
+            list(get_response_body_classes(op, python.ModulePath('test'), None))
         )

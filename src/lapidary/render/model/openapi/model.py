@@ -1,7 +1,6 @@
 import typing
 from collections.abc import Iterable, Mapping
 from enum import Enum
-from typing import Annotated, Any, Dict, List, Optional, Union
 
 import pydantic
 
@@ -79,24 +78,24 @@ class Reference(pydantic.BaseModel):
         populate_by_name=True,
     )
 
-    ref: Annotated[str, pydantic.Field(alias='$ref')]
+    ref: typing.Annotated[str, pydantic.Field(alias='$ref')]
 
 
 class Contact(ExtendableModel):
-    name: Optional[str]
-    url: Optional[str]
-    email: Optional[pydantic.EmailStr]
+    name: typing.Optional[str]
+    url: typing.Optional[str]
+    email: typing.Optional[pydantic.EmailStr]
 
 
 class License(ExtendableModel):
     name: str
-    url: Optional[str]
+    url: typing.Optional[str]
 
 
 class ServerVariable(ExtendableModel):
-    enum: Optional[List[str]]
+    enum: typing.Optional[typing.List[str]]
     default: str
-    description: Optional[str]
+    description: typing.Optional[str]
 
 
 class Type(Enum):
@@ -110,22 +109,22 @@ class Type(Enum):
 
 class Discriminator(pydantic.BaseModel):
     propertyName: str
-    mapping: Optional[Dict[str, str]]
+    mapping: typing.Optional[typing.Dict[str, str]]
 
 
 class XML(ExtendableModel):
-    name: Optional[str]
-    namespace: Optional[pydantic.AnyUrl]
-    prefix: Optional[str]
-    attribute: Optional[bool] = False
-    wrapped: Optional[bool] = False
+    name: typing.Optional[str]
+    namespace: typing.Optional[pydantic.AnyUrl]
+    prefix: typing.Optional[str]
+    attribute: typing.Optional[bool] = False
+    wrapped: typing.Optional[bool] = False
 
 
 class Example(ExtendableModel):
-    summary: Optional[str]
-    description: Optional[str]
-    value: Optional[Any]
-    externalValue: Optional[str]
+    summary: typing.Optional[str]
+    description: typing.Optional[str]
+    value: typing.Optional[typing.Any]
+    externalValue: typing.Optional[str]
 
 
 class Style(Enum):
@@ -133,17 +132,17 @@ class Style(Enum):
 
 
 class SecurityRequirement(pydantic.RootModel):
-    root: Annotated[dict[str, list[str]], pydantic.Field(default_factory=dict)]
+    root: typing.Annotated[dict[str, list[str]], pydantic.Field(default_factory=dict)]
 
 
 class ExternalDocumentation(ExtendableModel):
-    description: Optional[str]
+    description: typing.Optional[str]
     url: str
 
 
 class ExampleXORExamples(pydantic.RootModel):
-    root: Annotated[
-        Any,
+    root: typing.Annotated[
+        typing.Any,
         pydantic.Field(
             description='Example and examples are mutually exclusive',
             not_={'required': ['example', 'examples']},
@@ -170,8 +169,8 @@ class ParameterLocationItem(pydantic.BaseModel):
     Parameter in path
     """
 
-    in_: Annotated[Optional[In], pydantic.Field(alias='in')]
-    style: Optional[Style1] = 'simple'
+    in_: typing.Annotated[typing.Optional[In], pydantic.Field(alias='in')]
+    style: typing.Optional[Style1] = 'simple'
     required: Required
 
     class Config:
@@ -195,8 +194,8 @@ class ParameterLocationItem1(pydantic.BaseModel):
     Parameter in query
     """
 
-    in_: Annotated[Optional[In1], pydantic.Field(alias='in')]
-    style: Optional[Style2] = 'form'
+    in_: typing.Annotated[typing.Optional[In1], pydantic.Field(alias='in')]
+    style: typing.Optional[Style2] = 'form'
 
     class Config:
         extra = pydantic.Extra.forbid
@@ -212,8 +211,8 @@ class ParameterLocationItem2(pydantic.BaseModel):
     Parameter in header
     """
 
-    in_: Annotated[Optional[In2], pydantic.Field(alias='in')]
-    style: Optional[Style] = 'simple'
+    in_: typing.Annotated[typing.Optional[In2], pydantic.Field(alias='in')]
+    style: typing.Optional[Style] = 'simple'
 
     class Config:
         extra = pydantic.Extra.forbid
@@ -233,8 +232,8 @@ class ParameterLocationItem3(pydantic.BaseModel):
     Parameter in cookie
     """
 
-    in_: Annotated[Optional[In3], pydantic.Field(alias='in')]
-    style: Optional[Style4] = 'form'
+    in_: typing.Annotated[typing.Optional[In3], pydantic.Field(alias='in')]
+    style: typing.Optional[Style4] = 'form'
 
     class Config:
         extra = pydantic.Extra.forbid
@@ -242,8 +241,8 @@ class ParameterLocationItem3(pydantic.BaseModel):
 
 
 class ParameterLocation(pydantic.RootModel):
-    root: Annotated[
-        Union[
+    root: typing.Annotated[
+        typing.Union[
             ParameterLocationItem,
             ParameterLocationItem1,
             ParameterLocationItem2,
@@ -266,8 +265,8 @@ class In4(Enum):
 class APIKeySecurityScheme(ExtendableModel):
     type: Type1
     name: str
-    in_: Annotated[In4, pydantic.Field(alias='in')]
-    description: Optional[str]
+    in_: typing.Annotated[In4, pydantic.Field(alias='in')]
+    description: typing.Optional[str]
 
 
 class Type2(Enum):
@@ -276,8 +275,8 @@ class Type2(Enum):
 
 class HTTPSecurityScheme(ExtendableModel):
     scheme: str
-    bearerFormat: Optional[str]
-    description: Optional[str]
+    bearerFormat: typing.Optional[str]
+    description: typing.Optional[str]
     type: Type2
 
     @pydantic.model_validator(mode='after')
@@ -302,7 +301,7 @@ class OpenIdConnectSecurityScheme(pydantic.BaseModel):
 
     type: Type4
     openIdConnectUrl: str
-    description: Optional[str]
+    description: typing.Optional[str]
 
 
 class ImplicitOAuthFlow(pydantic.BaseModel):
@@ -310,8 +309,8 @@ class ImplicitOAuthFlow(pydantic.BaseModel):
         extra = pydantic.Extra.forbid
 
     authorizationUrl: str
-    refreshUrl: Optional[str]
-    scopes: Dict[str, str]
+    refreshUrl: typing.Optional[str]
+    scopes: typing.Dict[str, str]
 
 
 class PasswordOAuthFlow(pydantic.BaseModel):
@@ -319,8 +318,8 @@ class PasswordOAuthFlow(pydantic.BaseModel):
         extra = pydantic.Extra.forbid
 
     tokenUrl: str
-    refreshUrl: Optional[str] = None
-    scopes: Optional[Dict[str, str]] = None
+    refreshUrl: typing.Optional[str] = None
+    scopes: typing.Optional[typing.Dict[str, str]] = None
 
 
 class ClientCredentialsFlow(PasswordOAuthFlow):
@@ -333,26 +332,26 @@ class AuthorizationCodeOAuthFlow(pydantic.BaseModel):
 
     authorizationUrl: str
     tokenUrl: str
-    refreshUrl: Optional[str] = None
-    scopes: Optional[Dict[str, str]] = None
+    refreshUrl: typing.Optional[str] = None
+    scopes: typing.Optional[typing.Dict[str, str]] = None
 
 
 class Info(ExtendableModel):
     title: str
-    description: Optional[str] = None
-    termsOfService: Optional[str] = None
-    contact: Optional[Contact] = None
-    license: Optional[License] = None
+    description: typing.Optional[str] = None
+    termsOfService: typing.Optional[str] = None
+    contact: typing.Optional[Contact] = None
+    license: typing.Optional[License] = None
     version: str
 
 
 class Server(ExtendableModel):
     url: str
-    description: Optional[str] = None
-    variables: Optional[Dict[str, ServerVariable]] = None
+    description: typing.Optional[str] = None
+    variables: typing.Optional[typing.Dict[str, ServerVariable]] = None
 
 
-def validate_list_unique(v: Iterable[Any]) -> Iterable[Any]:
+def validate_list_unique(v: Iterable[typing.Any]) -> Iterable[typing.Any]:
     if sorted(v) != sorted(set(v)):
         raise ValueError('not unique')
     return v
@@ -362,57 +361,57 @@ UniqueListValidator = pydantic.AfterValidator(validate_list_unique)
 
 
 class Schema(ExtendableModel):
-    title: Optional[str] = None
-    type: Optional[Type] = None
+    title: typing.Optional[str] = None
+    type: typing.Optional[Type] = None
 
     # type == number or type == integer
-    multipleOf: Annotated[Optional[float], pydantic.Field(gt=0.0)] = None
-    maximum: Optional[float] = None
-    exclusiveMaximum: Optional[bool] = False
-    minimum: Optional[float] = None
-    exclusiveMinimum: Optional[bool] = False
+    multipleOf: typing.Annotated[typing.Optional[float], pydantic.Field(gt=0.0)] = None
+    maximum: typing.Optional[float] = None
+    exclusiveMaximum: typing.Optional[bool] = False
+    minimum: typing.Optional[float] = None
+    exclusiveMinimum: typing.Optional[bool] = False
 
     # type == string
-    maxLength: Annotated[Optional[int], pydantic.Field(ge=0)] = None
-    minLength: Annotated[int, pydantic.Field(ge=0)] = 0
-    pattern: Optional[str] = None
+    maxLength: typing.Annotated[typing.Optional[int], pydantic.Field(ge=0)] = None
+    minLength: typing.Annotated[int, pydantic.Field(ge=0)] = 0
+    pattern: typing.Optional[str] = None
 
     # type == array
-    items: 'Union[None, Reference, Schema]' = None
-    maxItems: Annotated[Optional[int], pydantic.Field(ge=0)] = None
-    minItems: Annotated[Optional[int], pydantic.Field(ge=0)] = 0
-    uniqueItems: Optional[bool] = False
+    items: 'typing.Union[None, Reference, Schema]' = None
+    maxItems: typing.Annotated[typing.Optional[int], pydantic.Field(ge=0)] = None
+    minItems: typing.Annotated[typing.Optional[int], pydantic.Field(ge=0)] = 0
+    uniqueItems: typing.Optional[bool] = False
 
     # type == object
-    maxProperties: Annotated[Optional[int], pydantic.Field(ge=0)] = None
-    minProperties: Annotated[Optional[int], pydantic.Field(ge=0)] = 0
-    required: Annotated[Optional[List[str]], pydantic.Field(min_items=1), UniqueListValidator] = None
-    properties: 'Optional[Dict[str, Union[Reference, Schema]]]' = None
-    additionalProperties: 'Union[Reference, Schema, bool]' = True
+    maxProperties: typing.Annotated[typing.Optional[int], pydantic.Field(ge=0)] = None
+    minProperties: typing.Annotated[typing.Optional[int], pydantic.Field(ge=0)] = 0
+    required: typing.Annotated[typing.Optional[typing.List[str]], pydantic.Field(min_items=1), UniqueListValidator] = None
+    properties: 'typing.Optional[typing.Dict[str, typing.Union[Reference, Schema]]]' = None
+    additionalProperties: 'typing.Union[Reference, Schema, bool]' = True
 
     # type == string or type = number or type == integer
-    format: Optional[str] = None
+    format: typing.Optional[str] = None
 
-    enum: Annotated[Optional[List], pydantic.Field(min_items=1),] = None
+    enum: typing.Annotated[typing.Optional[typing.List], pydantic.Field(min_items=1),] = None
 
-    not_: 'Annotated[Union[None, Reference, Schema], pydantic.Field(alias="not")]' = None
-    allOf: 'Optional[List[Union[Reference, Schema]]]' = None
-    oneOf: 'Optional[List[Union[Reference, Schema]]]' = None
-    anyOf: 'Optional[List[Union[Reference, Schema]]]' = None
+    not_: 'typing.Annotated[typing.Union[None, Reference, Schema], pydantic.Field(alias="not")]' = None
+    allOf: 'typing.Optional[typing.List[typing.Union[Reference, Schema]]]' = None
+    oneOf: 'typing.Optional[typing.List[typing.Union[Reference, Schema]]]' = None
+    anyOf: 'typing.Optional[typing.List[typing.Union[Reference, Schema]]]' = None
 
-    description: Optional[str] = None
-    default: Optional[Any] = None
-    nullable: Optional[bool] = False
-    discriminator: Optional[Discriminator] = None
-    readOnly: Optional[bool] = False
-    writeOnly: Optional[bool] = False
-    example: Optional[Any] = None
-    externalDocs: Optional[ExternalDocumentation] = None
-    deprecated: Optional[bool] = False
-    xml: Optional[XML] = None
+    description: typing.Optional[str] = None
+    default: typing.Optional[typing.Any] = None
+    nullable: typing.Optional[bool] = False
+    discriminator: typing.Optional[Discriminator] = None
+    readOnly: typing.Optional[bool] = False
+    writeOnly: typing.Optional[bool] = False
+    example: typing.Optional[typing.Any] = None
+    externalDocs: typing.Optional[ExternalDocumentation] = None
+    deprecated: typing.Optional[bool] = False
+    xml: typing.Optional[XML] = None
 
-    lapidary_names: Annotated[
-        Optional[dict[Union[str, None], Any]],
+    lapidary_names: typing.Annotated[
+        typing.Optional[dict[typing.Union[str, None], typing.Any]],
         pydantic.Field(
             alias='x-lapidary-names',
             default_factory=dict,
@@ -420,33 +419,33 @@ class Schema(ExtendableModel):
                         "Applicable to enum values or object properties."
         )
     ] = None
-    lapidary_name: Annotated[Optional[str], pydantic.Field(alias='x-lapidary-type-name')] = None
-    lapidary_model_type: Annotated[Optional[LapidaryModelType], pydantic.Field(alias='x-lapidary-modelType')] = None
+    lapidary_name: typing.Annotated[typing.Optional[str], pydantic.Field(alias='x-lapidary-type-name')] = None
+    lapidary_model_type: typing.Annotated[typing.Optional[LapidaryModelType], pydantic.Field(alias='x-lapidary-modelType')] = None
 
 
 class Tag(ExtendableModel):
     name: str
-    description: Optional[str] = None
-    externalDocs: Optional[ExternalDocumentation] = None
+    description: typing.Optional[str] = None
+    externalDocs: typing.Optional[ExternalDocumentation] = None
 
 
 class OAuthFlows(pydantic.BaseModel):
     class Config:
         extra = pydantic.Extra.forbid
 
-    implicit: Optional[ImplicitOAuthFlow] = None
-    password: Optional[PasswordOAuthFlow] = None
-    clientCredentials: Optional[ClientCredentialsFlow] = None
-    authorizationCode: Optional[AuthorizationCodeOAuthFlow] = None
+    implicit: typing.Optional[ImplicitOAuthFlow] = None
+    password: typing.Optional[PasswordOAuthFlow] = None
+    clientCredentials: typing.Optional[ClientCredentialsFlow] = None
+    authorizationCode: typing.Optional[AuthorizationCodeOAuthFlow] = None
 
 
 class Link(ExtendableModel):
-    operationId: Optional[str] = None
-    operationRef: Optional[str] = None
-    parameters: Optional[Dict[str, Any]] = None
-    requestBody: Optional[Any] = None
-    description: Optional[str] = None
-    server: Optional[Server] = None
+    operationId: typing.Optional[str] = None
+    operationRef: typing.Optional[str] = None
+    parameters: typing.Optional[typing.Dict[str, typing.Any]] = None
+    requestBody: typing.Optional[typing.Any] = None
+    description: typing.Optional[str] = None
+    server: typing.Optional[Server] = None
 
 
 class OAuth2SecurityScheme(pydantic.BaseModel):
@@ -455,11 +454,11 @@ class OAuth2SecurityScheme(pydantic.BaseModel):
 
     type: Type3
     flows: OAuthFlows
-    description: Optional[str] = None
+    description: typing.Optional[str] = None
 
 
 class SecurityScheme(pydantic.RootModel):
-    root: Union[
+    root: typing.Union[
         APIKeySecurityScheme,
         HTTPSecurityScheme,
         OAuth2SecurityScheme,
@@ -468,17 +467,17 @@ class SecurityScheme(pydantic.RootModel):
 
 
 class Header(ExtendableModel):
-    description: Optional[str]
-    required: Optional[bool] = False
-    deprecated: Optional[bool] = False
-    allowEmptyValue: Optional[bool] = False
-    content: 'Annotated[Optional[Dict[str, MediaType]], pydantic.Field(maxProperties=1, minProperties=1)]' = None
-    style: Optional[Style] = 'simple'
-    explode: Optional[bool] = None
-    allowReserved: Optional[bool] = False
-    schema_: Annotated[Union[None, Reference, Schema], pydantic.Field(alias='schema')] = None
-    example: Optional[Any] = None
-    examples: Optional[Dict[str, Union[Reference, Example]]] = None
+    description: typing.Optional[str]
+    required: typing.Optional[bool] = False
+    deprecated: typing.Optional[bool] = False
+    allowEmptyValue: typing.Optional[bool] = False
+    content: 'typing.Annotated[typing.Optional[typing.Dict[str, MediaType]], pydantic.Field(maxProperties=1, minProperties=1)]' = None
+    style: typing.Optional[Style] = 'simple'
+    explode: typing.Optional[bool] = None
+    allowReserved: typing.Optional[bool] = False
+    schema_: typing.Annotated[typing.Union[None, Reference, Schema], pydantic.Field(alias='schema')] = None
+    example: typing.Optional[typing.Any] = None
+    examples: typing.Optional[typing.Dict[str, typing.Union[Reference, Example]]] = None
 
     @pydantic.model_validator(mode='before')
     @staticmethod
@@ -493,14 +492,14 @@ class Header(ExtendableModel):
 
 class Response(ExtendableModel):
     description: str
-    headers: Optional[Dict[str, Union[Reference, Header]]] = None
-    content: 'Optional[Dict[str, MediaType]]' = None
-    links: Optional[Dict[str, Union[Reference, Link]]] = None
+    headers: typing.Optional[typing.Dict[str, typing.Union[Reference, Header]]] = None
+    content: 'typing.Optional[typing.Dict[str, MediaType]]' = None
+    links: typing.Optional[typing.Dict[str, typing.Union[Reference, Link]]] = None
 
 
 class Responses(ExtendableModel, ModelWithPatternProperties):
-    responses: Annotated[
-        Dict[str, Union[Reference, Response]],
+    responses: typing.Annotated[
+        typing.Dict[str, typing.Union[Reference, Response]],
         pydantic.Field(default_factory=dict, min_items=1),
         PropertyPattern(r'^[1-5](?:\d{2}|XX)|default$'),
     ]
@@ -513,20 +512,20 @@ class Parameter(ExtendableModel):
     )
 
     name: str
-    in_: Annotated[str, pydantic.Field(alias='in')]
-    description: Optional[str] = None
+    in_: typing.Annotated[str, pydantic.Field(alias='in')]
+    description: typing.Optional[str] = None
     required: bool = False
     deprecated: bool = False
     allowEmptyValue: bool = False
-    content: 'Annotated[Optional[Dict[str, MediaType]], pydantic.Field(maxProperties=1, minProperties=1)]' = None
-    style: Optional[str] = None
-    explode: Optional[bool] = None
-    allowReserved: Optional[bool] = False
-    schema_: Annotated[Union[None, Reference, Schema], pydantic.Field(alias='schema')] = None
-    example: Optional[Any] = None
-    examples: Optional[Dict[str, Union[Reference, Example]]] = None
+    content: 'typing.Annotated[typing.Optional[typing.Dict[str, MediaType]], pydantic.Field(maxProperties=1, minProperties=1)]' = None
+    style: typing.Optional[str] = None
+    explode: typing.Optional[bool] = None
+    allowReserved: typing.Optional[bool] = False
+    schema_: typing.Annotated[typing.Union[None, Reference, Schema], pydantic.Field(alias='schema')] = None
+    example: typing.Optional[typing.Any] = None
+    examples: typing.Optional[typing.Dict[str, typing.Union[Reference, Example]]] = None
 
-    lapidary_name: Annotated[Union[str, None], pydantic.Field(alias='x-lapidary-name')] = None
+    lapidary_name: typing.Annotated[typing.Union[str, None], pydantic.Field(alias='x-lapidary-name')] = None
 
     @pydantic.model_validator(mode='before')
     @staticmethod
@@ -544,28 +543,28 @@ class Parameter(ExtendableModel):
 
 
 class RequestBody(ExtendableModel):
-    description: Optional[str] = None
-    content: 'Dict[str, MediaType]'
-    required: Optional[bool] = False
+    description: typing.Optional[str] = None
+    content: 'typing.Dict[str, MediaType]'
+    required: typing.Optional[bool] = False
 
 
 class Encoding(ExtendableModel):
-    contentType: Optional[str] = None
-    headers: Optional[Dict[str, Header]] = None
-    style: Optional[Style2] = None
-    explode: Optional[bool] = None
-    allowReserved: Optional[bool] = False
+    contentType: typing.Optional[str] = None
+    headers: typing.Optional[typing.Dict[str, Header]] = None
+    style: typing.Optional[Style2] = None
+    explode: typing.Optional[bool] = None
+    allowReserved: typing.Optional[bool] = False
 
 
 class MediaType(ExtendableModel):
-    schema_: Annotated[Union[Reference, Schema, None], pydantic.Field(alias='schema')] = None
-    example: Optional[Any] = None
-    examples: Optional[Dict[str, Union[Reference, Example]]] = None
-    encoding: Optional[Dict[str, Encoding]] = None
+    schema_: typing.Annotated[typing.Union[Reference, Schema, None], pydantic.Field(alias='schema')] = None
+    example: typing.Optional[typing.Any] = None
+    examples: typing.Optional[typing.Dict[str, typing.Union[Reference, Example]]] = None
+    encoding: typing.Optional[typing.Dict[str, Encoding]] = None
 
     @pydantic.model_validator(mode='before')
     @classmethod
-    def _validate_example_xor_examples(cls, values: Mapping[str, Any]):
+    def _validate_example_xor_examples(cls, values: Mapping[str, typing.Any]):
         if not (isinstance(values, Mapping) or isinstance(values, MediaType)):
             raise TypeError(type(values))
         if 'examples' in values and 'example' in values:
@@ -574,61 +573,61 @@ class MediaType(ExtendableModel):
 
 
 class Operation(ExtendableModel):
-    tags: Optional[List[str]] = None
-    summary: Optional[str] = None
-    description: Optional[str] = None
-    externalDocs: Optional[ExternalDocumentation] = None
-    operationId: Optional[str] = None
-    parameters: Annotated[
-        Optional[List[Union[Reference, Parameter]]],
+    tags: typing.Optional[typing.List[str]] = None
+    summary: typing.Optional[str] = None
+    description: typing.Optional[str] = None
+    externalDocs: typing.Optional[ExternalDocumentation] = None
+    operationId: typing.Optional[str] = None
+    parameters: typing.Annotated[
+        typing.Optional[typing.List[typing.Union[Reference, Parameter]]],
         UniqueListValidator,
     ] = None
-    requestBody: Union[None, Reference, RequestBody] = None
+    requestBody: typing.Union[None, Reference, RequestBody] = None
     responses: Responses
-    callbacks: 'Optional[Dict[str, Union[Reference, Callback]]]' = None
-    deprecated: Optional[bool] = False
-    security: Optional[List[SecurityRequirement]] = None
-    servers: Optional[List[Server]] = None
+    callbacks: 'typing.Optional[typing.Dict[str, typing.Union[Reference, Callback]]]' = None
+    deprecated: typing.Optional[bool] = False
+    security: typing.Optional[typing.List[SecurityRequirement]] = None
+    servers: typing.Optional[typing.List[Server]] = None
 
-    paging: Annotated[Optional[PluginModel], pydantic.Field(alias='x-lapidary-pagingPlugin')] = None
+    paging: typing.Annotated[typing.Optional[PluginModel], pydantic.Field(alias='x-lapidary-pagingPlugin')] = None
 
 
 class PathItem(ExtendableModel):
-    summary: Optional[str] = None
-    description: Optional[str] = None
-    servers: Optional[List[Server]] = None
-    parameters: Annotated[
-        Optional[List[Union[Reference, Parameter]]],
+    summary: typing.Optional[str] = None
+    description: typing.Optional[str] = None
+    servers: typing.Optional[typing.List[Server]] = None
+    parameters: typing.Annotated[
+        typing.Optional[typing.List[typing.Union[Reference, Parameter]]],
         UniqueListValidator,
     ] = None
-    get: Optional[Operation] = None
-    put: Optional[Operation] = None
-    post: Optional[Operation] = None
-    delete: Optional[Operation] = None
-    options: Optional[Operation] = None
-    head: Optional[Operation] = None
-    patch: Optional[Operation] = None
-    trace: Optional[Operation] = None
+    get: typing.Optional[Operation] = None
+    put: typing.Optional[Operation] = None
+    post: typing.Optional[Operation] = None
+    delete: typing.Optional[Operation] = None
+    options: typing.Optional[Operation] = None
+    head: typing.Optional[Operation] = None
+    patch: typing.Optional[Operation] = None
+    trace: typing.Optional[Operation] = None
 
 
 class Paths(ModelWithPatternProperties):
-    paths: Annotated[dict[str, PathItem], pydantic.Field(default_factory=dict), PropertyPattern('^/')]
+    paths: typing.Annotated[dict[str, PathItem], pydantic.Field(default_factory=dict), PropertyPattern('^/')]
 
 
 class Callback(ModelWithAdditionalProperties):
-    __pydantic_extra__ = dict[str, Union[Reference, PathItem]]
+    __pydantic_extra__ = dict[str, typing.Union[Reference, PathItem]]
 
 
 class Components(ExtendableModel):
-    schemas: Optional[Dict[str, Union[Reference, Schema]]] = None
-    responses: Optional[Dict[str, Union[Reference, Response]]] = None
-    parameters: Optional[Dict[str, Union[Reference, Parameter]]] = None
-    examples: Optional[Dict[str, Union[Reference, Example]]] = None
-    requestBodies: Optional[Dict[str, Union[Reference, RequestBody]]] = None
-    headers: Optional[Dict[str, Union[Reference, Header]]] = None
-    securitySchemes: Optional[Dict[str, Union[Reference, SecurityScheme]]] = None
-    links: Optional[Dict[str, Union[Reference, Link]]] = None
-    callbacks: Optional[Dict[str, Union[Reference, Callback]]] = None
+    schemas: typing.Optional[typing.Dict[str, typing.Union[Reference, Schema]]] = None
+    responses: typing.Optional[typing.Dict[str, typing.Union[Reference, Response]]] = None
+    parameters: typing.Optional[typing.Dict[str, typing.Union[Reference, Parameter]]] = None
+    examples: typing.Optional[typing.Dict[str, typing.Union[Reference, Example]]] = None
+    requestBodies: typing.Optional[typing.Dict[str, typing.Union[Reference, RequestBody]]] = None
+    headers: typing.Optional[typing.Dict[str, typing.Union[Reference, Header]]] = None
+    securitySchemes: typing.Optional[typing.Dict[str, typing.Union[Reference, SecurityScheme]]] = None
+    links: typing.Optional[typing.Dict[str, typing.Union[Reference, Link]]] = None
+    callbacks: typing.Optional[typing.Dict[str, typing.Union[Reference, Callback]]] = None
 
 
 class OpenApiModel(ExtendableModel):
@@ -641,18 +640,18 @@ class OpenApiModel(ExtendableModel):
         populate_by_name=True,
     )
 
-    openapi: Annotated[str, pydantic.Field(pattern='^3\\.0\\.\\d(-.+)?$')]
+    openapi: typing.Annotated[str, pydantic.Field(pattern='^3\\.0\\.\\d(-.+)?$')]
     info: Info
-    externalDocs: Optional[ExternalDocumentation] = None
-    servers: Optional[List[Server]] = None
-    security: Optional[List[SecurityRequirement]] = None
-    tags: Annotated[Optional[List[Tag]], UniqueListValidator] = None
+    externalDocs: typing.Optional[ExternalDocumentation] = None
+    servers: typing.Optional[typing.List[Server]] = None
+    security: typing.Optional[typing.List[SecurityRequirement]] = None
+    tags: typing.Annotated[typing.Optional[typing.List[Tag]], UniqueListValidator] = None
     paths: Paths
-    components: Optional[Components] = None
+    components: typing.Optional[Components] = None
 
-    lapidary_headers_global: Annotated[
-        Optional[Union[
-            dict[str, Union[str, list[str]]],
+    lapidary_headers_global: typing.Annotated[
+        typing.Optional[typing.Union[
+            dict[str, typing.Union[str, list[str]]],
             list[tuple[str, str]]
         ]],
         pydantic.Field(
@@ -662,7 +661,7 @@ class OpenApiModel(ExtendableModel):
         )
     ]
 
-    lapidary_responses_global: Annotated[Optional[Responses], pydantic.Field(
+    lapidary_responses_global: typing.Annotated[typing.Optional[Responses], pydantic.Field(
         alias='x-lapidary-responses-global',
         description='Base Responses. Values in Responses declared in Operations override values in this one.',
         default=None,

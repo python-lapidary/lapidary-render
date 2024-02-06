@@ -1,8 +1,9 @@
 import re
-from typing import Any
+import typing
 
 import pydantic
-from lapidary.render.pydantic_utils import find_annotation_optional
+
+from ...pydantic_utils import find_annotation_optional
 
 
 class ExtendableModel(pydantic.BaseModel):
@@ -42,7 +43,7 @@ class ModelWithAdditionalProperties(BaseModel):
 class ModelWithPatternProperties(BaseModel):
     @pydantic.model_validator(mode='before')
     @classmethod
-    def validate(cls, value: Any, info: pydantic.ValidationInfo):
+    def validate(cls, value: typing.Any, info: pydantic.ValidationInfo):
         for field_name, field_info in cls.model_fields.items():
             pattern_anno = find_annotation_optional(field_info.metadata, PropertyPattern)
             if not pattern_anno:

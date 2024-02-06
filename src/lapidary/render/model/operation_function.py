@@ -1,30 +1,19 @@
 import logging
+import pkgutil
+import re
+import typing
 import warnings
-from dataclasses import dataclass
-from typing import Optional, Union
 
-from . import openapi
-from .attribute import AttributeModel
-from .attribute_annotation import AttributeAnnotationModel
-from .python.module_path import ModulePath
-from .python.names import PARAM_MODEL, escape_name, param_model_name
-from .python.params import ParamLocation, get_param_type
-from .python.type_hint import GenericTypeHint, TypeHint, resolve_type_hint
+from .. import names
+from . import openapi, python
+from .params import get_param_type
+from .python import ModulePath, OperationModel, PagingPlugin
 from .refs import ResolverFunc
 from .request_body import get_request_body_type
+from .response import get_response_map
+from .type_hint import resolve_type_hint
 
 logger = logging.getLogger(__name__)
-
-
-@dataclass(frozen=True)
-class OperationFunctionModel:
-    name: str
-    request_type: Optional[TypeHint]
-    params: list[AttributeModel]
-    response_type: Optional[TypeHint]
-    auth_name: Optional[str]
-    docstr: Optional[str] = None
-
 
 _FIELD_PROPS = dict(
     in_=None,
@@ -37,8 +26,8 @@ _FIELD_PROPS = dict(
 
 
 def get_operation_param(
-        param: Union[openapi.Parameter, openapi.Reference], module: ModulePath, resolve: ResolverFunc
-) -> AttributeModel:
+        param: typing.Union[openapi.Parameter, openapi.Reference], module: python.ModulePath, resolve: ResolverFunc
+) -> python.attribute.AttributeModel:
     if isinstance(param, openapi.Reference):
         param, module, _ = resolve(param, openapi.Parameter)
 
@@ -46,14 +35,14 @@ def get_operation_param(
 
 
 def get_operation_param_(
-        param: openapi.Parameter, parent_module: ModulePath, resolve: ResolverFunc
-) -> AttributeModel:
+        param: openapi.Parameter, parent_module: python.ModulePath, resolve: ResolverFunc
+) -> python.attribute.AttributeModel:
     field_props = {k: getattr(param, k, default) for k, default in _FIELD_PROPS.items()}
-    param_name = param_model_name(param)
+    param_name = names.param_model_name(param)
 
-    return AttributeModel(
+    return python.attribute.AttributeModel(
         name=param_name,
-        annotation=AttributeAnnotationModel(
+        annotation=python.attribute.AttributeAnnotationModel(
             type=get_param_type(param, parent_module, resolve),
             field_props=field_props,
         ),
@@ -63,8 +52,8 @@ def get_operation_param_(
 
 
 def get_operation_func(
-        op: openapi.Operation, parent: ModulePath, resolver: ResolverFunc
-) -> OperationFunctionModel:
+        op: openapi.Operation, parent: python.ModulePath, resolver: ResolverFunc
+) -> python.OperationFunctionModel:
     if not op.operationId:
         raise ValueError('operationId is required')
 
@@ -72,9 +61,9 @@ def get_operation_func(
 
     params = []
     if op.parameters:
-        params_module = module / PARAM_MODEL
+        params_module = module / names.PARAM_MODEL
         for oapi_param in op.parameters:
-            if oapi_param.in_ == ParamLocation.header.value and oapi_param.name.lower() in [
+            if oapi_param.in_ == python.ParamLocation.header.value and oapi_param.name.lower() in [
                 'accept', 'content-type', 'authorization'
             ]:
                 warnings.warn(f'Header param "{oapi_param.name}" ignored')
@@ -92,7 +81,7 @@ def get_operation_func(
     elif len(response_types) == 1:
         response_type = response_types.pop()
     else:
-        response_type = GenericTypeHint.union_of(tuple(response_types))
+        response_type = python.type_hint.GenericTypeHint.union_of(tuple(response_types))
 
     auth_name = None
     if op.security is not None and len(op.security) > 0:
@@ -100,7 +89,7 @@ def get_operation_func(
         if len(requirement) > 0:
             auth_name = next(iter(requirement.keys()))
 
-    return OperationFunctionModel(
+    return python.OperationFunctionModel(
         name=op.operationId,
         request_type=request_type,
         params=params,
@@ -109,7 +98,7 @@ def get_operation_func(
     )
 
 
-def get_response_types(op: openapi.Operation, module: ModulePath, resolve: ResolverFunc) -> set[TypeHint]:
+def get_response_types(op: openapi.Operation, module: python.ModulePath, resolve: ResolverFunc) -> set[python.TypeHint]:
     """
     Generate unique collection of types that may be returned by the operation. Skip types that are marked as exceptions as those are raised instead.
     """
@@ -117,7 +106,8 @@ def get_response_types(op: openapi.Operation, module: ModulePath, resolve: Resol
     return get_response_types_(op.responses, module, resolve)
 
 
-def get_response_types_(responses: openapi.Responses, module: ModulePath, resolve: ResolverFunc) -> set[TypeHint]:
+def get_response_types_(responses: openapi.Responses, module: python.ModulePath, resolve: ResolverFunc) -> set[
+    python.type_hint.TypeHint]:
     response_types = set()
     for resp_code, response in responses.responses.items():
         if isinstance(response, openapi.Reference):
@@ -130,7 +120,7 @@ def get_response_types_(responses: openapi.Responses, module: ModulePath, resolv
                 schema, resp_module, name = resolve(schema, openapi.Schema)
             else:
                 name = "schema"
-                resp_module = module / "responses" / escape_name(str(resp_code)) / "content" / escape_name(_media_type_name)
+                resp_module = module / "responses" / names.escape_name(str(resp_code)) / "content" / names.escape_name(_media_type_name)
             if schema.lapidary_model_type is openapi.LapidaryModelType.exception:
                 continue
             typ = resolve_type_hint(schema, resp_module, name, resolve)
@@ -142,14 +132,41 @@ def get_response_types_(responses: openapi.Responses, module: ModulePath, resolv
     return response_types
 
 
-def to_iterator(type_: TypeHint) -> TypeHint:
-    if not isinstance(type_, GenericTypeHint):
+def to_iterator(type_: python.type_hint.TypeHint) -> python.type_hint.TypeHint:
+    if not isinstance(type_, python.type_hint.GenericTypeHint):
         return type_
 
-    if type_.origin == TypeHint.from_str('typing.Union'):
-        return GenericTypeHint.union_of(tuple(to_iterator(targ) for targ in type_.args))
+    if type_.origin == python.type_hint.TypeHint.from_str('typing.Union'):
+        return python.type_hint.GenericTypeHint.union_of(tuple(to_iterator(targ) for targ in type_.args))
 
-    if type_.origin == TypeHint.from_type(list):
-        return GenericTypeHint(module='collections.abc', type_name='Iterator', args=type_.args)
+    if type_.origin == python.type_hint.TypeHint.from_type(list):
+        return python.type_hint.GenericTypeHint(module='collections.abc', type_name='Iterator', args=type_.args)
 
     return type_
+
+
+def get_operation(
+        op: openapi.Operation, method: str, url_path: str, module: ModulePath, resolver: ResolverFunc
+) -> OperationModel:
+    response_map = get_response_map(op.responses, op.operationId, module, resolver)
+
+    return OperationModel(
+        method=method,
+        path=re.compile(r'\{([^}]+)\}').sub(r'{p_\1}', url_path),
+        params_model=pkgutil.resolve_name(names.param_model_name(module, op.operationId)) if op.parameters else None,
+        response_map=response_map,
+        paging=instantiate_plugin(op.paging) if op.paging else None,
+    )
+
+
+def get_operation_functions(openapi_model: openapi.OpenApiModel, module: ModulePath, resolver: ResolverFunc) -> typing.Mapping[str, OperationModel]:
+    return {
+        op.operationId: get_operation(op, method, url_path, module / 'paths' / op.operationId, resolver)
+        for url_path, path_item in openapi_model.paths.items()
+        for method, op in openapi.get_operations(path_item, True)
+    }
+
+
+def instantiate_plugin(model: typing.Optional[openapi.PluginModel]) -> typing.Optional[PagingPlugin]:
+    type_ = pkgutil.resolve_name(model.factory)
+    return type_()

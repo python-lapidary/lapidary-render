@@ -1,40 +1,27 @@
-import dataclasses as dc
 import logging
-import typing as ty
+import typing
 
-from . import openapi
-from .module import AbstractModule, template_imports
-from .param_model_class import get_param_model_classes
-from .python.module_path import ModulePath
-from .python.names import (
+from ..names import (
     PARAM_MODEL,
     REQUEST_BODY,
     RESPONSE_BODY,
     check_name,
     get_schema_module_name,
 )
+from . import openapi, python
+from .param_model_class import get_param_model_classes
+from .python.module import template_imports
 from .refs import ResolverFunc
 from .request_body import get_request_body_module
 from .response_body import get_response_body_module
 from .schema_class import get_schema_classes
-from .schema_class_model import SchemaClass
 
 logger = logging.getLogger(__name__)
 
 
-@dc.dataclass(frozen=True, kw_only=True)
-class SchemaModule(AbstractModule):
-    """
-    One schema module per schema element directly under #/components/schemas, containing that schema and all non-reference schemas.
-    One schema module for inline request and for response body for each operation
-    """
-    body: list[SchemaClass] = dc.field(default_factory=list)
-    model_type: str = 'schema'
-
-
 def get_modules_for_components_schemas(
-        schemas: dict[str, ty.Union[openapi.Schema, openapi.Reference]], root_package: ModulePath, resolver: ResolverFunc
-) -> list[SchemaModule]:
+        schemas: dict[str, typing.Union[openapi.Schema, openapi.Reference]], root_package: python.ModulePath, resolver: ResolverFunc
+) -> list[python.SchemaModule]:
     modules = []
     for name, schema in schemas.items():
         if isinstance(schema, openapi.Schema):
@@ -47,14 +34,14 @@ def get_modules_for_components_schemas(
 
 
 def get_schema_module(
-        schema: openapi.Schema, name: str, path: ModulePath, resolver: ResolverFunc
-) -> ty.Optional[SchemaModule]:
+        schema: openapi.Schema, name: str, path: python.ModulePath, resolver: ResolverFunc
+) -> typing.Optional[python.SchemaModule]:
     classes = [cls for cls in get_schema_classes(schema, name, path, resolver)]
     if len(classes) > 0:
         return _get_schema_module(classes, path)
 
 
-def _get_schema_module(classes: list[SchemaClass], path: ModulePath, model_type="schema") -> SchemaModule:
+def _get_schema_module(classes: list[python.SchemaClass], path: python.ModulePath, model_type="schema") -> python.SchemaModule:
     imports = {
         imp
         for cls in classes
@@ -72,7 +59,7 @@ def _get_schema_module(classes: list[SchemaClass], path: ModulePath, model_type=
     })
     imports = sorted(imports)
 
-    return SchemaModule(
+    return python.SchemaModule(
         path=path,
         body=classes,
         imports=imports,
@@ -80,12 +67,12 @@ def _get_schema_module(classes: list[SchemaClass], path: ModulePath, model_type=
     )
 
 
-def get_param_model_classes_module(op: openapi.Operation, module: ModulePath, resolve: ResolverFunc) -> SchemaModule:
+def get_param_model_classes_module(op: openapi.Operation, module: python.ModulePath, resolve: ResolverFunc) -> python.SchemaModule:
     classes = [cls for cls in get_param_model_classes(op, module, resolve)]
     return _get_schema_module(classes, module, "param_model")
 
 
-def get_schema_modules(model: openapi.OpenApiModel, root_module: ModulePath, resolver: ResolverFunc) -> ty.Iterable[SchemaModule]:
+def get_schema_modules(model: openapi.OpenApiModel, root_module: python.ModulePath, resolver: ResolverFunc) -> typing.Iterable[python.SchemaModule]:
     if model.components and model.components.schemas:
         logger.info('Render schema modules')
         path = root_module / 'components' / 'schemas'

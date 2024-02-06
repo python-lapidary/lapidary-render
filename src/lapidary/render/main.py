@@ -13,9 +13,9 @@ from rybak.jinja import JinjaRenderer
 
 from .client import mk_model
 from .config import Config
-from .model import get_auth_module, openapi
+from .model import openapi, python
+from .model.auth_module import get_auth_module
 from .model.client_model import mk_client_model
-from .model.python.module_path import ModulePath
 from .model.refs import get_resolver
 from .spec import load_spec
 
@@ -57,7 +57,7 @@ def init_project(
     from rybak import render
 
     # model = LapidaryModel(oa_doc, oa_model, config.package)
-    model = mk_client_model(oa_model, ModulePath(config.package), get_resolver(oa_model, config.package))
+    model = mk_client_model(oa_model, python.ModulePath(config.package), get_resolver(oa_model, config.package))
 
     from pprint import pprint
     pprint(model)
@@ -69,7 +69,7 @@ def init_project(
         loader=jinja2.loaders.PackageLoader('lapidary.render'),
     )
     environment.globals.update(dict(
-        as_module_path=ModulePath,
+        as_module_path=python.ModulePath,
         os=os,
     ))
     environment.filters.update(dict(
@@ -83,7 +83,7 @@ def init_project(
             model=model,
             document=oa_doc,
             get_version=importlib.metadata.version,
-            auth_module=get_auth_module(oa_model, ModulePath(config.package) / 'auth')
+            auth_module=get_auth_module(oa_model, python.ModulePath(config.package) / 'auth')
         ),
         excluded=[Path(path) for path in excludes],
     )

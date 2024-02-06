@@ -1,16 +1,10 @@
-import pkgutil
-import re
-from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Optional, Type
 
-from ..openapi import PluginModel, get_operations
-from ..openapi import model as openapi
-from ..refs import ResolverFunc
-from . import names
-from .module_path import ModulePath
-from .plugins import PagingPlugin
-from .response_map import ResponseMap, get_response_map
+from .attribute import AttributeModel
+from .plugin import PagingPlugin
+from .response import ResponseMap
+from .type_hint import TypeHint
 
 
 @dataclass(frozen=True)
@@ -22,28 +16,11 @@ class OperationModel:
     paging: Optional[PagingPlugin]
 
 
-def get_operation(
-        op: openapi.Operation, method: str, url_path: str, module: ModulePath, resolver: ResolverFunc
-) -> OperationModel:
-    response_map = get_response_map(op.responses, op.operationId, module, resolver)
-
-    return OperationModel(
-        method=method,
-        path=re.compile(r'\{([^}]+)\}').sub(r'{p_\1}', url_path),
-        params_model=pkgutil.resolve_name(names.param_model_name(module, op.operationId)) if op.parameters else None,
-        response_map=response_map,
-        paging=instantiate_plugin(op.paging) if op.paging else None,
-    )
-
-
-def get_operation_functions(openapi_model: openapi.OpenApiModel, module: ModulePath, resolver: ResolverFunc) -> Mapping[str, OperationModel]:
-    return {
-        op.operationId: get_operation(op, method, url_path, module / 'paths' / op.operationId, resolver)
-        for url_path, path_item in openapi_model.paths.items()
-        for method, op in get_operations(path_item, True)
-    }
-
-
-def instantiate_plugin(model: Optional[PluginModel]) -> Optional[PagingPlugin]:
-    type_ = pkgutil.resolve_name(model.factory)
-    return type_()
+@dataclass(frozen=True)
+class OperationFunctionModel:
+    name: str
+    request_type: Optional[TypeHint]
+    params: list[AttributeModel]
+    response_type: Optional[TypeHint]
+    auth_name: Optional[str]
+    docstr: Optional[str] = None

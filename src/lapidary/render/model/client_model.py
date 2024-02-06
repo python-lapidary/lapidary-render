@@ -1,18 +1,8 @@
-import dataclasses as dc
-from collections.abc import Iterable
-
-from . import ResolverFunc
-from .client_module import ClientModule, get_client_class_module
+from .client_module import get_client_class_module
 from .openapi import OpenApiModel
-from .python.module_path import ModulePath
-from .schema_module import SchemaModule, get_schema_modules
-
-
-@dc.dataclass
-class ClientModel:
-    client: ClientModule
-    package: str
-    schemas: Iterable[SchemaModule]
+from .python import ClientModel, ModulePath
+from .refs import ResolverFunc
+from .schema_module import get_schema_modules
 
 
 def mk_client_model(src: OpenApiModel, root: ModulePath, resolver: ResolverFunc) -> ClientModel:

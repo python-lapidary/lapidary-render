@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from .python import ModulePath
+from .module_path import ModulePath
 
 template_imports = [
     'builtins',

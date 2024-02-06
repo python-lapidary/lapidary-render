@@ -1,30 +1,16 @@
-from dataclasses import dataclass
-from typing import Any, Optional, Union
+import typing
 
-from . import openapi
-from .attribute_annotation import AttributeAnnotationModel, get_attr_annotation
-from .python import ModulePath, TypeHint
-from .python.names import check_name, get_enum_field_name, maybe_mangle_name
-from .python.type_hint import ResolverFunc
-
-
-@dataclass(frozen=True)
-class AttributeModel:
-    name: str
-    annotation: AttributeAnnotationModel
-    deprecated: bool = False
-    """Currently not used"""
-
-    required: Optional[bool] = None
-    """
-    Used for op method params. Required params are rendered before optional, and optional have default value ABSENT
-    """
+from ..names import check_name, get_enum_field_name, maybe_mangle_name
+from . import python
+from .attribute_annotation import get_attr_annotation
+from .openapi import model
+from .refs import ResolverFunc
 
 
 def get_attributes(
-        parent_schema: openapi.Schema, parent_class_name: str, module: ModulePath, resolver: ResolverFunc
-) -> list[AttributeModel]:
-    def is_required(schema: openapi.Schema, prop_name: str) -> bool:
+        parent_schema: model.Schema, parent_class_name: str, module: python.ModulePath, resolver: ResolverFunc
+) -> list[python.AttributeModel]:
+    def is_required(schema: model.Schema, prop_name: str) -> bool:
         return schema.required is not None and prop_name in schema.required
 
     return [
@@ -42,29 +28,29 @@ def get_attributes(
 
 
 def get_attribute(
-        typ: Union[openapi.Schema, openapi.Reference], name: str, alias: str, parent_name: str, required: bool, module: ModulePath,
+        typ: typing.Union[model.Schema, model.Reference], name: str, alias: str, parent_name: str, required: bool, module: python.ModulePath,
         resolve: ResolverFunc
-) -> AttributeModel:
+) -> python.AttributeModel:
     alias = alias or name
     name = maybe_mangle_name(name, False)
     check_name(name, False)
     alias = alias if alias != name else None
 
-    return AttributeModel(
+    return python.AttributeModel(
         name=name,
         annotation=get_attr_annotation(typ, name, parent_name, required, module, resolve, alias=alias),
     )
 
 
-def get_enum_attribute(value: Any, name: Optional[str]) -> AttributeModel:
+def get_enum_attribute(value: typing.Any, name: typing.Optional[str]) -> python.AttributeModel:
     if isinstance(value, str):
         quoted_value = "'" + value.replace("'", r"\'") + "'" if value is not None else None
     else:
         quoted_value = value
-    return AttributeModel(
+    return python.AttributeModel(
         name=maybe_mangle_name(name, False) if name else get_enum_field_name(value),
-        annotation=AttributeAnnotationModel(
-            type=TypeHint.from_type(type(value)),
+        annotation=python.AttributeAnnotationModel(
+            type=python.TypeHint.from_type(type(value)),
             field_props={'default': quoted_value},
         )
     )

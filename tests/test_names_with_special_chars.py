@@ -2,20 +2,15 @@ import logging
 from unittest import TestCase
 
 import yaml
-from lapidary.render.model import get_schema_modules, openapi
-from lapidary.render.model.attribute import AttributeModel
-from lapidary.render.model.attribute_annotation import AttributeAnnotationModel
-from lapidary.render.model.python.module_path import ModulePath
-from lapidary.render.model.python.type_hint import TypeHint
+from lapidary.render.model import openapi, python
 from lapidary.render.model.refs import get_resolver
 from lapidary.render.model.schema_class import get_schema_classes
-from lapidary.render.model.schema_class_model import SchemaClass
-from lapidary.render.model.schema_module import SchemaModule, get_schema_module
+from lapidary.render.model.schema_module import get_schema_module, get_schema_modules
 
 logging.getLogger('lapidary').setLevel(logging.DEBUG)
 
 
-module_path = ModulePath('lapidary_test')
+module_path = python.ModulePath('lapidary_test')
 
 
 class NamingTest(TestCase):
@@ -24,30 +19,30 @@ class NamingTest(TestCase):
             model = openapi.OpenApiModel.model_validate(yaml.safe_load(document_file))
         resolve = get_resolver(model, 'lapidary_test')
 
-        expected = SchemaModule(
+        expected = python.SchemaModule(
             path=module_path,
             imports=[
             ],
             body=[
-                SchemaClass(
+                python.SchemaClass(
                     class_name='NonSpaceNameRandomProperty',
-                    base_type=TypeHint.from_str('pydantic:BaseModel'),
+                    base_type=python.TypeHint.from_str('pydantic:BaseModel'),
                     attributes=[
-                        AttributeModel(
+                        python.AttributeModel(
                             'key',
-                            AttributeAnnotationModel(TypeHint.from_type(str), {}),
+                            python.AttributeAnnotationModel(python.TypeHint.from_type(str), {}),
                         ),
                     ],
                 ),
-                SchemaClass(
+                python.SchemaClass(
                     has_aliases=True,
                     class_name='NonSpaceName',
-                    base_type=TypeHint.from_str('pydantic:BaseModel'),
+                    base_type=python.TypeHint.from_str('pydantic:BaseModel'),
                     attributes=[
-                        AttributeModel(
+                        python.AttributeModel(
                             'random_property',
-                            AttributeAnnotationModel(
-                                TypeHint.from_str('lapidary_test:NonSpaceNameRandomProperty'),
+                            python.AttributeAnnotationModel(
+                                python.TypeHint.from_str('lapidary_test:NonSpaceNameRandomProperty'),
                                 {
                                     'alias': "'random property'",
                                 },

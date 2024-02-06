@@ -1,34 +1,21 @@
-from dataclasses import dataclass
-from typing import Any, Optional
+import typing
 
-from . import openapi
-from .python.module_path import ModulePath
-from .python.names import get_subtype_name
-from .python.type_hint import TypeHint, get_type_hint
-from .refs import ResolverFunc, SchemaOrRef
-
-
-@dataclass(frozen=True)
-class AttributeAnnotationModel:
-    type: TypeHint
-    field_props: dict[str, Any]
-
-    default: Optional[str] = None
-    style: Optional[str] = None
-    explode: Optional[bool] = None
-    allowReserved: Optional[bool] = False
+from ..names import get_subtype_name
+from . import openapi, python
+from .refs import ResolverFunc
+from .type_hint import get_type_hint
 
 
 def get_attr_annotation(
-        typ: SchemaOrRef,
+        typ: openapi.SchemaOrRef,
         name: str,
         parent_name: str,
         required: bool,
-        module: ModulePath,
+        module: python.ModulePath,
         resolve: ResolverFunc,
-        in_: Optional[str] = None,
-        alias: Optional[str] = None
-) -> AttributeAnnotationModel:
+        in_: typing.Optional[str] = None,
+        alias: typing.Optional[str] = None
+) -> python.AttributeAnnotationModel:
     """
     if typ is a schema, then it's a nested schema. Name should be parent_class_name+prop_name, and module is the same.
     Otherwise, it's a reference; schema, module and name should be resolved from it and used to generate type_ref
@@ -61,12 +48,12 @@ def _get_attr_annotation(
         schema: openapi.Schema,
         type_name: str,
         required: bool,
-        module: ModulePath,
+        module: python.ModulePath,
         resolve: ResolverFunc,
-        in_: Optional[str],
-        name: Optional[str],
-        alias: Optional[str],
-) -> AttributeAnnotationModel:
+        in_: typing.Optional[str],
+        name: typing.Optional[str],
+        alias: typing.Optional[str],
+) -> python.attribute.AttributeAnnotationModel:
     field_props = {FIELD_PROPS[k]: getattr(schema, k) for k in schema.model_fields_set if k in FIELD_PROPS}
     for k, v in field_props.items():
         if isinstance(v, str):
@@ -90,14 +77,14 @@ def _get_attr_annotation(
 
     default = None if required else 'lapidary.runtime.absent.ABSENT'
 
-    return AttributeAnnotationModel(
+    return python.attribute.AttributeAnnotationModel(
         type=get_type_hint(schema, module, type_name, required, resolve),
         default=default,
         field_props=field_props
     )
 
 
-def get_direction(read_only: Optional[bool], write_only: Optional[bool]) -> Optional[str]:
+def get_direction(read_only: typing.Optional[bool], write_only: typing.Optional[bool]) -> typing.Optional[str]:
     if read_only:
         if write_only:
             raise ValueError()

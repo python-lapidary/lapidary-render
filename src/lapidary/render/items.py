@@ -1,16 +1,16 @@
 import logging
-from typing import Any, Callable, Iterable, Mapping, TypeAlias, TypeVar
+import typing
 
+from .json_pointer import encode_json_pointer
 from .model import openapi
-from .model.json_pointer import encode_json_pointer
 from .model.refs import resolve_ref
 
 logger = logging.getLogger(__name__)
-Document: TypeAlias = Mapping[str, Any]
-T = TypeVar('T')
+Document: typing.TypeAlias = typing.Mapping[str, typing.Any]
+T = typing.TypeVar('T')
 
 
-def extract_items(model: openapi.OpenApiModel) -> Iterable[str]:
+def extract_items(model: openapi.OpenApiModel) -> typing.Iterable[str]:
     extractor = _ItemListExtractor(model)
     extractor.extract()
     return extractor.known
@@ -29,7 +29,7 @@ class _ItemListExtractor:
             for method, operation in openapi.get_operations(path_item):
                 self._process_model_or_ref(operation, f"#/paths/{encode_json_pointer(path)}/{method}", self._process_operation)
 
-    def _process_model_or_ref(self, model_or_ref: T | openapi.Reference, path: str, process_model: Callable[[T, str], None]) -> None:
+    def _process_model_or_ref(self, model_or_ref: T | openapi.Reference, path: str, process_model: typing.Callable[[T, str], None]) -> None:
         if isinstance(model_or_ref, openapi.Reference):
             path = model_or_ref.ref
             model = resolve_ref(self.model, path)

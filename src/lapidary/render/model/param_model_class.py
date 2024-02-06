@@ -4,26 +4,23 @@ parameters.
 """
 from collections.abc import Iterator
 
-from . import openapi
-from .attribute import AttributeModel
+from ..names import check_name, get_param_python_name, get_subtype_name
+from . import openapi, python
 from .attribute_annotation import get_attr_annotation
-from .python.module_path import ModulePath
-from .python.names import check_name, get_param_python_name, get_subtype_name
 from .refs import ResolverFunc
 from .schema_class import get_schema_classes
-from .schema_class_model import SchemaClass
 
 
 def get_param_attribute(
         param: openapi.Parameter,
         parent_name: str,
-        module: ModulePath,
+        module: python.ModulePath,
         resolver: ResolverFunc,
-) -> AttributeModel:
+) -> python.AttributeModel:
     attr_name = get_param_python_name(param)
     check_name(attr_name)
 
-    return AttributeModel(
+    return python.AttributeModel(
         name=attr_name,
         annotation=get_attr_annotation(
             param.schema_, param.name, parent_name, param.required, module, resolver, param.in_
@@ -34,9 +31,9 @@ def get_param_attribute(
 
 def get_param_model_classes(
         operation: openapi.Operation,
-        module: ModulePath,
+        module: python.ModulePath,
         resolver: ResolverFunc,
-) -> Iterator[SchemaClass]:
+) -> Iterator[python.SchemaClass]:
     # handle sub schemas
     for param in operation.parameters:
         schema = param.schema_

@@ -6,8 +6,7 @@ import typing
 
 import inflection
 
-from .. import openapi
-from .module_path import ModulePath
+from .model import openapi, python
 
 logger = logging.getLogger(__name__)
 
@@ -89,7 +88,7 @@ def get_param_python_name(param: openapi.Parameter) -> str:
     return maybe_mangle_name(param.effective_name, False) + "_" + param.in_[0]
 
 
-def param_model_name(module: ModulePath, op_id: str) -> str:
+def param_model_name(module: python.ModulePath, op_id: str) -> str:
     return (module / PARAM_MODEL).str() + ':' + inflection.camelize(op_id)
 
 
@@ -100,5 +99,5 @@ def get_enum_field_name(value: typing.Any) -> str:
         raise ValueError("Can't determine field name")
 
 
-def get_ops_module(module: ModulePath) -> ModulePath:
+def get_ops_module(module: python.ModulePath) -> python.ModulePath:
     return module / 'ops'
