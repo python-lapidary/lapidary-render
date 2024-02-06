@@ -2,10 +2,7 @@ from . import openapi, python
 from .attribute import get_enum_attribute
 
 
-def get_enum_class(
-        schema: openapi.Schema,
-        name: str
-):
+def get_enum_class(schema: openapi.Schema, name: str):
     enum_fields = []
     for v in schema.enum:
         try:

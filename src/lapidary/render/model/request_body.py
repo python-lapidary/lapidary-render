@@ -10,18 +10,22 @@ from .schema_class import get_schema_classes
 from .type_hint import resolve_type_hint
 
 
-def get_request_body_type(op: openapi.Operation, module: python.ModulePath, resolve: ResolverFunc) -> python.TypeHint | None:
+def get_request_body_type(
+    op: openapi.Operation,
+    module: python.ModulePath,
+    resolve: ResolverFunc,
+) -> python.TypeHint | None:
     mime_json = best_match(op.requestBody.content.keys(), MIME_JSON)
     if mime_json == '':
         return None
     schema = op.requestBody.content[mime_json].schema_
-    return resolve_type_hint(schema, module / REQUEST_BODY / "content" / escape_name(mime_json), "schema", resolve)
+    return resolve_type_hint(schema, module / REQUEST_BODY / 'content' / escape_name(mime_json), 'schema', resolve)
 
 
 def get_request_body_classes(
-        operation: openapi.Operation,
-        module: python.ModulePath,
-        resolve: ResolverFunc,
+    operation: openapi.Operation,
+    module: python.ModulePath,
+    resolve: ResolverFunc,
 ) -> ty.Iterator[python.SchemaClass]:
     rb = operation.requestBody
     if isinstance(rb, openapi.Reference):
@@ -36,7 +40,12 @@ def get_request_body_classes(
     yield from get_schema_classes(schema, request_type_name(operation.operationId), module, resolve)
 
 
-def get_request_body_module(op: openapi.Operation, module: python.ModulePath, resolve: ResolverFunc) -> python.SchemaModule:
+def get_request_body_module(
+    op: openapi.Operation,
+    module: python.ModulePath,
+    resolve: ResolverFunc,
+) -> python.SchemaModule:
     from .schema_module import _get_schema_module
+
     classes = [cls for cls in get_request_body_classes(op, module, resolve)]
     return _get_schema_module(classes, module)

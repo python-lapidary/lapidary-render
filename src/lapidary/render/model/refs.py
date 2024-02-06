@@ -9,7 +9,14 @@ if typing.TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-T = typing.TypeVar('T', 'openapi.Schema', 'openapi.Parameter', 'openapi.SecurityScheme', 'openapi.Response', 'openapi.Operation')
+T = typing.TypeVar(
+    'T',
+    'openapi.Schema',
+    'openapi.Parameter',
+    'openapi.SecurityScheme',
+    'openapi.Response',
+    'openapi.Operation',
+)
 ResolverFunc = typing.Callable[['openapi.Reference', type[T]], tuple[T, 'python.ModulePath', str]]
 
 

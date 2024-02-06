@@ -11,10 +11,10 @@ logger = logging.getLogger(__name__)
 
 
 def get_schema_classes(
-        schema: openapi.Schema,
-        name: str,
-        module: python.ModulePath,
-        resolver: ResolverFunc,
+    schema: openapi.Schema,
+    name: str,
+    module: python.ModulePath,
+    resolver: ResolverFunc,
 ) -> Iterator[python.SchemaClass]:
     # First handle the enum case, so that the model class has suffixed name, and all sub-schemas use it as their prefix
     if schema.enum is not None:
@@ -51,10 +51,10 @@ def get_schema_classes(
 
 
 def get_schema_class(
-        schema: openapi.Schema,
-        name: str,
-        module: python.ModulePath,
-        resolver: ResolverFunc,
+    schema: openapi.Schema,
+    name: str,
+    module: python.ModulePath,
+    resolver: ResolverFunc,
 ) -> python.SchemaClass | None:
     assert isinstance(schema, openapi.Schema)
 
@@ -77,5 +77,7 @@ def get_schema_class(
         has_aliases=any(['alias' in attr.annotation.field_props for attr in attributes]),
         attributes=attributes,
         docstr=schema.description or None,
-        model_type=python.ModelType[schema.lapidary_model_type.name] if schema.lapidary_model_type else python.ModelType.model,
+        model_type=python.ModelType[schema.lapidary_model_type.name]
+        if schema.lapidary_model_type
+        else python.ModelType.model,
     )

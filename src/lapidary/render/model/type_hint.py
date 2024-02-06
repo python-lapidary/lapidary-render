@@ -25,8 +25,13 @@ PRIMITIVE_TYPES = {
 }
 
 
-def get_type_hint(schema: openapi.Schema, module: python.ModulePath, name: str, required: bool,
-                  resolver: ResolverFunc) -> python.TypeHint:
+def get_type_hint(
+    schema: openapi.Schema,
+    module: python.ModulePath,
+    name: str,
+    required: bool,
+    resolver: ResolverFunc,
+) -> python.TypeHint:
     typ = _get_type_hint(schema, module, name, resolver)
 
     if schema.nullable:
@@ -37,7 +42,12 @@ def get_type_hint(schema: openapi.Schema, module: python.ModulePath, name: str, 
     return typ
 
 
-def _get_one_of_type_hint(schema: openapi.Schema, module: python.ModulePath, name: str, resolve: ResolverFunc) -> python.TypeHint:
+def _get_one_of_type_hint(
+    schema: openapi.Schema,
+    module: python.ModulePath,
+    name: str,
+    resolve: ResolverFunc,
+) -> python.TypeHint:
     args = []
     for idx, sub_schema in enumerate(schema.oneOf):
         if isinstance(sub_schema, openapi.Reference):
@@ -60,7 +70,10 @@ def _get_one_of_type_hint(schema: openapi.Schema, module: python.ModulePath, nam
 
 
 def _get_composite_type_hint(
-        component_schemas: list[openapi.Schema | openapi.Reference], module: python.ModulePath, name: str, resolve: ResolverFunc
+    component_schemas: list[openapi.Schema | openapi.Reference],
+    module: python.ModulePath,
+    name: str,
+    resolve: ResolverFunc,
 ) -> python.TypeHint:
     if len(component_schemas) != 1:
         raise NotImplementedError(name, 'Multiple component schemas (allOf, anyOf, oneOf) are currently unsupported.')
@@ -68,7 +81,12 @@ def _get_composite_type_hint(
     return resolve_type_hint(component_schemas[0], module, name, resolve)
 
 
-def _get_type_hint(schema: openapi.Schema, module: python.ModulePath, name: str, resolver: ResolverFunc) -> python.TypeHint:
+def _get_type_hint(
+    schema: openapi.Schema,
+    module: python.ModulePath,
+    name: str,
+    resolver: ResolverFunc,
+) -> python.TypeHint:
     class_name = name.replace(' ', '_')
     if schema.enum:
         return python.TypeHint(module=str(module), name=class_name)
@@ -99,8 +117,12 @@ def _get_type_hint_object(schema: openapi.Schema, module: python.ModulePath, nam
         return python.TypeHint(module=str(module), name=name)
 
 
-def _get_type_hint_array(schema: openapi.Schema, module: python.ModulePath, parent_name: str,
-                         resolver: ResolverFunc) -> python.TypeHint:
+def _get_type_hint_array(
+    schema: openapi.Schema,
+    module: python.ModulePath,
+    parent_name: str,
+    resolver: ResolverFunc,
+) -> python.TypeHint:
     if isinstance(schema.items, openapi.Reference):
         item_schema, module, name = resolver(schema.items, openapi.Schema)
     else:
@@ -110,8 +132,12 @@ def _get_type_hint_array(schema: openapi.Schema, module: python.ModulePath, pare
     return get_type_hint(item_schema, module, name, True, resolver).list_of()
 
 
-def resolve_type_hint(typ: openapi.Schema | openapi.Reference, module: python.ModulePath, name: str,
-                      resolver: ResolverFunc) -> python.TypeHint:
+def resolve_type_hint(
+    typ: openapi.Schema | openapi.Reference,
+    module: python.ModulePath,
+    name: str,
+    resolver: ResolverFunc,
+) -> python.TypeHint:
     if isinstance(typ, openapi.Reference):
         typ, module, name = resolver(typ, openapi.Schema)
     return get_type_hint(typ, module, name, True, resolver)

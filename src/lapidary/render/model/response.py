@@ -7,7 +7,7 @@ from .type_hint import get_type_hint
 
 
 def get_response_map(
-        responses: openapi.Responses, op_name: str, module: python.ModulePath, resolve_ref: ResolverFunc
+    responses: openapi.Responses, op_name: str, module: python.ModulePath, resolve_ref: ResolverFunc
 ) -> python.ResponseMap:
     result = {}
     for resp_code, response in responses.responses.items():
@@ -32,11 +32,11 @@ def get_response_map(
 
 
 def resolve_response(
-        resp_code: str,
-        response: openapi.Response | openapi.Reference,
-        op_name: str,
-        module: python.ModulePath,
-        resolve_ref: ResolverFunc
+    resp_code: str,
+    response: openapi.Response | openapi.Reference,
+    op_name: str,
+    module: python.ModulePath,
+    resolve_ref: ResolverFunc,
 ) -> tuple[openapi.Response, python.ModulePath, str]:
     if isinstance(response, openapi.Reference):
         response, sub_module, sub_name = resolve_ref(response, openapi.Response)
@@ -52,7 +52,11 @@ def get_api_responses(model: openapi.OpenApiModel, module: python.ModulePath) ->
     return get_response_map(model.lapidary_responses_global, 'API', module, resolve_ref)
 
 
-def resolve_type(schema: openapi.Schema | openapi.Reference, module: python.ModulePath, resolve_ref: ResolverFunc) -> type:
+def resolve_type(
+    schema: openapi.Schema | openapi.Reference,
+    module: python.ModulePath,
+    resolve_ref: ResolverFunc,
+) -> type:
     if isinstance(schema, openapi.Reference):
         _, module, name = resolve_ref(schema, openapi.Schema)
     elif schema.lapidary_name is not None:

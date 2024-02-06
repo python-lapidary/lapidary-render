@@ -26,14 +26,10 @@ def get_subtype_name(parent_name: str, schema_name: str) -> str:
 
 def check_name(name: str, check_builtins=True) -> None:
     if (
-            name is None
-            or keyword.iskeyword(name)
-            or
-            (
-                    check_builtins
-                    and name in builtins.__dict__
-            )
-            or not VALID_IDENTIFIER_RE.match(name)
+        name is None
+        or keyword.iskeyword(name)
+        or (check_builtins and name in builtins.__dict__)
+        or not VALID_IDENTIFIER_RE.match(name)
     ):
         raise ValueError('Invalid identifier', name)
 
@@ -44,9 +40,8 @@ def _escape_char(s: str) -> str:
 
 def escape_name(name: str) -> str:
     name = name.replace('u_', 'u' + _escape_char('_'))
-    return (
-            re.sub('[^a-zA-Z]', lambda match: _escape_char(match.group()), name[0])
-            + re.sub('[^a-zA-Z0-9_]', lambda match: _escape_char(match.group()), name[1:])
+    return re.sub('[^a-zA-Z]', lambda match: _escape_char(match.group()), name[0]) + re.sub(
+        '[^a-zA-Z0-9_]', lambda match: _escape_char(match.group()), name[1:]
     )
 
 
@@ -60,10 +55,7 @@ def maybe_mangle_name(name: str, check_builtins=True) -> str:
     if name is None or name == '':
         raise ValueError()
 
-    if (
-            check_builtins and (name in builtins.__dict__)
-            or keyword.iskeyword(name)
-    ):
+    if check_builtins and (name in builtins.__dict__) or keyword.iskeyword(name):
         return name + '_'
     elif not VALID_IDENTIFIER_RE.match(name) or 'u_' in name:
         return escape_name(name)
@@ -77,6 +69,7 @@ def response_type_name(operation_id: str, status_code: str) -> str:
 
 def get_schema_module_name(name):
     from inflection import underscore
+
     return underscore(name)
 
 
@@ -85,7 +78,7 @@ def request_type_name(name):
 
 
 def get_param_python_name(param: openapi.Parameter) -> str:
-    return maybe_mangle_name(param.effective_name, False) + "_" + param.in_[0]
+    return maybe_mangle_name(param.effective_name, False) + '_' + param.in_[0]
 
 
 def param_model_name(module: python.ModulePath, op_id: str) -> str:

@@ -11,7 +11,7 @@ class ModulePath:
     def __init__(self, module: str | Iterable[str]):
         if isinstance(module, str):
             module = module.strip()
-            if module == "" or module.strip() != module:
+            if module == '' or module.strip() != module:
                 raise ValueError()
             parts = module.split(ModulePath._SEP)
         else:

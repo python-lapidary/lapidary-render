@@ -55,7 +55,7 @@ __all__ = [
     'Type2',
     'Type3',
     'Type4',
-    'XML'
+    'XML',
 ]
 
 from .ext import *

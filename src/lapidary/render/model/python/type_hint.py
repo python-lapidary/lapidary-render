@@ -48,11 +48,11 @@ class TypeHint(BaseModel):
 
     def __eq__(self, other) -> bool:
         return (
-                isinstance(other, TypeHint)
-                # generic type hint has args, so either both should be generic or none
-                and isinstance(self, GenericTypeHint) == isinstance(other, GenericTypeHint)
-                and self.module == other.module
-                and self.name == other.name
+            isinstance(other, TypeHint)
+            # generic type hint has args, so either both should be generic or none
+            and isinstance(self, GenericTypeHint) == isinstance(other, GenericTypeHint)
+            and self.module == other.module
+            and self.name == other.name
         )
 
     def __hash__(self) -> int:
@@ -106,12 +106,7 @@ class GenericTypeHint(TypeHint):
         return GenericTypeHint(module='typing', name='Union', args=sorted(args, key=str))
 
     def imports(self) -> list[str]:
-        return [
-            imp
-            for typ in self._types()
-            for imp in TypeHint.imports(typ)
-            if imp != 'builtins'
-        ]
+        return [imp for typ in self._types() for imp in TypeHint.imports(typ) if imp != 'builtins']
 
     def _types(self) -> list[TypeHint]:
         return [self, *[typ for arg in self.args for typ in arg._types()]]
@@ -132,10 +127,10 @@ class GenericTypeHint(TypeHint):
 
     def __eq__(self, other) -> bool:
         return (
-                isinstance(other, GenericTypeHint)
-                and self.module == other.module
-                and self.name == other.name
-                and self.args == other.args
+            isinstance(other, GenericTypeHint)
+            and self.module == other.module
+            and self.name == other.name
+            and self.args == other.args
         )
 
     def __hash__(self) -> int:

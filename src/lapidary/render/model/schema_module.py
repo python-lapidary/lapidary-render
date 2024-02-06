@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_modules_for_components_schemas(
-        schemas: dict[str, openapi.Schema | openapi.Reference], root_package: python.ModulePath, resolver: ResolverFunc
+    schemas: dict[str, openapi.Schema | openapi.Reference], root_package: python.ModulePath, resolver: ResolverFunc
 ) -> list[python.SchemaModule]:
     modules = []
     for name, schema in schemas.items():
@@ -34,14 +34,21 @@ def get_modules_for_components_schemas(
 
 
 def get_schema_module(
-        schema: openapi.Schema, name: str, path: python.ModulePath, resolver: ResolverFunc
+    schema: openapi.Schema,
+    name: str,
+    path: python.ModulePath,
+    resolver: ResolverFunc,
 ) -> python.SchemaModule | None:
     classes = [cls for cls in get_schema_classes(schema, name, path, resolver)]
     if classes:
         return _get_schema_module(classes, path)
 
 
-def _get_schema_module(classes: list[python.SchemaClass], path: python.ModulePath, model_type="schema") -> python.SchemaModule:
+def _get_schema_module(
+    classes: list[python.SchemaClass],
+    path: python.ModulePath,
+    model_type='schema',
+) -> python.SchemaModule:
     imports = {
         imp
         for cls in classes
@@ -50,13 +57,15 @@ def _get_schema_module(classes: list[python.SchemaClass], path: python.ModulePat
         if imp not in template_imports
     }
 
-    imports.update({
-        import_
-        for schema_class in classes
-        for attr in schema_class.attributes
-        for import_ in attr.annotation.type.imports()
-        if import_ not in imports and import_ not in template_imports and import_ != str(path)
-    })
+    imports.update(
+        {
+            import_
+            for schema_class in classes
+            for attr in schema_class.attributes
+            for import_ in attr.annotation.type.imports()
+            if import_ not in imports and import_ not in template_imports and import_ != str(path)
+        }
+    )
     imports = sorted(imports)
 
     return python.SchemaModule(
@@ -67,12 +76,20 @@ def _get_schema_module(classes: list[python.SchemaClass], path: python.ModulePat
     )
 
 
-def get_param_model_classes_module(op: openapi.Operation, module: python.ModulePath, resolve: ResolverFunc) -> python.SchemaModule:
+def get_param_model_classes_module(
+    op: openapi.Operation,
+    module: python.ModulePath,
+    resolve: ResolverFunc,
+) -> python.SchemaModule:
     classes = [cls for cls in get_param_model_classes(op, module, resolve)]
-    return _get_schema_module(classes, module, "param_model")
+    return _get_schema_module(classes, module, 'param_model')
 
 
-def get_schema_modules(model: openapi.OpenApiModel, root_module: python.ModulePath, resolver: ResolverFunc) -> typing.Iterable[python.SchemaModule]:
+def get_schema_modules(
+    model: openapi.OpenApiModel,
+    root_module: python.ModulePath,
+    resolver: ResolverFunc,
+) -> typing.Iterable[python.SchemaModule]:
     if model.components and model.components.schemas:
         logger.info('Render schema modules')
         path = root_module / 'components' / 'schemas'

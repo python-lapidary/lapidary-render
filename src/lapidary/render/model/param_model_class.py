@@ -12,10 +12,10 @@ from .schema_class import get_schema_classes
 
 
 def get_param_attribute(
-        param: openapi.Parameter,
-        parent_name: str,
-        module: python.ModulePath,
-        resolver: ResolverFunc,
+    param: openapi.Parameter,
+    parent_name: str,
+    module: python.ModulePath,
+    resolver: ResolverFunc,
 ) -> python.AttributeModel:
     attr_name = get_param_python_name(param)
     check_name(attr_name)
@@ -30,9 +30,9 @@ def get_param_attribute(
 
 
 def get_param_model_classes(
-        operation: openapi.Operation,
-        module: python.ModulePath,
-        resolver: ResolverFunc,
+    operation: openapi.Operation,
+    module: python.ModulePath,
+    resolver: ResolverFunc,
 ) -> Iterator[python.SchemaClass]:
     # handle sub schemas
     for param in operation.parameters:

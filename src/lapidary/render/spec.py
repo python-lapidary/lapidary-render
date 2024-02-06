@@ -37,12 +37,14 @@ def load_patches(patches: Sequence[Path], cache_path, config: Config) -> JsonPat
         patches = first.glob('**/*.[yamljson]')
 
     logger.info('Load patches')
-    return JsonPatch([
-        op
-        for p in patches
-        if p.suffix in ('yaml', 'yml', 'json')
-        for op in load_yaml_cached(p, cache_path, config.cache)
-    ])
+    return JsonPatch(
+        [
+            op
+            for p in patches
+            if p.suffix in ('yaml', 'yml', 'json')
+            for op in load_yaml_cached(p, cache_path, config.cache)
+        ]
+    )
 
 
 def save_spec(doc: dict, path: Path) -> None:

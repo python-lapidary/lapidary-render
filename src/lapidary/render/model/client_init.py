@@ -8,10 +8,7 @@ from .response import get_api_responses
 def get_client_init(openapi_model: openapi.OpenApiModel, module: python.ModulePath) -> python.ClientInit:
     default_auth = next(iter(openapi_model.security[0].__root__.keys())) if openapi_model.security else None
 
-    base_url = (
-        openapi_model.servers[0].url if openapi_model.servers and openapi_model.servers
-        else None
-    )
+    base_url = openapi_model.servers[0].url if openapi_model.servers and openapi_model.servers else None
 
     auth_models = (
         get_auth_models(openapi_model.components.securitySchemes)
@@ -30,7 +27,9 @@ def get_client_init(openapi_model: openapi.OpenApiModel, module: python.ModulePa
     )
 
 
-def get_global_headers(global_headers: dict[str, str | list[str]] | list[tuple[str, str]] | None) -> list[tuple[str, str]]:
+def get_global_headers(
+    global_headers: dict[str, str | list[str]] | list[tuple[str, str]] | None,
+) -> list[tuple[str, str]]:
     """Normalize headers structure"""
     if global_headers is None:
         return []
@@ -41,6 +40,6 @@ def get_global_headers(global_headers: dict[str, str | list[str]] | list[tuple[s
         if not isinstance(values, typing.Collection) or isinstance(values, str):
             values = [values]
         for value in values:
-            result_headers.append((key, value,))
+            result_headers.append((key, value))
 
     return result_headers

@@ -6,7 +6,11 @@ from .operation_function import get_operation_func
 from .refs import ResolverFunc
 
 
-def get_client_class(openapi_model: openapi.OpenApiModel, root_module: python.ModulePath, resolver: ResolverFunc) -> python.ClientClass:
+def get_client_class(
+    openapi_model: openapi.OpenApiModel,
+    root_module: python.ModulePath,
+    resolver: ResolverFunc,
+) -> python.ClientClass:
     functions = [
         get_operation_func(op, get_ops_module(root_module), resolver)
         for url_path, path_item in openapi_model.paths.paths.items()

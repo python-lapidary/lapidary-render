@@ -23,28 +23,34 @@ class Test(TestCase):
             class_name='alice',
             base_type=python.TypeHint.from_str('pydantic:BaseModel'),
             docstr=None,
-            attributes=[python.AttributeModel(
-                name='bob',
-                annotation=python.AttributeAnnotationModel(
-                    type=python.GenericTypeHint.union_of((python.TypeHint.from_type(str), python.TypeHint.from_type(Absent))),
-                    field_props={},
-                    style=None,
-                    explode=None,
-                    allowReserved=False,
-                    default='lapidary.runtime.absent.ABSENT',
-                ),
-                deprecated=False
-            )]
+            attributes=[
+                python.AttributeModel(
+                    name='bob',
+                    annotation=python.AttributeAnnotationModel(
+                        type=python.GenericTypeHint.union_of(
+                            (python.TypeHint.from_type(str), python.TypeHint.from_type(Absent))
+                        ),
+                        field_props={},
+                        style=None,
+                        explode=None,
+                        allowReserved=False,
+                        default='lapidary.runtime.absent.ABSENT',
+                    ),
+                    deprecated=False,
+                )
+            ],
         )
 
         self.assertEqual(schema, a)
 
     def test_schema_type_name(self):
-        classes = list(get_schema_classes(
-            model.components.schemas['charlie'],
-            'alice',
-            python.ModulePath('test'),
-            get_resolver(model, 'test'),
-        ))
+        classes = list(
+            get_schema_classes(
+                model.components.schemas['charlie'],
+                'alice',
+                python.ModulePath('test'),
+                get_resolver(model, 'test'),
+            )
+        )
         class_names = [cls.class_name for cls in classes]
         self.assertEqual(class_names, ['FirstSchemaClass', 'SecondSchemaClass'])

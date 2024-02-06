@@ -69,7 +69,7 @@ __all__ = [
     'Type2',
     'Type3',
     'Type4',
-    'XML'
+    'XML',
 ]
 
 
@@ -387,7 +387,10 @@ class Schema(ExtendableModel):
     # type == string or type = number or type == integer
     format: str | None = None
 
-    enum: typing.Annotated[list | None, pydantic.Field(min_items=1),] = None
+    enum: typing.Annotated[
+        list | None,
+        pydantic.Field(min_items=1),
+    ] = None
 
     not_: 'typing.Annotated[None | Reference | Schema, pydantic.Field(alias="not")]' = None
     allOf: 'list[Reference | Schema] | None' = None
@@ -410,9 +413,9 @@ class Schema(ExtendableModel):
         pydantic.Field(
             alias='x-lapidary-names',
             default_factory=dict,
-            description="Mapping of keys used in the JSON document and variable names in the generated Python code. "
-                        "Applicable to enum values or object properties."
-        )
+            description='Mapping of keys used in the JSON document and variable names in the generated Python code. '
+            'Applicable to enum values or object properties.',
+        ),
     ] = None
     lapidary_name: typing.Annotated[str | None, pydantic.Field(alias='x-lapidary-type-name')] = None
     lapidary_model_type: typing.Annotated[LapidaryModelType | None, pydantic.Field(alias='x-lapidary-modelType')] = None
@@ -643,11 +646,14 @@ class OpenApiModel(ExtendableModel):
             alias='x-lapidary-headers-global',
             description='Headers to add to every request.',
             default=None,
-        )
+        ),
     ]
 
-    lapidary_responses_global: typing.Annotated[Responses | None, pydantic.Field(
-        alias='x-lapidary-responses-global',
-        description='Base Responses. Values in Responses declared in Operations override values in this one.',
-        default=None,
-    )]
+    lapidary_responses_global: typing.Annotated[
+        Responses | None,
+        pydantic.Field(
+            alias='x-lapidary-responses-global',
+            description='Base Responses. Values in Responses declared in Operations override values in this one.',
+            default=None,
+        ),
+    ]

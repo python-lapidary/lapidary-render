@@ -31,5 +31,6 @@ class SchemaModule(AbstractModule):
     One schema module per schema element directly under #/components/schemas, containing that schema and all non-reference schemas.
     One schema module for inline request and for response body for each operation
     """
+
     body: list[SchemaClass] = dc.field(default_factory=list)
     model_type: str = 'schema'

@@ -17,12 +17,9 @@ repos:
   hooks:
   - id: ruff
     name: ruff check
-    #
     pass_filenames: false
-#  - id: ruff-format
-#    pass_filenames: false
-#    args:
-#    - --check
+  - id: ruff-format
+    pass_filenames: false
 #- repo: local
 #  hooks:
 #  - id: mypy

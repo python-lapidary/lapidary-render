@@ -46,6 +46,10 @@ target-version = "py312"
 extend-select = ['I', 'UP']
 extend-exclude = ['src/lapidary/render/templates/']
 extend-ignore = ['F401', 'F403', 'F405']
+line-length = 120
+
+[tool.ruff.format]
+quote-style = "single"
 
 [tool.mypy]
 mypy_path = "src"

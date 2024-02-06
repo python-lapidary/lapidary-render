@@ -26,7 +26,7 @@ _FIELD_PROPS = dict(
 
 
 def get_operation_param(
-        param: openapi.Parameter | openapi.Reference, module: python.ModulePath, resolve: ResolverFunc
+    param: openapi.Parameter | openapi.Reference, module: python.ModulePath, resolve: ResolverFunc
 ) -> python.attribute.AttributeModel:
     if isinstance(param, openapi.Reference):
         param, module, _ = resolve(param, openapi.Parameter)
@@ -35,7 +35,7 @@ def get_operation_param(
 
 
 def get_operation_param_(
-        param: openapi.Parameter, parent_module: python.ModulePath, resolve: ResolverFunc
+    param: openapi.Parameter, parent_module: python.ModulePath, resolve: ResolverFunc
 ) -> python.attribute.AttributeModel:
     field_props = {k: getattr(param, k, default) for k, default in _FIELD_PROPS.items()}
     param_name = names.param_model_name(param)
@@ -52,7 +52,7 @@ def get_operation_param_(
 
 
 def get_operation_func(
-        op: openapi.Operation, parent: python.ModulePath, resolver: ResolverFunc
+    op: openapi.Operation, parent: python.ModulePath, resolver: ResolverFunc
 ) -> python.OperationFunctionModel:
     if not op.operationId:
         raise ValueError('operationId is required')
@@ -64,14 +64,16 @@ def get_operation_func(
         params_module = module / names.PARAM_MODEL
         for oapi_param in op.parameters:
             if oapi_param.in_ == python.ParamLocation.header.value and oapi_param.name.lower() in (
-                'accept', 'content-type', 'authorization'
+                'accept',
+                'content-type',
+                'authorization',
             ):
                 warnings.warn(f'Header param "{oapi_param.name}" ignored')
                 continue
             try:
                 params.append(get_operation_param(oapi_param, params_module, resolver))
             except Exception:
-                raise Exception("Error while handling parameter", oapi_param.name)
+                raise Exception('Error while handling parameter', oapi_param.name)
 
     request_type = get_request_body_type(op, module, resolver) if op.requestBody else None
 
@@ -106,8 +108,11 @@ def get_response_types(op: openapi.Operation, module: python.ModulePath, resolve
     return get_response_types_(op.responses, module, resolve)
 
 
-def get_response_types_(responses: openapi.Responses, module: python.ModulePath, resolve: ResolverFunc) -> set[
-    python.type_hint.TypeHint]:
+def get_response_types_(
+    responses: openapi.Responses,
+    module: python.ModulePath,
+    resolve: ResolverFunc,
+) -> set[python.type_hint.TypeHint]:
     response_types = set()
     for resp_code, response in responses.responses.items():
         if isinstance(response, openapi.Reference):
@@ -119,8 +124,14 @@ def get_response_types_(responses: openapi.Responses, module: python.ModulePath,
             if isinstance(schema, openapi.Reference):
                 schema, resp_module, name = resolve(schema, openapi.Schema)
             else:
-                name = "schema"
-                resp_module = module / "responses" / names.escape_name(resp_code) / "content" / names.escape_name(_media_type_name)
+                name = 'schema'
+                resp_module = (
+                    module
+                    / 'responses'
+                    / names.escape_name(resp_code)
+                    / 'content'
+                    / names.escape_name(_media_type_name)
+                )
             if schema.lapidary_model_type is openapi.LapidaryModelType.exception:
                 continue
             typ = resolve_type_hint(schema, resp_module, name, resolve)
@@ -130,7 +141,11 @@ def get_response_types_(responses: openapi.Responses, module: python.ModulePath,
 
 
 def get_operation(
-        op: openapi.Operation, method: str, url_path: str, module: ModulePath, resolver: ResolverFunc
+    op: openapi.Operation,
+    method: str,
+    url_path: str,
+    module: ModulePath,
+    resolver: ResolverFunc,
 ) -> OperationModel:
     response_map = get_response_map(op.responses, op.operationId, module, resolver)
 
@@ -142,7 +157,11 @@ def get_operation(
     )
 
 
-def get_operation_functions(openapi_model: openapi.OpenApiModel, module: ModulePath, resolver: ResolverFunc) -> typing.Mapping[str, OperationModel]:
+def get_operation_functions(
+    openapi_model: openapi.OpenApiModel,
+    module: ModulePath,
+    resolver: ResolverFunc,
+) -> typing.Mapping[str, OperationModel]:
     return {
         op.operationId: get_operation(op, method, url_path, module / 'paths' / op.operationId, resolver)
         for url_path, path_item in openapi_model.paths.items()

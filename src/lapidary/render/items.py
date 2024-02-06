@@ -27,9 +27,13 @@ class _ItemListExtractor:
     def _process_operations(self) -> None:
         for path, path_item in self.model.paths.items():
             for method, operation in openapi.get_operations(path_item):
-                self._process_model_or_ref(operation, f"#/paths/{encode_json_pointer(path)}/{method}", self._process_operation)
+                self._process_model_or_ref(
+                    operation, f'#/paths/{encode_json_pointer(path)}/{method}', self._process_operation
+                )
 
-    def _process_model_or_ref(self, model_or_ref: T | openapi.Reference, path: str, process_model: typing.Callable[[T, str], None]) -> None:
+    def _process_model_or_ref(
+        self, model_or_ref: T | openapi.Reference, path: str, process_model: typing.Callable[[T, str], None]
+    ) -> None:
         if isinstance(model_or_ref, openapi.Reference):
             path = model_or_ref.ref
             model = resolve_ref(self.model, path)
@@ -44,28 +48,32 @@ class _ItemListExtractor:
                 self._process_model_or_ref(parameter_or_ref, path, self._process_parameter)
 
         if operation.requestBody:
-            self._process_model_or_ref(operation.requestBody, path + "/requestBody", self._process_request_body)
+            self._process_model_or_ref(operation.requestBody, path + '/requestBody', self._process_request_body)
 
         for response_code, response_or_ref in operation.responses.responses.items():
-            self._process_model_or_ref(response_or_ref, f"{path}/responses/{response_code}", self._process_response)
+            self._process_model_or_ref(response_or_ref, f'{path}/responses/{response_code}', self._process_response)
 
     def _process_parameter(self, parameter: openapi.Parameter, path: str) -> None:
         """Child schemas yield a single item "$path/parameters", references yield separate items each"""
         if parameter.schema_:
             if isinstance(parameter.schema_, openapi.Reference):
-                self._process_schema_or_ref(parameter.schema_, path + "/parameters")
+                self._process_schema_or_ref(parameter.schema_, path + '/parameters')
             else:
-                self._collect_and_continue(path + "/parameters")
+                self._collect_and_continue(path + '/parameters')
 
     def _process_response(self, response: openapi.Response, path: str) -> None:
         if response.content:
             for mime_type, media_type in response.content.items():
-                self._process_schema_or_ref(media_type.schema_, f"{path}/content/{encode_json_pointer(mime_type)}/schema")
+                self._process_schema_or_ref(
+                    media_type.schema_, f'{path}/content/{encode_json_pointer(mime_type)}/schema'
+                )
 
     def _process_request_body(self, request_body: openapi.RequestBody, path: str) -> None:
         if request_body.content:
             for mime_type, media_type in request_body.content.items():
-                self._process_schema_or_ref(media_type.schema_, f"{path}/content/{encode_json_pointer(mime_type)}/schema")
+                self._process_schema_or_ref(
+                    media_type.schema_, f'{path}/content/{encode_json_pointer(mime_type)}/schema'
+                )
 
     def _process_schema_or_ref(self, model: openapi.Schema | openapi.Reference, path: str) -> None:
         """Only references to object schemas produce item. This applies recursively to their properties."""

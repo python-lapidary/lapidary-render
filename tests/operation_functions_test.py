@@ -14,10 +14,9 @@ model = openapi.OpenApiModel.model_validate(doc)
 
 resolve = get_resolver(model, 'lapidary_test')
 module_path = python.ModulePath('lapidary_test')
-union_str_absent = python.GenericTypeHint.union_of((
-    python.TypeHint.from_type(str),
-    python.TypeHint.from_str('lapidary.runtime.absent:Absent')
-))
+union_str_absent = python.GenericTypeHint.union_of(
+    (python.TypeHint.from_type(str), python.TypeHint.from_str('lapidary.runtime.absent:Absent'))
+)
 common_attributes = [
     python.AttributeModel(
         name='a',
@@ -34,7 +33,7 @@ common_attributes = [
             field_props={},
             default='lapidary.runtime.absent.ABSENT',
         ),
-    )
+    ),
 ]
 
 
@@ -45,11 +44,13 @@ class OperationResponseTest(TestCase):
             imports=[
                 'lapidary.runtime.absent',
             ],
-            body=[python.SchemaClass(
-                class_name='Response',
-                base_type=python.TypeHint.from_str('pydantic:BaseModel'),
-                attributes=common_attributes
-            )]
+            body=[
+                python.SchemaClass(
+                    class_name='Response',
+                    base_type=python.TypeHint.from_str('pydantic:BaseModel'),
+                    attributes=common_attributes,
+                )
+            ],
         )
 
         mod = get_response_body_module(model.paths.paths['/schema-response/'].get, module_path, resolve)
@@ -65,11 +66,13 @@ class OperationResponseTest(TestCase):
             imports=[
                 'lapidary.runtime.absent',
             ],
-            body=[python.SchemaClass(
-                class_name='GetSchemaRequestRequest',
-                base_type=python.TypeHint.from_str('pydantic:BaseModel'),
-                attributes=common_attributes
-            )]
+            body=[
+                python.SchemaClass(
+                    class_name='GetSchemaRequestRequest',
+                    base_type=python.TypeHint.from_str('pydantic:BaseModel'),
+                    attributes=common_attributes,
+                )
+            ],
         )
 
         self.assertEqual(expected, mod)

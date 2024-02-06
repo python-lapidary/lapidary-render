@@ -21,8 +21,7 @@ class NamingTest(TestCase):
 
         expected = python.SchemaModule(
             path=module_path,
-            imports=[
-            ],
+            imports=list(),
             body=[
                 python.SchemaClass(
                     class_name='NonSpaceNameRandomProperty',
@@ -50,7 +49,7 @@ class NamingTest(TestCase):
                         ),
                     ],
                 ),
-            ]
+            ],
         )
 
         mod = get_schema_module(model.components.schemas['NonSpaceName'], 'NonSpaceName', module_path, resolve)
@@ -74,12 +73,6 @@ class NamingTest(TestCase):
             _ = [c for c in get_schema_classes(model, 'test', module_path, None)]
 
     def test_null_enum_with_alias(self):
-        model = openapi.Schema(
-            enum=[None],
-            nullable=True,
-            lapidary_names={
-                None: 'null'
-            }
-        )
+        model = openapi.Schema(enum=[None], nullable=True, lapidary_names={None: 'null'})
         result = [c for c in get_schema_classes(model, 'test', module_path, None)]
         self.assertEqual('null', result[0].attributes[0].name)

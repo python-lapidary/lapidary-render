@@ -8,7 +8,7 @@ from .refs import ResolverFunc
 
 
 def get_attributes(
-        parent_schema: model.Schema, parent_class_name: str, module: python.ModulePath, resolver: ResolverFunc
+    parent_schema: model.Schema, parent_class_name: str, module: python.ModulePath, resolver: ResolverFunc
 ) -> list[python.AttributeModel]:
     def is_required(schema: model.Schema, prop_name: str) -> bool:
         return schema.required is not None and prop_name in schema.required
@@ -28,8 +28,13 @@ def get_attributes(
 
 
 def get_attribute(
-        typ: model.Schema | model.Reference, name: str, alias: str, parent_name: str, required: bool, module: python.ModulePath,
-        resolve: ResolverFunc
+    typ: model.Schema | model.Reference,
+    name: str,
+    alias: str,
+    parent_name: str,
+    required: bool,
+    module: python.ModulePath,
+    resolve: ResolverFunc,
 ) -> python.AttributeModel:
     alias = alias or name
     name = maybe_mangle_name(name, False)
@@ -44,7 +49,7 @@ def get_attribute(
 
 def get_enum_attribute(value: typing.Any, name: str | None) -> python.AttributeModel:
     if isinstance(value, str):
-        quoted_value = "'" + value.replace("'", r"\'") + "'" if value is not None else None
+        quoted_value = "'" + value.replace("'", r'\'') + "'" if value is not None else None
     else:
         quoted_value = value
     return python.AttributeModel(
@@ -52,5 +57,5 @@ def get_enum_attribute(value: typing.Any, name: str | None) -> python.AttributeM
         annotation=python.AttributeAnnotationModel(
             type=python.TypeHint.from_type(type(value)),
             field_props={'default': quoted_value},
-        )
+        ),
     )

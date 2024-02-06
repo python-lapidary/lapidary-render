@@ -8,16 +8,15 @@ class TestResponseBody(TestCase):
     def test_get_response_body_classes(self):
         op = openapi.Operation(
             operationId='op',
-            responses=openapi.Responses(**dict(
-                default=openapi.Response(
-                    description='',
-                    content={
-                        'image/png': {},
-                    }
+            responses=openapi.Responses(
+                **dict(
+                    default=openapi.Response(
+                        description='',
+                        content={
+                            'image/png': {},
+                        },
+                    )
                 )
-            ))
+            ),
         )
-        self.assertEqual(
-            [],
-            list(get_response_body_classes(op, python.ModulePath('test'), None))
-        )
+        self.assertEqual([], list(get_response_body_classes(op, python.ModulePath('test'), None)))

@@ -5,14 +5,14 @@ from .type_hint import get_type_hint
 
 
 def get_attr_annotation(
-        typ: openapi.SchemaOrRef,
-        name: str,
-        parent_name: str,
-        required: bool,
-        module: python.ModulePath,
-        resolve: ResolverFunc,
-        in_: str | None = None,
-        alias: str | None = None
+    typ: openapi.SchemaOrRef,
+    name: str,
+    parent_name: str,
+    required: bool,
+    module: python.ModulePath,
+    resolve: ResolverFunc,
+    in_: str | None = None,
+    alias: str | None = None,
 ) -> python.AttributeAnnotationModel:
     """
     if typ is a schema, then it's a nested schema. Name should be parent_class_name+prop_name, and module is the same.
@@ -43,14 +43,14 @@ FIELD_PROPS = {
 
 
 def _get_attr_annotation(
-        schema: openapi.Schema,
-        type_name: str,
-        required: bool,
-        module: python.ModulePath,
-        resolve: ResolverFunc,
-        in_: str | None,
-        name: str | None,
-        alias: str | None,
+    schema: openapi.Schema,
+    type_name: str,
+    required: bool,
+    module: python.ModulePath,
+    resolve: ResolverFunc,
+    in_: str | None,
+    name: str | None,
+    alias: str | None,
 ) -> python.attribute.AttributeAnnotationModel:
     field_props = {FIELD_PROPS[k]: getattr(schema, k) for k in schema.model_fields_set if k in FIELD_PROPS}
     for k, v in field_props.items():
@@ -76,9 +76,7 @@ def _get_attr_annotation(
     default = None if required else 'lapidary.runtime.absent.ABSENT'
 
     return python.attribute.AttributeAnnotationModel(
-        type=get_type_hint(schema, module, type_name, required, resolve),
-        default=default,
-        field_props=field_props
+        type=get_type_hint(schema, module, type_name, required, resolve), default=default, field_props=field_props
     )
 
 

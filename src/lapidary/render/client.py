@@ -23,6 +23,6 @@ def mk_model(model: openapi.OpenApiModel, config: Config) -> RenderModel:
 
 
 def ensure_init_py(pkg_path: Path) -> None:
-    for (dirpath, _, filenames) in os.walk(pkg_path):
+    for dirpath, _, filenames in os.walk(pkg_path):
         if dirpath != str(pkg_path) and '__init__.py' not in filenames:
             (Path(dirpath) / '__init__.py').touch()

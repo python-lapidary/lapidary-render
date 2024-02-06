@@ -24,11 +24,11 @@ logging.getLogger('rybak').setLevel(logging.DEBUG)
 
 
 def init_project(
-        schema_path: Path,
-        project_root: Path,
-        config: Config,
-        render: bool,
-        patches: Collection[Path],
+    schema_path: Path,
+    project_root: Path,
+    config: Config,
+    render: bool,
+    patches: Collection[Path],
 ):
     # (project_root / config.openapi_root).mkdir(parents=True)
     # package_path = project_root / config.gen_root / config.package
@@ -38,7 +38,7 @@ def init_project(
     # if patches:
     #     copy_patches(config, project_root, patches)
 
-    logger.info("Parse OpenAPI schema")
+    logger.info('Parse OpenAPI schema')
     oa_doc = load_spec(schema_path, patches, config)
 
     excludes = [
@@ -46,11 +46,11 @@ def init_project(
     ]
     if not render:
         logger.info('Skip rendering client.')
-        excludes.append("gen")
+        excludes.append('gen')
 
     oa_model = openapi.OpenApiModel.model_validate(oa_doc)
 
-    logger.info("Prepare model")
+    logger.info('Prepare model')
 
     from importlib import resources
 
@@ -60,21 +60,22 @@ def init_project(
     model = mk_client_model(oa_model, python.ModulePath(config.package), get_resolver(oa_model, config.package))
 
     from pprint import pprint
+
     pprint(model)
     # if True:
     #     return
 
-    logger.info("Render project")
+    logger.info('Render project')
     environment = jinja2.Environment(
         loader=jinja2.loaders.PackageLoader('lapidary.render'),
     )
-    environment.globals.update(dict(
-        as_module_path=python.ModulePath,
-        os=os,
-    ))
-    environment.filters.update(dict(
-        toyaml=yaml.safe_dump
-    ))
+    environment.globals.update(
+        dict(
+            as_module_path=python.ModulePath,
+            os=os,
+        )
+    )
+    environment.filters.update(dict(toyaml=yaml.safe_dump))
     render(
         resources.files('lapidary.render') / 'templates',
         project_root,
@@ -83,7 +84,7 @@ def init_project(
             model=model,
             document=oa_doc,
             get_version=importlib.metadata.version,
-            auth_module=get_auth_module(oa_model, python.ModulePath(config.package) / 'auth')
+            auth_module=get_auth_module(oa_model, python.ModulePath(config.package) / 'auth'),
         ),
         excluded=[Path(path) for path in excludes],
     )
@@ -96,12 +97,12 @@ def copy_schema(config: Config, project_root: Path, schema_path: Path):
 
 def copy_patches(config: Config, project_root: Path, patches: Collection[Path]) -> None:
     patches_dir = config.get_patches(project_root)
-    logger.info("Copy patches to %s", patches_dir)
+    logger.info('Copy patches to %s', patches_dir)
     assert patches
 
     if len(patches) > 1:
         if not all(path.is_file() for path in patches):
-            raise ValueError("When passing multiple patch paths, all must be files")
+            raise ValueError('When passing multiple patch paths, all must be files')
 
         patches_dir.mkdir()
 
@@ -114,9 +115,11 @@ def copy_patches(config: Config, project_root: Path, patches: Collection[Path]) 
 
 def update_project(project_root: Path, config: Config) -> None:
     from .spec import load_spec
+
     oa_doc = load_spec(project_root, config)
 
     from . import jinja
+
     jinja.model = openapi.OpenApiModel.parse_obj(oa_doc)
     jinja.document = oa_doc
     jinja.package = config.package
@@ -130,7 +133,7 @@ def update_project(project_root: Path, config: Config) -> None:
             'pyproject.toml',
             'includes',
         ),
-        vcs_ref="HEAD",
+        vcs_ref='HEAD',
         defaults=True,
         overwrite=True,
     )

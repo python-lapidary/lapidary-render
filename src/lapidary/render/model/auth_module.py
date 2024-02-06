@@ -5,14 +5,12 @@ from . import openapi, python
 
 
 def get_auth_module(openapi_model: openapi.OpenApiModel, module: python.ModulePath) -> python.AuthModule | None:
-    schemes = {
-        name: get_auth_param_type(value) for name, value in openapi_model.components.securitySchemes.items()
-    } if openapi_model.components and openapi_model.components.securitySchemes else {}
-    imports = list({
-        import_
-        for scheme in schemes.values()
-        for import_ in scheme.imports()
-    })
+    schemes = (
+        {name: get_auth_param_type(value) for name, value in openapi_model.components.securitySchemes.items()}
+        if openapi_model.components and openapi_model.components.securitySchemes
+        else {}
+    )
+    imports = list({import_ for scheme in schemes.values() for import_ in scheme.imports()})
     return python.AuthModule(
         schemes=schemes,
         imports=imports,
@@ -34,7 +32,9 @@ def get_auth_param_type(security_scheme: openapi.SecurityScheme) -> python.type_
         raise NotImplementedError(scheme.__name__)
 
 
-def get_auth_models(model: dict[str, openapi.Reference | openapi.SecurityScheme]) -> typing.Mapping[str, python.AuthModel]:
+def get_auth_models(
+    model: dict[str, openapi.Reference | openapi.SecurityScheme],
+) -> typing.Mapping[str, python.AuthModel]:
     result: typing.Mapping[str, python.AuthModel] = {name: get_auth_model(scheme) for name, scheme in model.items()}
     return result
 

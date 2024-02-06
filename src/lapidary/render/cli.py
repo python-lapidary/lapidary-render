@@ -4,7 +4,7 @@ from pathlib import Path
 import typer
 
 from .config import Config, load_config
-from .model import python
+from .model import openapi, python
 from .model.client_model import mk_client_model
 from .model.refs import get_resolver
 from .spec import load_spec
@@ -23,15 +23,16 @@ def version():
     """Print version and exit."""
 
     from importlib.metadata import version
+
     package = 'lapidary'
     print(f'{package}, {version(package)}')
 
 
 @app.command()
 def update(
-        project_root: Path = typer.Argument(Path()),
-        format_strict: bool = typer.Option(False, help=HELP_FORMAT_STRICT),
-        cache: bool = True
+    project_root: Path = typer.Argument(Path()),
+    format_strict: bool = typer.Option(False, help=HELP_FORMAT_STRICT),
+    cache: bool = True,
 ):
     """Update existing project. Read configuration from pyproject.yaml ."""
 
@@ -53,16 +54,17 @@ def update(
 
 @app.command()
 def init(
-        schema_path: Path,
-        project_root: Path,
-        package_name: str,
-        patch: list[Path] = typer.Option(
-            None,
-            help="""A JSON Patch file or a directory of thereof. Can be used multiple times,
-                     in which case only files are accepted."""),
-        format_strict: bool = typer.Option(False, help=HELP_FORMAT_STRICT),
-        render: bool = True,
-        cache: bool = True,
+    schema_path: Path,
+    project_root: Path,
+    package_name: str,
+    patch: list[Path] = typer.Option(
+        None,
+        help="""A JSON Patch file or a directory of thereof. Can be used multiple times,
+                     in which case only files are accepted.""",
+    ),
+    format_strict: bool = typer.Option(False, help=HELP_FORMAT_STRICT),
+    render: bool = True,
+    cache: bool = True,
 ):
     """Create a new project from scratch."""
 
@@ -83,25 +85,26 @@ def init(
 
 @app.command()
 def dump_model(
-        schema_path: Path,
-        patch: list[Path] = typer.Option(
-            None,
-            help="""A JSON Patch file or a directory of thereof. Can be used multiple times,
-              in which case only files are accepted."""),
+    schema_path: Path,
+    patch: list[Path] = typer.Option(
+        None,
+        help="""A JSON Patch file or a directory of thereof. Can be used multiple times,
+              in which case only files are accepted.""",
+    ),
 ):
+    from pprint import pprint
+
     config = Config(
         package='package',
         format_strict=False,
         cache=False,
     )
 
-    logger.info("Parse OpenAPI schema")
+    logger.info('Parse OpenAPI schema')
     oa_doc = load_spec(schema_path, patch, config)
-    from .model import openapi
     oa_model = openapi.OpenApiModel.model_validate(oa_doc)
 
-    logger.info("Prepare model")
+    logger.info('Prepare model')
     model = mk_client_model(oa_model, python.ModulePath(config.package), get_resolver(oa_model, config.package))
 
-    from pprint import pprint
     pprint(model)
