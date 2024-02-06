@@ -10,7 +10,7 @@ from .base import (
     ModelWithPatternProperties,
     PropertyPattern,
 )
-from .ext import LapidaryModelType, PluginModel
+from .ext import LapidaryModelType
 
 __all__ = [
     'APIKeySecurityScheme',
@@ -588,8 +588,6 @@ class Operation(ExtendableModel):
     deprecated: typing.Optional[bool] = False
     security: typing.Optional[typing.List[SecurityRequirement]] = None
     servers: typing.Optional[typing.List[Server]] = None
-
-    paging: typing.Annotated[typing.Optional[PluginModel], pydantic.Field(alias='x-lapidary-pagingPlugin')] = None
 
 
 class PathItem(ExtendableModel):

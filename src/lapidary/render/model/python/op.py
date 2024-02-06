@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from typing import Optional, Type
 
 from .attribute import AttributeModel
-from .plugin import PagingPlugin
 from .response import ResponseMap
 from .type_hint import TypeHint
 
@@ -13,7 +12,6 @@ class OperationModel:
     path: str
     params_model: Optional[Type]
     response_map: Optional[ResponseMap]
-    paging: Optional[PagingPlugin]
 
 
 @dataclass(frozen=True)

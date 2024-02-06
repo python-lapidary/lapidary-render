@@ -7,7 +7,6 @@ MimeType = ResponseCode = str
 
 class ReturnTypeInfo(typing.NamedTuple):
     type_: type
-    iterator: bool = False
 
 
 MimeMap = Mapping[MimeType, ReturnTypeInfo]

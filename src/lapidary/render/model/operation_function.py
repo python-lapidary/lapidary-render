@@ -7,7 +7,7 @@ import warnings
 from .. import names
 from . import openapi, python
 from .params import get_param_type
-from .python import ModulePath, OperationModel, PagingPlugin
+from .python import ModulePath, OperationModel
 from .refs import ResolverFunc
 from .request_body import get_request_body_type
 from .response import get_response_map
@@ -125,24 +125,8 @@ def get_response_types_(responses: openapi.Responses, module: python.ModulePath,
                 continue
             typ = resolve_type_hint(schema, resp_module, name, resolve)
 
-            if schema.lapidary_model_type is openapi.LapidaryModelType.iterator:
-                typ = to_iterator(typ)
-
             response_types.add(typ)
     return response_types
-
-
-def to_iterator(type_: python.type_hint.TypeHint) -> python.type_hint.TypeHint:
-    if not isinstance(type_, python.type_hint.GenericTypeHint):
-        return type_
-
-    if type_.origin == python.type_hint.TypeHint.from_str('typing.Union'):
-        return python.type_hint.GenericTypeHint.union_of(tuple(to_iterator(targ) for targ in type_.args))
-
-    if type_.origin == python.type_hint.TypeHint.from_type(list):
-        return python.type_hint.GenericTypeHint(module='collections.abc', type_name='Iterator', args=type_.args)
-
-    return type_
 
 
 def get_operation(
@@ -155,7 +139,6 @@ def get_operation(
         path=re.compile(r'\{([^}]+)\}').sub(r'{p_\1}', url_path),
         params_model=pkgutil.resolve_name(names.param_model_name(module, op.operationId)) if op.parameters else None,
         response_map=response_map,
-        paging=instantiate_plugin(op.paging) if op.paging else None,
     )
 
 
@@ -165,8 +148,3 @@ def get_operation_functions(openapi_model: openapi.OpenApiModel, module: ModuleP
         for url_path, path_item in openapi_model.paths.items()
         for method, op in openapi.get_operations(path_item, True)
     }
-
-
-def instantiate_plugin(model: typing.Optional[openapi.PluginModel]) -> typing.Optional[PagingPlugin]:
-    type_ = pkgutil.resolve_name(model.factory)
-    return type_()
