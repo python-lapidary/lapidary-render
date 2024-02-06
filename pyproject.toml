@@ -32,8 +32,7 @@ pydantic = "^2.5.2"
 python-mimeparse = "^1.6.0"
 PyYAML = "^6.0"
 rybak = {path = "../../rybak", extras = ["jinja"], develop = true}
-tomlkit = "^0.11.4"
-typer = "^0.6.1"
+typer = "^0.9.0"
 
 [tool.poetry.scripts]
 lapidary = "lapidary.render:app"

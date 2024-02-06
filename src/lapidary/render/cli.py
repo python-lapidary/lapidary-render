@@ -1,5 +1,6 @@
 import logging
 from pathlib import Path
+from typing import Annotated
 
 import typer
 
@@ -30,8 +31,8 @@ def version():
 
 @app.command()
 def update(
-    project_root: Path = typer.Argument(Path()),
-    format_strict: bool = typer.Option(False, help=HELP_FORMAT_STRICT),
+    project_root: Annotated[Path, typer.Argument()] = Path(),
+    format_strict: Annotated[bool, typer.Option(help=HELP_FORMAT_STRICT)] = False,
     cache: bool = True,
 ):
     """Update existing project. Read configuration from pyproject.yaml ."""
@@ -57,12 +58,14 @@ def init(
     schema_path: Path,
     project_root: Path,
     package_name: str,
-    patch: list[Path] = typer.Option(
-        None,
-        help="""A JSON Patch file or a directory of thereof. Can be used multiple times,
+    patch: Annotated[
+        list[Path],
+        typer.Option(
+            help="""A JSON Patch file or a directory of thereof. Can be used multiple times,
                      in which case only files are accepted.""",
-    ),
-    format_strict: bool = typer.Option(False, help=HELP_FORMAT_STRICT),
+        ),
+    ] = None,
+    format_strict: Annotated[bool, typer.Option(help=HELP_FORMAT_STRICT)] = False,
     render: bool = True,
     cache: bool = True,
 ):
@@ -86,11 +89,13 @@ def init(
 @app.command()
 def dump_model(
     schema_path: Path,
-    patch: list[Path] = typer.Option(
-        None,
-        help="""A JSON Patch file or a directory of thereof. Can be used multiple times,
+    patch: Annotated[
+        list[Path],
+        typer.Option(
+            help="""A JSON Patch file or a directory of thereof. Can be used multiple times,
               in which case only files are accepted.""",
-    ),
+        ),
+    ] = None,
 ):
     from pprint import pprint
 
