@@ -52,3 +52,7 @@ mypy_path = "src"
 namespace_packages = true
 python_version = "3.12"
 exclude = ["src/lapidary/render/templates"]
+
+[tool.refurb]
+python_version = "3.12"
+ignore = ["115", "126"]

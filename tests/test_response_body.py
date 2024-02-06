@@ -12,7 +12,7 @@ class TestResponseBody(TestCase):
                 default=openapi.Response(
                     description='',
                     content={
-                        'image/png': dict(),
+                        'image/png': {},
                     }
                 )
             ))

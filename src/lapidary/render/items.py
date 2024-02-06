@@ -47,7 +47,7 @@ class _ItemListExtractor:
             self._process_model_or_ref(operation.requestBody, path + "/requestBody", self._process_request_body)
 
         for response_code, response_or_ref in operation.responses.responses.items():
-            self._process_model_or_ref(response_or_ref, f"{path}/responses/{str(response_code)}", self._process_response)
+            self._process_model_or_ref(response_or_ref, f"{path}/responses/{response_code}", self._process_response)
 
     def _process_parameter(self, parameter: openapi.Parameter, path: str) -> None:
         """Child schemas yield a single item "$path/parameters", references yield separate items each"""

@@ -37,7 +37,7 @@ def get_schema_module(
         schema: openapi.Schema, name: str, path: python.ModulePath, resolver: ResolverFunc
 ) -> python.SchemaModule | None:
     classes = [cls for cls in get_schema_classes(schema, name, path, resolver)]
-    if len(classes) > 0:
+    if classes:
         return _get_schema_module(classes, path)
 
 

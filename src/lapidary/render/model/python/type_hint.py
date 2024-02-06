@@ -103,7 +103,7 @@ class GenericTypeHint(TypeHint):
                 args.update(typ.args)
             else:
                 args.add(typ)
-        return GenericTypeHint(module='typing', name='Union', args=sorted(args, key=lambda t: str(t)))
+        return GenericTypeHint(module='typing', name='Union', args=sorted(args, key=str))
 
     def imports(self) -> list[str]:
         return [

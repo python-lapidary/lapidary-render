@@ -63,9 +63,9 @@ def get_operation_func(
     if op.parameters:
         params_module = module / names.PARAM_MODEL
         for oapi_param in op.parameters:
-            if oapi_param.in_ == python.ParamLocation.header.value and oapi_param.name.lower() in [
+            if oapi_param.in_ == python.ParamLocation.header.value and oapi_param.name.lower() in (
                 'accept', 'content-type', 'authorization'
-            ]:
+            ):
                 warnings.warn(f'Header param "{oapi_param.name}" ignored')
                 continue
             try:
@@ -120,7 +120,7 @@ def get_response_types_(responses: openapi.Responses, module: python.ModulePath,
                 schema, resp_module, name = resolve(schema, openapi.Schema)
             else:
                 name = "schema"
-                resp_module = module / "responses" / names.escape_name(str(resp_code)) / "content" / names.escape_name(_media_type_name)
+                resp_module = module / "responses" / names.escape_name(resp_code) / "content" / names.escape_name(_media_type_name)
             if schema.lapidary_model_type is openapi.LapidaryModelType.exception:
                 continue
             typ = resolve_type_hint(schema, resp_module, name, resolve)

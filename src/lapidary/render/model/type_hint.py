@@ -107,8 +107,7 @@ def _get_type_hint_array(schema: openapi.Schema, module: python.ModulePath, pare
         item_schema = schema.items
         name = parent_name + 'Item'
 
-    type_hint = get_type_hint(item_schema, module, name, True, resolver)
-    return type_hint.list_of()
+    return get_type_hint(item_schema, module, name, True, resolver).list_of()
 
 
 def resolve_type_hint(typ: openapi.Schema | openapi.Reference, module: python.ModulePath, name: str,

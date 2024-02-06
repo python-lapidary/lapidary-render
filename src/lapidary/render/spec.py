@@ -46,5 +46,5 @@ def load_patches(patches: Sequence[Path], cache_path, config: Config) -> JsonPat
 
 
 def save_spec(doc: dict, path: Path) -> None:
-    with open(path, "w") as stream:
+    with path.open('w') as stream:
         yaml.safe_dump(doc, stream, allow_unicode=True)

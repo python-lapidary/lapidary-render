@@ -35,7 +35,7 @@ def get_schema_classes(
                     continue
                 prop_name = prop_schema.lapidary_name or schema.lapidary_names.get(prop_name, prop_name)
                 yield from get_schema_classes(prop_schema, get_subtype_name(name, prop_name), module, resolver)
-    for key in ['oneOf', 'anyOf', 'allOf']:
+    for key in ('oneOf', 'anyOf', 'allOf'):
         inheritance_elem = getattr(schema, key)
         if inheritance_elem is not None:
             for idx, sub_schema in enumerate(inheritance_elem):

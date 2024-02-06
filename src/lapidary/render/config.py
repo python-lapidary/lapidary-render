@@ -27,7 +27,7 @@ def load_config(project_root: Path) -> Config:
     if not pyproj_path.exists():
         raise FileNotFoundError(pyproj_path)
 
-    with open(pyproj_path, 'br') as fb:
+    with pyproj_path.open('br') as fb:
         pyproj = tomllib.load(fb)
     pyproj_dict = pyproj['tool']['lapidary']
     return Config(**pyproj_dict)

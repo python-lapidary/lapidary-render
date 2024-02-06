@@ -555,7 +555,7 @@ class MediaType(ExtendableModel):
     @pydantic.model_validator(mode='before')
     @classmethod
     def _validate_example_xor_examples(cls, values: Mapping[str, typing.Any]):
-        if not (isinstance(values, Mapping) or isinstance(values, MediaType)):
+        if not isinstance(values, Mapping | MediaType):
             raise TypeError(type(values))
         if 'examples' in values and 'example' in values:
             raise ValueError('Only either example or examples is allowed')
