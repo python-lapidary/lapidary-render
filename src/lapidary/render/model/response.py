@@ -23,8 +23,7 @@ def get_response_map(
                 resp_schema = media_type.schema_
                 resp_module = sub_module
                 resp_name = sub_name
-            type_ = get_type_hint(resp_schema, resp_module, resp_name, True, resolve_ref).resolve()
-            mime_map[mime] = python.ReturnTypeInfo(type_)
+            mime_map[mime] = get_type_hint(resp_schema, resp_module, resp_name, True, resolve_ref)
 
         result[resp_code] = mime_map
 

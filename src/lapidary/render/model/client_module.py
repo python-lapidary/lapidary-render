@@ -24,7 +24,10 @@ def get_client_class_module(
     ]
 
     global_response_type_imports = {
-        import_ for type_hint in client_class.init_method.response_types for import_ in type_hint.imports()
+        import_
+        for mime_map in client_class.init_method.response_map.values()
+        for type_hint in mime_map.values()
+        for import_ in type_hint.imports()
     }
 
     request_response_type_imports = {

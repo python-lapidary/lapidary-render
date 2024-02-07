@@ -19,7 +19,7 @@ class GlobalResponsesTest(unittest.TestCase):
             python.TypeHint(module='test.components.schemas', name='GSMTasksError'),
         }
 
-        self.assertEqual(expected, module.body.init_method.response_types)
+        self.assertEqual(expected, set(module.body.init_method.response_map['4XX'].values()))
 
     def test_inline_global_responses_in_output_model(self):
         with open('global_responses_inline.yaml') as doc_file:
@@ -33,4 +33,4 @@ class GlobalResponsesTest(unittest.TestCase):
             python.TypeHint(module='test.components.schemas', name='GSMTasksError'),
         }
 
-        self.assertEqual(expected, module.body.init_method.response_types)
+        self.assertEqual(expected, set(module.body.init_method.response_map['4XX'].values()))

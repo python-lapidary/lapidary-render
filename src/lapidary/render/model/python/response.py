@@ -1,13 +1,10 @@
 import typing
 from collections.abc import Mapping
 
+from .type_hint import TypeHint
+
 T = typing.TypeVar('T')
 MimeType = ResponseCode = str
 
-
-class ReturnTypeInfo(typing.NamedTuple):
-    type_: type
-
-
-MimeMap = Mapping[MimeType, ReturnTypeInfo]
+MimeMap = Mapping[MimeType, TypeHint]
 ResponseMap = Mapping[ResponseCode, MimeMap]
