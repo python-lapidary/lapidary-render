@@ -10,7 +10,7 @@ class ExtendableModel(pydantic.BaseModel):
     """Base model class for model classes that accept extension fields, i.e. with keys start with 'x-'"""
 
     model_config = pydantic.ConfigDict(
-        # Allow extra properties, but we doesn't need it.
+        # Allow extra properties, but don't keep them.
         extra='ignore',
         populate_by_name=True,
     )

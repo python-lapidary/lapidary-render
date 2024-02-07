@@ -27,7 +27,6 @@ class ClientClass:
 class ClientModule(AbstractModule):
     body: ClientClass = dc.field()
     model_type = 'client'
-    # path unused
 
 
 @dc.dataclass

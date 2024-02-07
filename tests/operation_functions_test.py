@@ -54,7 +54,6 @@ class OperationResponseTest(TestCase):
         )
 
         mod = get_response_body_module(model.paths.paths['/schema-response/'].get, module_path, resolve)
-        # pp(mod)
 
         self.assertEqual(expected, mod)
 
