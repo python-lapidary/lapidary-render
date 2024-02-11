@@ -1,8 +1,11 @@
 import dataclasses as dc
 import typing
+from collections.abc import Iterable
+from typing import Self
 
 from .auth import AuthModel
 from .module import AbstractModule
+from .module_path import ModulePath
 from .op import OperationFunctionModel
 from .response import ResponseMap
 from .schema_class import SchemaModule
@@ -34,3 +37,14 @@ class ClientModel:
     client: ClientModule
     package: str
     schemas: typing.Iterable[SchemaModule]
+
+    def packages(self: Self) -> Iterable[ModulePath]:
+        packages = {ModulePath(self.package)}
+
+        # for each schema module get its package
+        for schema in self.schemas:
+            path = schema.path
+            while path := path.parent():
+                packages.add(path)
+
+        return packages

@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import pathlib
 import typing
 from collections.abc import Iterable
+from pathlib import PurePath
 
 
 class ModulePath:
@@ -24,8 +24,8 @@ class ModulePath:
         else:
             raise ValueError(module)
 
-    def to_path(self, root: pathlib.Path, is_module=True):
-        path = root.joinpath(*self.parts)
+    def to_path(self, root: PurePath | None = None, is_module=True):
+        path = (root or PurePath()).joinpath(*self.parts)
         if is_module:
             name = self.parts[-1]
             dot_idx = name.rfind('.')
@@ -33,7 +33,9 @@ class ModulePath:
             path = path.with_suffix(suffix)
         return path
 
-    def parent(self) -> typing.Self:
+    def parent(self) -> typing.Self | None:
+        if len(self.parts) == 1:
+            return None
         return ModulePath(self.parts[:-1])
 
     def __truediv__(self, other: str | Iterable[str]):
@@ -46,3 +48,6 @@ class ModulePath:
 
     def __eq__(self, other: typing.Self):
         return self.parts == other.parts
+
+    def __hash__(self) -> int:
+        return hash(self.__str__())
