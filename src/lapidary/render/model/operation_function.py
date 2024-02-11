@@ -1,16 +1,11 @@
 import logging
-import pkgutil
-import re
-import typing
 import warnings
 
-from .. import names
+from ..names import PARAM_MODEL, escape_name, param_model_name
 from . import openapi, python
 from .params import get_param_type
-from .python import ModulePath, OperationModel
 from .refs import ResolverFunc
 from .request_body import get_request_body_type
-from .response import get_response_map
 from .type_hint import resolve_type_hint
 
 logger = logging.getLogger(__name__)
@@ -38,7 +33,7 @@ def get_operation_param_(
     param: openapi.Parameter, parent_module: python.ModulePath, resolve: ResolverFunc
 ) -> python.attribute.AttributeModel:
     field_props = {k: getattr(param, k, default) for k, default in _FIELD_PROPS.items()}
-    param_name = names.param_model_name(param)
+    param_name = param_model_name(param)
 
     return python.attribute.AttributeModel(
         name=param_name,
@@ -61,7 +56,7 @@ def get_operation_func(
 
     params = []
     if op.parameters:
-        params_module = module / names.PARAM_MODEL
+        params_module = module / PARAM_MODEL
         for oapi_param in op.parameters:
             if oapi_param.in_ == python.ParamLocation.header.value and oapi_param.name.lower() in (
                 'accept',
@@ -105,16 +100,8 @@ def get_response_types(op: openapi.Operation, module: python.ModulePath, resolve
     Generate unique collection of types that may be returned by the operation. Skip types that are marked as exceptions as those are raised instead.
     """
 
-    return get_response_types_(op.responses, module, resolve)
-
-
-def get_response_types_(
-    responses: openapi.Responses,
-    module: python.ModulePath,
-    resolve: ResolverFunc,
-) -> set[python.type_hint.TypeHint]:
     response_types = set()
-    for resp_code, response in responses.responses.items():
+    for resp_code, response in op.responses.responses.items():
         if isinstance(response, openapi.Reference):
             response, module, name = resolve(response, openapi.Response)
         if response.content is None:
@@ -125,45 +112,10 @@ def get_response_types_(
                 schema, resp_module, name = resolve(schema, openapi.Schema)
             else:
                 name = 'schema'
-                resp_module = (
-                    module
-                    / 'responses'
-                    / names.escape_name(resp_code)
-                    / 'content'
-                    / names.escape_name(_media_type_name)
-                )
+                resp_module = module / 'responses' / escape_name(resp_code) / 'content' / escape_name(_media_type_name)
             if schema.lapidary_model_type is openapi.LapidaryModelType.exception:
                 continue
             typ = resolve_type_hint(schema, resp_module, name, resolve)
 
             response_types.add(typ)
     return response_types
-
-
-def get_operation(
-    op: openapi.Operation,
-    method: str,
-    url_path: str,
-    module: ModulePath,
-    resolver: ResolverFunc,
-) -> OperationModel:
-    response_map = get_response_map(op.responses, op.operationId, module, resolver)
-
-    return OperationModel(
-        method=method,
-        path=re.compile(r'\{([^}]+)\}').sub(r'{p_\1}', url_path),
-        params_model=pkgutil.resolve_name(names.param_model_name(module, op.operationId)) if op.parameters else None,
-        response_map=response_map,
-    )
-
-
-def get_operation_functions(
-    openapi_model: openapi.OpenApiModel,
-    module: ModulePath,
-    resolver: ResolverFunc,
-) -> typing.Mapping[str, OperationModel]:
-    return {
-        op.operationId: get_operation(op, method, url_path, module / 'paths' / op.operationId, resolver)
-        for url_path, path_item in openapi_model.paths.items()
-        for method, op in openapi.get_operations(path_item, True)
-    }

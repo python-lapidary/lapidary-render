@@ -13,8 +13,8 @@ def get_client_class(
 ) -> python.ClientClass:
     functions = [
         get_operation_func(op, get_paths_module(root_module), resolver)
-        for url_path, path_item in openapi_model.paths.paths.items()
-        for method, op in get_operations(path_item, True)
+        for _, path_item in openapi_model.paths.paths.items()
+        for _, op in get_operations(path_item, True)
     ]
 
     return python.ClientClass(

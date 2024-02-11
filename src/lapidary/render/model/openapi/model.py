@@ -140,16 +140,6 @@ class ExternalDocumentation(ExtendableModel):
     url: str
 
 
-class ExampleXORExamples(pydantic.RootModel):
-    root: typing.Annotated[
-        typing.Any,
-        pydantic.Field(
-            description='Example and examples are mutually exclusive',
-            not_={'required': ['example', 'examples']},
-        ),
-    ]
-
-
 class In(Enum):
     path = 'path'
 

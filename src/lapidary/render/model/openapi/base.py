@@ -23,12 +23,6 @@ class BaseModel(pydantic.BaseModel):
     )
 
 
-class ExtensibleModel(BaseModel):
-    model_config = pydantic.ConfigDict(
-        extra='ignore',
-    )
-
-
 class PropertyPattern:
     def __init__(self, pattern: str) -> None:
         self.pattern = pattern
