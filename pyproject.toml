@@ -43,7 +43,10 @@ pytest = "^7.1.3"
 [tool.ruff]
 target-version = "py312"
 extend-select = ['I', 'UP']
-extend-exclude = ['src/lapidary/render/templates/']
+extend-exclude = [
+    "src/lapidary/render/templates/",
+    "tests/e2e",
+]
 extend-ignore = ['F401', 'F403', 'F405']
 line-length = 120
 
@@ -54,7 +57,10 @@ quote-style = "single"
 mypy_path = "src"
 namespace_packages = true
 python_version = "3.12"
-exclude = ["src/lapidary/render/templates"]
+exclude = [
+    "src/lapidary/render/templates/",
+    "tests/e2e",
+]
 
 [tool.refurb]
 python_version = "3.12"
