@@ -9,7 +9,7 @@ from pathlib import Path
 import jinja2
 import jinja2.loaders
 import yaml
-from rybak.jinja import JinjaRenderer
+from rybak.jinja import JinjaAdapter
 
 from .client import mk_model
 from .config import Config
@@ -52,18 +52,9 @@ def init_project(
 
     logger.info('Prepare model')
 
-    from importlib import resources
-
     from rybak import render
 
-    # model = LapidaryModel(oa_doc, oa_model, config.package)
     model = mk_client_model(oa_model, python.ModulePath(config.package), get_resolver(oa_model, config.package))
-
-    from pprint import pprint
-
-    pprint(model)
-    # if True:
-    #     return
 
     logger.info('Render project')
     environment = jinja2.Environment(
@@ -77,16 +68,16 @@ def init_project(
     )
     environment.filters.update(dict(toyaml=yaml.safe_dump))
     render(
-        resources.files('lapidary.render') / 'templates',
-        project_root,
-        JinjaRenderer(environment),
+        JinjaAdapter(environment),
         dict(
             model=model,
             document=oa_doc,
             get_version=importlib.metadata.version,
             auth_module=get_auth_module(oa_model, python.ModulePath(config.package) / 'auth'),
         ),
-        excluded=[Path(path) for path in excludes],
+        project_root,
+        exclude_extend=excludes,
+        remove_suffixes=['.jinja'],
     )
 
 

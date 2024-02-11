@@ -33,7 +33,7 @@ class ApiClient(lapidary.runtime.ClientBase):
         ...
 
 {% for func in model.client.body.methods | sort(attribute='name') %}
-{%- include 'includes/client/method_operation.py' %}
+{%- include 'includes/client/method_operation.py.jinja' %}
 {%- else %}
     pass
 {%- endfor %}
