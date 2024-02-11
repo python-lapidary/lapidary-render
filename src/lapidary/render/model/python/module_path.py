@@ -36,12 +36,12 @@ class ModulePath:
     def parent(self) -> typing.Self:
         return ModulePath(self.parts[:-1])
 
-    def __truediv__(self, other: str | Iterable[__str__]):
+    def __truediv__(self, other: str | Iterable[str]):
         if isinstance(other, str):
             other = [other]
         return ModulePath([*self.parts, *other])
 
-    def __str__(self):
+    def __repr__(self):
         return ModulePath._SEP.join(self.parts)
 
     def __eq__(self, other: typing.Self):
