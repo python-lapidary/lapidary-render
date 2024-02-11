@@ -92,5 +92,5 @@ def get_enum_field_name(value: typing.Any) -> str:
         raise ValueError("Can't determine field name")
 
 
-def get_ops_module(module: python.ModulePath) -> python.ModulePath:
-    return module / 'ops'
+def get_paths_module(module: python.ModulePath) -> python.ModulePath:
+    return module / 'paths'
