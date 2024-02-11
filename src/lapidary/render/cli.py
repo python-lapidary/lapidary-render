@@ -4,7 +4,7 @@ from typing import Annotated
 
 import typer
 
-from .config import Config, load_config
+from .config import Config
 from .model import openapi, python
 from .model.client_model import mk_client_model
 from .model.refs import get_resolver
@@ -27,30 +27,6 @@ def version():
 
     package = 'lapidary'
     print(f'{package}, {version(package)}')
-
-
-@app.command()
-def update(
-    project_root: Annotated[Path, typer.Argument()] = Path(),
-    format_strict: Annotated[bool, typer.Option(help=HELP_FORMAT_STRICT)] = False,
-    cache: bool = True,
-):
-    """Update existing project. Read configuration from pyproject.yaml ."""
-
-    if not project_root.exists():
-        logger.error(f"'Target '{project_root}' doesn't exists'")
-        raise typer.Exit(code=1)
-
-    from .main import update_project
-
-    try:
-        config = load_config(project_root)
-    except (KeyError, FileNotFoundError):
-        raise SystemExit('Missing Lapidary configuration')
-
-    config.format_strict = format_strict
-    config.cache = cache
-    update_project(project_root, config)
 
 
 @app.command()

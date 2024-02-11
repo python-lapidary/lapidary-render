@@ -3,7 +3,6 @@ import logging
 import os
 import shutil
 from collections.abc import Collection
-from hashlib import sha3_256
 from pathlib import Path
 
 import jinja2
@@ -11,7 +10,6 @@ import jinja2.loaders
 import yaml
 from rybak.jinja import JinjaAdapter
 
-from .client import mk_model
 from .config import Config
 from .model import openapi, python
 from .model.auth_module import get_auth_module
@@ -102,33 +100,3 @@ def copy_patches(config: Config, project_root: Path, patches: Collection[Path]) 
 
     else:
         shutil.copytree(next(iter(patches)), patches_dir)
-
-
-def update_project(project_root: Path, config: Config) -> None:
-    from .spec import load_spec
-
-    oa_doc = load_spec(project_root, config)
-
-    from . import jinja
-
-    jinja.model = openapi.OpenApiModel.parse_obj(oa_doc)
-    jinja.document = oa_doc
-    jinja.package = config.package
-
-    from copier import run_update
-
-    run_update(
-        str(project_root),
-        mk_model(jinja.model, config, calculate_signture(oa_doc)),
-        exclude=(
-            'pyproject.toml',
-            'includes',
-        ),
-        vcs_ref='HEAD',
-        defaults=True,
-        overwrite=True,
-    )
-
-
-def calculate_signture(doc: dict) -> str:
-    return sha3_256(yaml.safe_dump(doc).encode()).hexdigest()
