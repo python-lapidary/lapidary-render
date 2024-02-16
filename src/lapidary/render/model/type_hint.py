@@ -103,13 +103,6 @@ def _get_type_hint(
         raise NotImplementedError
 
 
-def _get_type_hint_object(schema: openapi.Schema, module: python.ModulePath, name: str) -> python.TypeHint:
-    if schema.properties or schema.allOf:
-        return python.TypeHint(module=str(module), name=name)
-    else:
-        return python.TypeHint(module=str(module), name=name)
-
-
 def _get_type_hint_array(
     ctx: Context, stack: Stack, value: openapi.Schema | openapi.Reference[openapi.Schema]
 ) -> python.TypeHint:

@@ -2,26 +2,12 @@ import builtins
 import keyword
 import logging
 import re
-import typing
 
-import inflection
-
-from .model import openapi, python
+from .model import python
 
 logger = logging.getLogger(__name__)
 
-PARAM_MODEL = 'param_model'
-REQUEST_BODY = 'request_body'
-RESPONSE_BODY = 'response_body'
-
 VALID_IDENTIFIER_RE = re.compile(r'^[a-zA-Z]\w*$', re.ASCII)
-
-
-def get_subtype_name(parent_name: str, schema_name: str) -> str:
-    subtype_name = inflection.camelize(parent_name) + inflection.camelize(schema_name)
-    subtype_name = maybe_mangle_name(subtype_name)
-    logger.debug('get name for "%s" / "%s" -> "%s"', parent_name, schema_name, subtype_name)
-    return subtype_name
 
 
 def check_name(name: str, check_builtins=True) -> None:
@@ -63,36 +49,5 @@ def maybe_mangle_name(name: str, check_builtins=True) -> str:
         return name
 
 
-def response_type_name(operation_id: str, status_code: str) -> str:
-    return inflection.camelize(operation_id) + status_code + 'Response'
-
-
-def get_schema_module_name(name):
-    from inflection import underscore
-
-    return underscore(name)
-
-
-def request_type_name(name):
-    return inflection.camelize(name) + 'Request'
-
-
 def get_param_python_name(param: python.Parameter) -> str:
     return maybe_mangle_name(param.name, False) + '_' + param.in_.name[0]
-
-
-def param_model_name(module: python.ModulePath, op_id: str) -> str:
-    return str(module / PARAM_MODEL) + ':' + inflection.camelize(op_id)
-
-
-def get_enum_field_name(value: typing.Any) -> str:
-    if isinstance(value, str | int | float):
-        return maybe_mangle_name(str(value), False)
-    else:
-        raise ValueError("Can't determine field name")
-
-
-def mk_schema_type_hint(pointer: str) -> python.TypeHint:
-    parts = [maybe_mangle_name(part) for part in pointer.split('/')[1:]]
-    module_name = '.'.join(parts[:-1])
-    return python.TypeHint(module=module_name, name=parts[-1])
