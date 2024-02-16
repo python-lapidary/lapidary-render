@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from .attribute import AttributeAnnotationModel, AttributeModel
 from .auth import ApiKeyAuthModel, AuthModel, AuthModule, HttpAuthModel
 from .client import ClientClass, ClientInit, ClientModel, ClientModule

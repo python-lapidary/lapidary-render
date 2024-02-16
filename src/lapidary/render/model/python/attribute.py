@@ -1,9 +1,18 @@
-from __future__ import annotations
-
 import dataclasses as dc
 import typing
 
 from .type_hint import TypeHint
+
+
+@dc.dataclass(frozen=True)
+class AttributeAnnotationModel:
+    type: TypeHint
+    field_props: dict[str, typing.Any]
+
+    default: str | None = None
+    style: str | None = None
+    explode: bool | None = None
+    allowReserved: bool | None = False
 
 
 @dc.dataclass
@@ -17,14 +26,3 @@ class AttributeModel:
     """
     Used for op method params. Required params are rendered before optional, and optional have default value ABSENT
     """
-
-
-@dc.dataclass(frozen=True)
-class AttributeAnnotationModel:
-    type: TypeHint
-    field_props: dict[str, typing.Any]
-
-    default: str | None = None
-    style: str | None = None
-    explode: bool | None = None
-    allowReserved: bool | None = False

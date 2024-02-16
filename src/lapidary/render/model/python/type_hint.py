@@ -1,7 +1,6 @@
-from __future__ import annotations
-
 import importlib
 from collections.abc import Collection
+from typing import Self
 
 from pydantic import BaseModel, Extra
 
@@ -20,12 +19,12 @@ class TypeHint(BaseModel):
         return self.module + '.' + self.name if self.module != 'builtins' else self.name
 
     @staticmethod
-    def from_str(path: str) -> TypeHint:
+    def from_str(path: str) -> 'TypeHint':
         module, name = path.split(':')
         return TypeHint(module=module, name=name)
 
     @staticmethod
-    def from_type(typ: type) -> TypeHint:
+    def from_type(typ: type) -> 'TypeHint':
         if hasattr(typ, '__origin__'):
             raise ValueError('Generic types unsupported', typ)
         module = typ.__module__
@@ -38,13 +37,13 @@ class TypeHint(BaseModel):
     def imports(self) -> list[str]:
         return [self.module]
 
-    def union_with(self, other: TypeHint | None) -> GenericTypeHint:
+    def union_with(self, other: Self | None) -> 'GenericTypeHint':
         return GenericTypeHint(module='typing', name='Union', args=[self, other])
 
-    def list_of(self) -> GenericTypeHint:
+    def list_of(self) -> 'GenericTypeHint':
         return GenericTypeHint(module='builtins', name='list', args=[self])
 
-    def _types(self) -> list[TypeHint]:
+    def _types(self) -> list[Self]:
         return [self]
 
     def __eq__(self, other) -> bool:
@@ -74,7 +73,7 @@ class BuiltinTypeHint(TypeHint):
         return self.full_name()
 
     @staticmethod
-    def from_str(name: str) -> BuiltinTypeHint:
+    def from_str(name: str) -> 'BuiltinTypeHint':
         return BuiltinTypeHint(name=name)
 
     def imports(self) -> list[str]:
@@ -90,14 +89,14 @@ class GenericTypeHint(TypeHint):
     class Config:
         extra = Extra.forbid
 
-    def union_with(self, other: TypeHint) -> GenericTypeHint:
+    def union_with(self, other: TypeHint) -> Self:
         if self.module == 'typing' and self.name == 'Union':
             return GenericTypeHint(module=self.module, name=self.name, args=[*self.args, other])
         else:
             return super().union_with(other)
 
     @staticmethod
-    def union_of(types: tuple[TypeHint, ...]) -> GenericTypeHint:
+    def union_of(types: tuple[TypeHint, ...]) -> 'GenericTypeHint':
         args = set()
         for typ in types:
             if isinstance(typ, GenericTypeHint) and typ.module == 'typing' and typ.name == 'Union':
