@@ -4,6 +4,7 @@ from typing import Self
 
 from .model import (
     ApiKeyAuthModel,
+    AttributeAnnotationModel,
     AttributeModel,
     AuthModel,
     ClientClass,

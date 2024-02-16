@@ -12,7 +12,7 @@ from rybak.jinja import JinjaAdapter
 
 from .config import Config
 from .model import openapi, python
-from .model.client_model import mk_client_model
+from .model.openapi_conv import OpenApi30Converter
 from .spec import load_spec
 
 logger = logging.getLogger(__name__)
@@ -48,7 +48,7 @@ def init_project(
 
     from rybak import render
 
-    model = mk_client_model(oa_model, python.ModulePath(config.package))
+    model = OpenApi30Converter(python.ModulePath(config.package), oa_model).process()
 
     logger.info('Render project')
     environment = jinja2.Environment(

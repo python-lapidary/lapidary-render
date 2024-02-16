@@ -5,8 +5,7 @@ from typing import Annotated
 import typer
 
 from .config import Config
-from .model import openapi, python
-from .model.client_model import mk_client_model
+from .model import OpenApi30Converter, openapi, python
 from .spec import load_spec
 
 HELP_FORMAT_STRICT = 'Use black in slow (strict checking) mode'
@@ -85,6 +84,6 @@ def dump_model(
     oa_model = openapi.OpenApiModel.model_validate(oa_doc)
 
     logger.info('Prepare model')
-    model = mk_client_model(oa_model, python.ModulePath(config.package))
+    model = OpenApi30Converter(python.ModulePath(config.package), oa_model).process()
 
     pprint(model)

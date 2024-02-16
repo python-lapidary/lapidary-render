@@ -1,15 +1,12 @@
 import datetime as dt
 import logging
 import uuid
-from typing import TYPE_CHECKING
 
 from lapidary.runtime.absent import Absent
 
 from . import openapi, python
+from .context import Context
 from .stack import Stack
-
-if TYPE_CHECKING:
-    from .context import Context
 
 logger = logging.getLogger(__name__)
 
