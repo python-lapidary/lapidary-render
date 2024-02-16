@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib
+from collections.abc import Collection
 
 from pydantic import BaseModel, Extra
 
@@ -37,7 +38,7 @@ class TypeHint(BaseModel):
     def imports(self) -> list[str]:
         return [self.module]
 
-    def union_with(self, other: TypeHint) -> GenericTypeHint:
+    def union_with(self, other: TypeHint | None) -> GenericTypeHint:
         return GenericTypeHint(module='typing', name='Union', args=[self, other])
 
     def list_of(self) -> GenericTypeHint:
@@ -138,3 +139,12 @@ class GenericTypeHint(TypeHint):
         for arg in self.args:
             hash_ = (hash_ << 1) + arg.__hash__()
         return hash_
+
+
+def type_hint_or_union(types: Collection[TypeHint]) -> TypeHint | None:
+    if not types:
+        return None
+    if len(types) == 1:
+        return next(iter(types))
+    else:
+        return TypeHint(module='typing', name='Union', types=types)

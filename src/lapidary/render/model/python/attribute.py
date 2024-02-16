@@ -6,7 +6,7 @@ import typing
 from .type_hint import TypeHint
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass
 class AttributeModel:
     name: str
     annotation: AttributeAnnotationModel

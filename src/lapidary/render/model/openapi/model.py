@@ -1,10 +1,14 @@
 import typing
-from collections.abc import Iterable, Mapping
+from collections.abc import Mapping, Sequence
 from enum import Enum
 
 import pydantic
+from typing_extensions import Doc
+
+from lapidary.runtime.model.params import ParamLocation
 
 from .base import (
+    BaseModel,
     ExtendableModel,
     ModelWithAdditionalProperties,
     ModelWithPatternProperties,
@@ -41,6 +45,7 @@ __all__ = [
     'OpenIdConnectSecurityScheme',
     'Operation',
     'Parameter',
+    'ParameterBase',
     'ParameterLocation',
     'ParameterLocationItem',
     'ParameterLocationItem1',
@@ -73,7 +78,7 @@ __all__ = [
 ]
 
 
-class Reference(pydantic.BaseModel):
+class Reference[Target](BaseModel):
     model_config = pydantic.ConfigDict(
         populate_by_name=True,
     )
@@ -336,8 +341,8 @@ class Server(ExtendableModel):
     variables: dict[str, ServerVariable] | None = None
 
 
-def validate_list_unique(v: Iterable[typing.Any]) -> Iterable[typing.Any]:
-    if sorted(v) != sorted(set(v)):
+def validate_list_unique(v: Sequence[typing.Any]) -> Sequence[typing.Any]:
+    if len(set(v)) != len(v):
         raise ValueError('not unique')
     return v
 
@@ -362,7 +367,7 @@ class Schema(ExtendableModel):
     pattern: str | None = None
 
     # type == array
-    items: 'None | Reference | Schema' = None
+    items: 'None | Reference[Schema] | Schema' = None
     maxItems: typing.Annotated[int | None, pydantic.Field(ge=0)] = None
     minItems: typing.Annotated[int | None, pydantic.Field(ge=0)] = 0
     uniqueItems: bool | None = False
@@ -370,8 +375,8 @@ class Schema(ExtendableModel):
     # type == object
     maxProperties: typing.Annotated[int | None, pydantic.Field(ge=0)] = None
     minProperties: typing.Annotated[int | None, pydantic.Field(ge=0)] = 0
-    required: typing.Annotated[list[str] | None, pydantic.Field(min_items=1), UniqueListValidator] = None
-    properties: 'dict[str, Reference | Schema] | None' = None
+    required: typing.Annotated[list[str], pydantic.Field(min_items=1, default_factory=list), UniqueListValidator]
+    properties: 'typing.Annotated[dict[str, Reference[Schema] | Schema], pydantic.Field(default_factory=dict)]'
     additionalProperties: 'Reference | Schema | bool' = True
 
     # type == string or type = number or type == integer
@@ -382,10 +387,10 @@ class Schema(ExtendableModel):
         pydantic.Field(min_items=1),
     ] = None
 
-    not_: 'typing.Annotated[None | Reference | Schema, pydantic.Field(alias="not")]' = None
-    allOf: 'list[Reference | Schema] | None' = None
-    oneOf: 'list[Reference | Schema] | None' = None
-    anyOf: 'list[Reference | Schema] | None' = None
+    not_: 'typing.Annotated[None | Reference[Schema] | Schema, pydantic.Field(alias="not")]' = None
+    allOf: 'list[Reference[Schema] | Schema] | None' = None
+    oneOf: 'list[Reference[Schema] | Schema] | None' = None
+    anyOf: 'list[Reference[Schema] | Schema] | None' = None
 
     description: str | None = None
     default: typing.Any | None = None
@@ -449,86 +454,33 @@ class SecurityScheme(pydantic.RootModel):
     root: APIKeySecurityScheme | HTTPSecurityScheme | OAuth2SecurityScheme | OpenIdConnectSecurityScheme
 
 
-class Header(ExtendableModel):
-    description: str | None
-    required: bool | None = False
-    deprecated: bool | None = False
-    allowEmptyValue: bool | None = False
-    content: 'typing.Annotated[dict[str, MediaType] | None, pydantic.Field(maxProperties=1, minProperties=1)]' = None
-    style: Style | None = 'simple'
-    explode: bool | None = None
-    allowReserved: bool | None = False
-    schema_: typing.Annotated[None | Reference | Schema, pydantic.Field(alias='schema')] = None
-    example: typing.Any | None = None
-    examples: dict[str, Reference | Example] | None = None
-
-    @pydantic.model_validator(mode='before')
-    @staticmethod
-    def check_schema_xor_content(values: Mapping[str, typing.Any]):
-        if 'content' in values:
-            if fields := set(values.keys()).intersection(
-                'style', 'explode', 'allowReserved', 'schema', 'example', 'examples'
-            ):
-                raise ValueError(f'{", ".join(fields)} not allowed when content is present')
-        return values
-
-
-class Response(ExtendableModel):
-    description: str
-    headers: dict[str, Reference | Header] | None = None
-    content: 'dict[str, MediaType] | None' = None
-    links: dict[str, Reference | Link] | None = None
-
-
-class Responses(ExtendableModel, ModelWithPatternProperties):
-    responses: typing.Annotated[
-        dict[str, Reference | Response],
-        pydantic.Field(default_factory=dict, min_items=1),
-        PropertyPattern(r'^[1-5](?:\d{2}|XX)|default$'),
-    ]
-
-
-class Parameter(ExtendableModel):
-    model_config = pydantic.ConfigDict(
-        frozen=True,
-        populate_by_name=True,
-    )
-
-    name: str
-    in_: typing.Annotated[str, pydantic.Field(alias='in')]
+class ParameterBase(ExtendableModel):
+    in_: typing.Annotated[ParamLocation, pydantic.Field(alias='in')]
     description: str | None = None
     required: bool = False
     deprecated: bool = False
     allowEmptyValue: bool = False
+
     content: 'typing.Annotated[dict[str, MediaType] | None, pydantic.Field(maxProperties=1, minProperties=1)]' = None
+
     style: str | None = None
     explode: bool | None = None
     allowReserved: bool | None = False
-    schema_: typing.Annotated[None | Reference | Schema, pydantic.Field(alias='schema')] = None
+    schema_: typing.Annotated[None | Reference[Schema] | Schema, pydantic.Field(alias='schema')] = None
     example: typing.Any | None = None
     examples: dict[str, Reference | Example] | None = None
-
-    lapidary_name: typing.Annotated[str | None, pydantic.Field(alias='x-lapidary-name')] = None
 
     @pydantic.model_validator(mode='before')
     @staticmethod
     def check_schema_xor_content(values: Mapping[str, typing.Any]):
-        if 'content' in values:
-            if fields := set(values.keys()).intersection(
-                'style', 'explode', 'allowReserved', 'schema', 'example', 'examples'
-            ):
-                raise ValueError(f'{", ".join(fields)} not allowed when content is present')
+        if 'content' not in values and 'schema' not in values:
+            raise ValueError('content or schema required')
         return values
 
-    @property
-    def effective_name(self) -> str:
-        return self.lapidary_name or self.name
 
-
-class RequestBody(ExtendableModel):
-    description: str | None = None
-    content: 'dict[str, MediaType]'
-    required: bool | None = False
+class Header(ParameterBase):
+    in_: typing.Annotated[ParamLocation, pydantic.Field(alias='in')] = ParamLocation.header
+    style: Style | None = 'simple'
 
 
 class Encoding(ExtendableModel):
@@ -555,6 +507,40 @@ class MediaType(ExtendableModel):
         return values
 
 
+class Response(ExtendableModel):
+    description: str
+    headers: dict[str, Reference[Header] | Header] | None = None
+    content: 'typing.Annotated[dict[str, MediaType], pydantic.Field(default_factory=dict)]'
+    links: dict[str, Reference | Link] | None = None
+
+
+class Responses(ExtendableModel, ModelWithPatternProperties):
+    responses: typing.Annotated[
+        dict[str, Reference[Response] | Response],
+        pydantic.Field(default_factory=dict, min_items=1),
+        PropertyPattern(r'^[1-5](?:\d{2}|XX)|default$'),
+    ]
+
+
+class Parameter(ParameterBase):
+    name: str
+
+    lapidary_name: typing.Annotated[str | None, pydantic.Field(alias='x-lapidary-name')] = None
+
+    @property
+    def effective_name(self) -> str:
+        return self.lapidary_name or self.name
+
+    def __hash__(self) -> int:
+        return (hash(self.name) << 2) + hash(self.in_)
+
+
+class RequestBody(ExtendableModel):
+    description: str | None = None
+    content: 'dict[str, MediaType]'
+    required: bool | None = False
+
+
 class Operation(ExtendableModel):
     tags: list[str] | None = None
     summary: str | None = None
@@ -562,9 +548,8 @@ class Operation(ExtendableModel):
     externalDocs: ExternalDocumentation | None = None
     operationId: str | None = None
     parameters: typing.Annotated[
-        list[Reference | Parameter] | None,
-        UniqueListValidator,
-    ] = None
+        list[Parameter | Reference[Parameter]], UniqueListValidator, pydantic.Field(default_factory=list)
+    ]
     requestBody: None | Reference | RequestBody = None
     responses: Responses
     callbacks: 'dict[str, Reference | Callback] | None' = None
@@ -573,22 +558,14 @@ class Operation(ExtendableModel):
     servers: list[Server] | None = None
 
 
-class PathItem(ExtendableModel):
+class PathItem(BaseModel):
     summary: str | None = None
     description: str | None = None
     servers: list[Server] | None = None
     parameters: typing.Annotated[
-        list[Reference | Parameter] | None,
-        UniqueListValidator,
-    ] = None
-    get: Operation | None = None
-    put: Operation | None = None
-    post: Operation | None = None
-    delete: Operation | None = None
-    options: Operation | None = None
-    head: Operation | None = None
-    patch: Operation | None = None
-    trace: Operation | None = None
+        list[Parameter | Reference[Parameter]], UniqueListValidator, pydantic.Field(default_factory=list)
+    ]
+    __pydantic_extra__: dict[str, Operation]
 
 
 class Paths(ModelWithPatternProperties):
@@ -600,15 +577,15 @@ class Callback(ModelWithAdditionalProperties):
 
 
 class Components(ExtendableModel):
-    schemas: dict[str, Reference | Schema] | None = None
-    responses: dict[str, Reference | Response] | None = None
-    parameters: dict[str, Reference | Parameter] | None = None
-    examples: dict[str, Reference | Example] | None = None
-    requestBodies: dict[str, Reference | RequestBody] | None = None
-    headers: dict[str, Reference | Header] | None = None
-    securitySchemes: dict[str, Reference | SecurityScheme] | None = None
-    links: dict[str, Reference | Link] | None = None
-    callbacks: dict[str, Reference | Callback] | None = None
+    schemas: dict[str, Reference[Schema] | Schema] | None = None
+    responses: dict[str, Reference[Response] | Response] | None = None
+    parameters: dict[str, Reference[Parameter] | Parameter] | None = None
+    examples: dict[str, Reference[Example] | Example] | None = None
+    requestBodies: dict[str, Reference[RequestBody] | RequestBody] | None = None
+    headers: dict[str, Reference[Header] | Header] | None = None
+    securitySchemes: dict[str, Reference[SecurityScheme] | SecurityScheme] | None = None
+    links: dict[str, Reference[Link] | Link] | None = None
+    callbacks: dict[str, Reference[Callback] | Callback] | None = None
 
 
 class OpenApiModel(ExtendableModel):
@@ -631,11 +608,14 @@ class OpenApiModel(ExtendableModel):
     components: Components | None = None
 
     lapidary_headers_global: typing.Annotated[
-        dict[str, str | list[str]] | list[tuple[str, str]] | None,
+        dict[str, Header],
         pydantic.Field(
             alias='x-lapidary-headers-global',
-            description='Headers to add to every request.',
-            default=None,
+            default_factory=dict,
+        ),
+        Doc(
+            'Headers added to every request. '
+            'Unlike with operation headers, the default value found in the schema is sent over the wire'
         ),
     ]
 
@@ -643,7 +623,8 @@ class OpenApiModel(ExtendableModel):
         Responses | None,
         pydantic.Field(
             alias='x-lapidary-responses-global',
-            description='Base Responses. Values in Responses declared in Operations override values in this one.',
+            description='Common Responses, added to every operation. '
+            'Values in Responses declared in Operations override values in this one.',
             default=None,
         ),
     ]

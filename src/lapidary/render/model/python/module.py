@@ -1,4 +1,6 @@
-from dataclasses import dataclass, field
+import abc
+from collections.abc import Iterable
+from dataclasses import dataclass
 
 from .module_path import ModulePath
 
@@ -11,6 +13,10 @@ template_imports = [
 
 
 @dataclass(frozen=True, kw_only=True)
-class AbstractModule:
+class AbstractModule(abc.ABC):
     path: ModulePath
-    imports: list[str] = field(default_factory=list)
+
+    @property
+    @abc.abstractmethod
+    def imports(self) -> Iterable[str]:
+        pass

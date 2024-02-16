@@ -7,13 +7,12 @@ import typer
 from .config import Config
 from .model import openapi, python
 from .model.client_model import mk_client_model
-from .model.refs import get_resolver
 from .spec import load_spec
 
 HELP_FORMAT_STRICT = 'Use black in slow (strict checking) mode'
 
 logging.basicConfig()
-logging.getLogger('lapidary').setLevel(logging.INFO)
+logging.getLogger('lapidary').setLevel(logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 app = typer.Typer()
@@ -86,6 +85,6 @@ def dump_model(
     oa_model = openapi.OpenApiModel.model_validate(oa_doc)
 
     logger.info('Prepare model')
-    model = mk_client_model(oa_model, python.ModulePath(config.package), get_resolver(oa_model, config.package))
+    model = mk_client_model(oa_model, python.ModulePath(config.package))
 
     pprint(model)

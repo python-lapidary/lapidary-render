@@ -77,8 +77,8 @@ def request_type_name(name):
     return inflection.camelize(name) + 'Request'
 
 
-def get_param_python_name(param: openapi.Parameter) -> str:
-    return maybe_mangle_name(param.effective_name, False) + '_' + param.in_[0]
+def get_param_python_name(param: python.Parameter) -> str:
+    return maybe_mangle_name(param.name, False) + '_' + param.in_.name[0]
 
 
 def param_model_name(module: python.ModulePath, op_id: str) -> str:
@@ -92,5 +92,7 @@ def get_enum_field_name(value: typing.Any) -> str:
         raise ValueError("Can't determine field name")
 
 
-def get_paths_module(module: python.ModulePath) -> python.ModulePath:
-    return module / 'paths'
+def mk_schema_type_hint(pointer: str) -> python.TypeHint:
+    parts = [maybe_mangle_name(part) for part in pointer.split('/')[1:]]
+    module_name = '.'.join(parts[:-1])
+    return python.TypeHint(module=module_name, name=parts[-1])

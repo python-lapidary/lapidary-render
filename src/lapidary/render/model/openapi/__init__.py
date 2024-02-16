@@ -27,6 +27,7 @@ __all__ = [
     'OpenIdConnectSecurityScheme',
     'Operation',
     'Parameter',
+    'ParameterBase',
     'ParameterLocation',
     'ParameterLocationItem',
     'ParameterLocationItem1',
@@ -60,6 +61,5 @@ __all__ = [
 
 from .ext import *
 from .model import *
-from .utils import get_operations
 
 type SchemaOrRef = Schema | Reference

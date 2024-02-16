@@ -1,9 +1,21 @@
 openapi: 3.0.3
 info:
-  title: Lapidary test schema
+  title: test schema
   version: 1.0.0
+components:
+  parameters:
+    comp_param:
+      name: comp_param
+      in: cookie
+      schema:
+        type: string
 paths:
   /simple-response/:
+    parameters:
+    - name: c1
+      schema:
+        type: string
+      in: header
     get:
       operationId: get_simple_response
       responses:
@@ -13,6 +25,31 @@ paths:
             application/json:
               schema:
                 type: string
+      parameters:
+      - name: a
+        schema:
+          type: string
+        in: query
+  /ref-params/:
+    parameters:
+    - name: c2
+      schema:
+        type: string
+      in: header
+    get:
+      operationId: get_ref_params
+      responses:
+        'default':
+          description: test response
+          content:
+            application/json:
+              schema:
+                type: string
+      parameters:
+      - $ref: '#/components/parameters/comp_param'
+      - $ref: '#/paths/~1simple-response~1/parameters/0'
+      - $ref: '#/paths/~1simple-response~1/get/parameters/0'
+
   /schema-response/:
     get:
       operationId: get_schema_response
@@ -55,3 +92,5 @@ paths:
       parameters:
       - name: accept
         in: header
+        schema:
+          type: string

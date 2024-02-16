@@ -1,51 +1,35 @@
-import pkgutil
+from collections.abc import Collection, Iterable, Mapping
 
-from ..names import RESPONSE_BODY, response_type_name
+from mimeparse import parse_media_range
+
 from . import openapi, python
-from .refs import ResolverFunc, get_resolver
-from .type_hint import get_type_hint
+from .context import Context
+from .schema_class import process_schema
+from .stack import Stack
 
 
-def get_response_map(
-    responses: openapi.Responses, op_name: str, module: python.ModulePath, resolve_ref: ResolverFunc
-) -> python.ResponseMap:
-    result = {}
-    for resp_code, response in responses.responses.items():
-        response, sub_module, sub_name = resolve_response(resp_code, response, op_name, module, resolve_ref)
-        if not response.content:
+def process_responses(ctx: Context, stack: Stack, value: openapi.Responses) -> python.TypeHint:
+    types = {
+        typ for code, response in value.responses.items() for typ in process_response(ctx, stack.push(code), response)
+    }
+
+    return python.type_hint_or_union(types)
+
+
+def process_response(
+    ctx: Context, stack: Stack, value: openapi.Response | openapi.Reference[openapi.Response]
+) -> Iterable[python.TypeHint]:
+    if isinstance(value, openapi.Reference):
+        return process_response(ctx, *ctx.resolve_ref(value))
+
+    return process_content(ctx, stack.push('content'), value.content)
+
+
+def process_content(ctx: Context, stack: Stack, self: Mapping[str, openapi.MediaType]) -> Collection[python.TypeHint]:
+    types = set()
+    for mime, media_type in self.items():
+        mime_parsed = parse_media_range(mime)
+        if mime_parsed[:2] != ('application', 'json'):
             continue
-
-        mime_map = {}
-        for mime, media_type in response.content.items():
-            if isinstance(media_type.schema_, openapi.Reference):
-                resp_schema, resp_module, resp_name = resolve_ref(media_type.schema_, openapi.Schema)
-            else:
-                resp_schema = media_type.schema_
-                resp_module = sub_module
-                resp_name = sub_name
-            mime_map[mime] = get_type_hint(resp_schema, resp_module, resp_name, True, resolve_ref)
-
-        result[resp_code] = mime_map
-
-    return result
-
-
-def resolve_response(
-    resp_code: str,
-    response: openapi.Response | openapi.Reference,
-    op_name: str,
-    module: python.ModulePath,
-    resolve_ref: ResolverFunc,
-) -> tuple[openapi.Response, python.ModulePath, str]:
-    if isinstance(response, openapi.Reference):
-        response, sub_module, sub_name = resolve_ref(response, openapi.Response)
-    else:
-        sub_module = module / RESPONSE_BODY
-        response_type_name(op_name, resp_code)
-        sub_name = response_type_name(op_name, resp_code)
-    return response, sub_module, sub_name
-
-
-def get_api_responses(model: openapi.OpenApiModel, module: python.ModulePath) -> python.ResponseMap:
-    resolve_ref = get_resolver(model, str(module))
-    return get_response_map(model.lapidary_responses_global, 'API', module, resolve_ref)
+        types.add(process_schema(ctx, stack.push_all(mime, 'schema'), media_type.schema_))
+    return types

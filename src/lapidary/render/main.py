@@ -12,9 +12,7 @@ from rybak.jinja import JinjaAdapter
 
 from .config import Config
 from .model import openapi, python
-from .model.auth_module import get_auth_module
 from .model.client_model import mk_client_model
-from .model.refs import get_resolver
 from .spec import load_spec
 
 logger = logging.getLogger(__name__)
@@ -39,9 +37,7 @@ def init_project(
     logger.info('Parse OpenAPI schema')
     oa_doc = load_spec(schema_path, patches, config)
 
-    excludes = [
-        'includes',
-    ]
+    excludes = ['includes', 'gen/{{model.package}}/auth.py.jinja']
     if not render:
         logger.info('Skip rendering client.')
         excludes.append('gen')
@@ -52,7 +48,7 @@ def init_project(
 
     from rybak import render
 
-    model = mk_client_model(oa_model, python.ModulePath(config.package), get_resolver(oa_model, config.package))
+    model = mk_client_model(oa_model, python.ModulePath(config.package))
 
     logger.info('Render project')
     environment = jinja2.Environment(
@@ -71,7 +67,7 @@ def init_project(
             model=model,
             document=oa_doc,
             get_version=importlib.metadata.version,
-            auth_module=get_auth_module(oa_model, python.ModulePath(config.package) / 'auth'),
+            auth_module=None,
         ),
         project_root,
         exclude_extend=excludes,

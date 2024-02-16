@@ -1,5 +1,6 @@
 import dataclasses as dc
 import enum
+from collections.abc import Iterable
 
 from .attribute import AttributeModel
 from .module import AbstractModule
@@ -24,6 +25,12 @@ class SchemaClass:
     attributes: list[AttributeModel] = dc.field(default_factory=list)
     model_type: ModelType = ModelType.model
 
+    @property
+    def imports(self) -> Iterable[str]:
+        yield from self.base_type.imports()
+        for prop in self.attributes:
+            yield from prop.annotation.type.imports()
+
 
 @dc.dataclass(frozen=True, kw_only=True)
 class SchemaModule(AbstractModule):
@@ -34,3 +41,8 @@ class SchemaModule(AbstractModule):
 
     body: list[SchemaClass] = dc.field(default_factory=list)
     model_type: str = 'schema'
+
+    @property
+    def imports(self) -> Iterable[str]:
+        for cls in self.body:
+            yield from cls.imports

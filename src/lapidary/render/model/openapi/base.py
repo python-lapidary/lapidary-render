@@ -6,20 +6,20 @@ import pydantic
 from ...pydantic_utils import find_annotation_optional
 
 
-class ExtendableModel(pydantic.BaseModel):
+class BaseModel(pydantic.BaseModel):
+    model_config = pydantic.ConfigDict(
+        populate_by_name=True,
+        extra='allow',
+        frozen=True,
+    )
+
+
+class ExtendableModel(BaseModel):
     """Base model class for model classes that accept extension fields, i.e. with keys start with 'x-'"""
 
     model_config = pydantic.ConfigDict(
         # Allow extra properties, but don't keep them.
         extra='ignore',
-        populate_by_name=True,
-    )
-
-
-class BaseModel(pydantic.BaseModel):
-    model_config = pydantic.ConfigDict(
-        populate_by_name=True,
-        extra='allow',
     )
 
 
