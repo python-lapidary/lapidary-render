@@ -49,6 +49,8 @@ extend-exclude = [
 ]
 extend-ignore = ['F401', 'F403', 'F405']
 line-length = 120
+namespace-packages = ["lapidary/render"]
+src = ["src"]
 
 [tool.ruff.format]
 quote-style = "single"
