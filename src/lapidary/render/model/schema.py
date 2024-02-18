@@ -1,17 +1,26 @@
+import datetime as dt
+import itertools
 import logging
+import uuid
+from collections import defaultdict
+from collections.abc import Callable, Iterable, MutableMapping
 
-from .. import names
+from lapidary.runtime.absent import Absent
+
+from .. import json_pointer, names
 from . import openapi, python
-from .context import Context
 from .stack import Stack
-from .type_hint import get_type_hint
+
+type ResolveRefFn[Target] = Callable[[openapi.Reference[Target]], tuple[Stack, Target]]
 
 logger = logging.getLogger(__name__)
 
 
 class OpenApi30SchemaConverter:
-    def __init__(self, ctx: Context) -> None:
-        self.ctx = ctx
+    def __init__(self, root_package: python.ModulePath, resolve_ref: ResolveRefFn) -> None:
+        self.root_package = root_package
+        self.resolve_ref = staticmethod(resolve_ref)
+        self.schema_types: MutableMapping[Stack, python.SchemaClass] = {}
 
     def process_schema(
         self,
@@ -21,14 +30,14 @@ class OpenApi30SchemaConverter:
         logger.debug('process schema %s', stack)
 
         if isinstance(value, openapi.Reference):
-            return self.process_schema(*self.ctx.resolve_ref(value))
+            return self.process_schema(*self.resolve_ref(value))
 
         assert isinstance(value, openapi.Schema)
 
         name = value.lapidary_name or stack.top()
 
         path = str(stack)
-        if path not in self.ctx.schema_types:
+        if path not in self.schema_types:
             base_type = (
                 python.TypeHint.from_type(Exception)
                 if value.lapidary_model_type is openapi.LapidaryModelType.exception
@@ -41,7 +50,7 @@ class OpenApi30SchemaConverter:
                 for prop_name, prop_schema in value.properties.items()
             ]
 
-            self.ctx.schema_types[stack] = python.SchemaClass(
+            self.schema_types[stack] = python.SchemaClass(
                 class_name=name,
                 base_type=base_type,
                 allow_extra=value.additionalProperties is not False,
@@ -53,7 +62,7 @@ class OpenApi30SchemaConverter:
                 else python.ModelType.model,
             )
 
-        return get_type_hint(self.ctx, stack, value)
+        return self.get_type_hint(stack, value)
 
     def process_property(
         self,
@@ -80,7 +89,7 @@ class OpenApi30SchemaConverter:
         Otherwise, it's a reference; schema, module and name should be resolved from it and used to generate type_ref
         """
         if isinstance(value, openapi.Reference):
-            return self.get_attr_annotation(*self.ctx.resolve_ref(value))
+            return self.get_attr_annotation(*self.resolve_ref(value))
 
         name = stack.top()
 
@@ -108,9 +117,128 @@ class OpenApi30SchemaConverter:
         default = None if value.required else 'lapidary.runtime.absent.ABSENT'
 
         return python.AttributeAnnotationModel(
-            type=get_type_hint(self.ctx, stack, value), default=default, field_props=field_props
+            type=self.get_type_hint(stack, value), default=default, field_props=field_props
         )
 
+    def get_type_hint(
+        self,
+        stack: Stack,
+        value: openapi.Schema | openapi.Reference[openapi.Schema],
+    ) -> python.TypeHint:
+        if isinstance(value, openapi.Reference):
+            return self.get_type_hint(*self.resolve_ref(value))
+
+        typ = self._get_type_hint(stack, value)
+
+        required = True  # TODO
+
+        if value.nullable:
+            typ = typ.union_with(python.BuiltinTypeHint.from_str('None'))
+        if not required:
+            typ = typ.union_with(python.TypeHint.from_type(Absent))
+
+        return typ
+
+    def _get_one_of_type_hint(
+        self,
+        stack: Stack,
+        schema: openapi.Schema,
+    ) -> python.TypeHint:
+        args = []
+        for idx, sub_schema in enumerate(schema.oneOf):
+            if isinstance(sub_schema, openapi.Reference):
+                stack, sub_schema = self.resolve_ref(sub_schema)
+
+            type_hint = self.get_type_hint(stack.push(idx), sub_schema)
+            args.append(type_hint)
+
+        return python.GenericTypeHint(
+            module='typing',
+            name='Union',
+            args=tuple(args),
+        )
+
+    def _get_composite_type_hint(
+        self,
+        stack: Stack,
+        schemas: list[openapi.Schema | openapi.Reference],
+    ) -> python.TypeHint:
+        if len(schemas) != 1:
+            raise NotImplementedError(
+                stack, 'Multiple component schemas (allOf, anyOf, oneOf) are currently unsupported.'
+            )
+
+        return self.get_type_hint(stack, schemas[0])
+
+    def _get_type_hint(
+        self,
+        stack: Stack,
+        value: openapi.Schema,
+    ) -> python.TypeHint:
+        match value:
+            case openapi.Schema(oneOf=x) if x is not None:
+                pass
+        if value.type == openapi.Type.string:
+            return python.TypeHint.from_type(STRING_FORMATS.get(value.format, str))
+        elif value.type in PRIMITIVE_TYPES:
+            return python.BuiltinTypeHint.from_str(PRIMITIVE_TYPES[value.type].__name__)
+        elif value.type == openapi.Type.object:
+            return resolve_type_hint(str(self.root_package), stack)
+        elif value.type == openapi.Type.array:
+            return self._get_type_hint_array(stack.push('items'), value.items)
+        elif value.anyOf:
+            return self._get_one_of_type_hint(stack, value)
+        elif value.oneOf:
+            return self._get_one_of_type_hint(stack, value)
+        elif value.allOf:
+            return self._get_composite_type_hint(stack.push('allOf'), value.allOf)
+        elif value.type is None:
+            return python.TypeHint.from_str('typing:Any')
+        else:
+            raise NotImplementedError
+
+    def _get_type_hint_array(
+        self, stack: Stack, value: openapi.Schema | openapi.Reference[openapi.Schema]
+    ) -> python.TypeHint:
+        if isinstance(value, openapi.Reference):
+            return self._get_type_hint_array(*self.resolve_ref(value))
+
+        return self.get_type_hint(stack, value).list_of()
+
+    def resolve_type_hint(
+        self, stack: Stack, value: openapi.Schema | openapi.Reference[openapi.Schema]
+    ) -> python.TypeHint:
+        if isinstance(value, openapi.Reference):
+            return self.resolve_type_hint(*self.resolve_ref(value))
+        return self.get_type_hint(stack, value)
+
+    @property
+    def schema_modules(self) -> Iterable[python.SchemaModule]:
+        modules: dict[python.ModulePath, list[python.SchemaClass]] = defaultdict(list)
+        for pointer, schema_class in self.schema_types.items():
+            hint = resolve_type_hint(str(self.root_package), pointer)
+            modules[python.ModulePath(hint.module)].append(schema_class)
+        return [
+            python.SchemaModule(
+                path=module,
+                body=classes,
+            )
+            for module, classes in modules.items()
+        ]
+
+
+STRING_FORMATS = {
+    'uuid': uuid.UUID,
+    'date': dt.date,
+    'date-time': dt.datetime,
+}
+
+PRIMITIVE_TYPES = {
+    openapi.Type.string: str,
+    openapi.Type.integer: int,
+    openapi.Type.number: float,
+    openapi.Type.boolean: bool,
+}
 
 FIELD_PROPS = {
     'multipleOf': 'multiple_of',
@@ -139,3 +267,19 @@ def get_direction(read_only: bool | None, write_only: bool | None) -> str | None
             return 'lapidary.runtime.ParamDirection.write'
         else:
             return None
+
+
+def resolve_type_hint(root_package: str, pointer: str | Stack) -> python.TypeHint:
+    if isinstance(pointer, Stack):
+        parts = pointer.path[1:]
+    else:
+        parts = pointer.split('/')[1:]
+    module_name = '.'.join(
+        itertools.chain(
+            (root_package,), [names.maybe_mangle_name(json_pointer.encode_json_pointer(part)) for part in parts[:-1]]
+        )
+    )
+    top: str | int = parts[-1]
+    if isinstance(top, int):
+        top = parts[-2] + str(top)
+    return python.TypeHint(module=module_name, name=top)

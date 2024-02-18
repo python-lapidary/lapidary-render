@@ -1,6 +1,7 @@
 import typing
 from collections.abc import Mapping, Sequence
 from enum import Enum
+from typing import Self, cast
 
 import pydantic
 from typing_extensions import Doc
@@ -76,6 +77,8 @@ __all__ = [
     'Type4',
     'XML',
 ]
+
+from ...json_pointer import decode_json_pointer
 
 
 class Reference[Target](BaseModel):
@@ -628,3 +631,39 @@ class OpenApiModel(ExtendableModel):
             default=None,
         ),
     ]
+
+    def resolve_ref[Target](self, ref: Reference[Target]) -> tuple[str, Target]:
+        pointer = ref.ref
+        target = self._resolve_ref(pointer)
+        stack = [pointer]
+
+        while isinstance(target, Reference):
+            pointer = target.ref
+            if pointer in stack:
+                raise ValueError('Circular references', stack, pointer)
+            else:
+                stack.append(pointer)
+            target = self._resolve_ref(pointer)
+        return pointer, cast(Target, target)
+
+    def _resolve_ref[Target](self: Self, ref_str: str) -> Target | Reference[Target]:
+        """Resolve ref without recursion"""
+        obj: typing.Any = self
+        for name in ref_str.split('/')[1:]:
+            name = decode_json_pointer(name)
+            obj = _resolve_name(obj, name)
+        return obj
+
+
+def _resolve_name(src: typing.Any, name: str) -> typing.Any:
+    if isinstance(src, Paths) and name in src.paths:
+        src = src.paths
+    elif isinstance(src, PathItem) and name in src.model_extra:
+        src = src.model_extra
+
+    if isinstance(src, Sequence):
+        return src[int(name)]
+    elif isinstance(src, Mapping):
+        return src[name]
+    else:
+        return getattr(src, name)

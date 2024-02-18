@@ -1,11 +1,11 @@
 import logging
 from collections.abc import Collection, Iterable, Mapping
+from typing import cast
 
 from mimeparse import parse_media_range
 
 from .. import names
 from . import openapi, python
-from .context import Context
 from .python import type_hint_or_union
 from .schema import OpenApi30SchemaConverter
 from .stack import Stack
@@ -20,20 +20,28 @@ class OpenApi30Converter:
         source: openapi.OpenApiModel,
         schema_converter: OpenApi30SchemaConverter | None = None,
     ):
+        self.root_package = root_package
+        self.global_headers: dict[str, python.Parameter] = {}
         self.src = source
-        self.ctx = Context(source, str(root_package))
-        self.schema_converter = schema_converter or OpenApi30SchemaConverter(self.ctx)
+
+        self.schema_converter = schema_converter or OpenApi30SchemaConverter(self.root_package, self.resolve_ref)
+
+        self.target = python.ClientModel(
+            client=python.ClientModule(
+                path=root_package,
+                body=python.ClientClass(init_method=python.ClientInit()),
+            ),
+            package=str(root_package),
+        )
 
     def process(self) -> python.ClientModel:
         stack = Stack()
 
-        self.process_global_responses(
-            stack.push('x-lapidary-responses-global'), self.ctx.source.lapidary_responses_global
-        )
-        self.process_global_headers(stack.push('x-lapidary-headers-global'), self.ctx.source.lapidary_headers_global)
-        self.process_paths(stack.push('paths'), self.ctx.source.paths)
-
-        return self.ctx.build_target()
+        self.process_global_responses(stack.push('x-lapidary-responses-global'), self.src.lapidary_responses_global)
+        self.process_global_headers(stack.push('x-lapidary-headers-global'), self.src.lapidary_headers_global)
+        self.process_paths(stack.push('paths'), self.src.paths)
+        self.target.schemas.extend(self.schema_converter.schema_modules)
+        return self.target
 
     def process_global_headers(self, stack: Stack, value: Mapping[str, openapi.Header]) -> None:
         logger.debug('Process global headers %s', stack)
@@ -41,14 +49,14 @@ class OpenApi30Converter:
             return
 
         for header_name, header in value.items():
-            self.ctx.global_headers[header_name] = self.process_parameter(stack.push(header_name), header)
+            self.global_headers[header_name] = self.process_parameter(stack.push(header_name), header)
 
     def process_global_responses(self, stack: Stack, value: openapi.Responses) -> None:
         logger.debug('Process global responses %s', stack)
         if not value:
             return
 
-        self.ctx.global_responses = {
+        self.global_responses = {
             self.process_response(stack.push(code), response) for code, response in value.responses.items()
         }
 
@@ -60,7 +68,7 @@ class OpenApi30Converter:
         logger.debug('process_parameter %s', stack)
 
         if isinstance(value, openapi.Reference):
-            return self.process_parameter(*self.ctx.resolve_stack(value.ref))
+            return self.process_parameter(*self.resolve_ref(value))
         if not isinstance(value, openapi.ParameterBase):
             raise TypeError(f'Expected Parameter object at {stack}, got {type(value).__name__}.')
         if value.schema_:
@@ -122,7 +130,7 @@ class OpenApi30Converter:
         value: openapi.Response | openapi.Reference[openapi.Response],
     ) -> Iterable[python.TypeHint]:
         if isinstance(value, openapi.Reference):
-            return self.process_response(*self.ctx.resolve_ref(value))
+            return self.process_response(*self.resolve_ref(value))
 
         return self.process_content(stack.push('content'), value.content)
 
@@ -161,7 +169,7 @@ class OpenApi30Converter:
             auth_name=None,
         )
 
-        self.ctx.target.client.body.methods.append(model)
+        self.target.client.body.methods.append(model)
 
     def _mk_params(
         self,
@@ -176,3 +184,8 @@ class OpenApi30Converter:
             param = self.process_parameter(stack.push(idx), oa_param)
             params[names.get_param_python_name(param)] = param
         return params
+
+    def resolve_ref[Target](self, ref: openapi.Reference[Target]) -> tuple[Stack, Target]:
+        """Resolve reference to OpenAPI object and its direct path."""
+        pointer, value = self.src.resolve_ref(ref)
+        return Stack.from_str(pointer), cast(Target, value)
