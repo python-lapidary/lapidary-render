@@ -632,7 +632,7 @@ class OpenApiModel(ExtendableModel):
         ),
     ]
 
-    def resolve_ref[Target](self, ref: Reference[Target]) -> tuple[str, Target]:
+    def resolve_ref[Target](self, ref: Reference[Target]) -> tuple[Target, str]:
         pointer = ref.ref
         target = self._resolve_ref(pointer)
         stack = [pointer]
@@ -644,7 +644,7 @@ class OpenApiModel(ExtendableModel):
             else:
                 stack.append(pointer)
             target = self._resolve_ref(pointer)
-        return pointer, cast(Target, target)
+        return cast(Target, target), pointer
 
     def _resolve_ref[Target](self: Self, ref_str: str) -> Target | Reference[Target]:
         """Resolve ref without recursion"""

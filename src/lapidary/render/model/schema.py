@@ -9,6 +9,7 @@ from lapidary.runtime.absent import Absent
 
 from .. import json_pointer, names
 from . import openapi, python
+from .refs import resolve_ref
 from .stack import Stack
 
 type ResolveRefFn[Target] = Callable[[openapi.Reference[Target]], tuple[Stack, Target]]
@@ -17,20 +18,14 @@ logger = logging.getLogger(__name__)
 
 
 class OpenApi30SchemaConverter:
-    def __init__(self, root_package: python.ModulePath, resolve_ref: ResolveRefFn) -> None:
+    def __init__(self, root_package: python.ModulePath, resolve_ref_: ResolveRefFn) -> None:
         self.root_package = root_package
-        self.resolve_ref = staticmethod(resolve_ref)
+        self.resolve_ref = staticmethod(resolve_ref_)
         self.schema_types: MutableMapping[Stack, python.SchemaClass] = {}
 
-    def process_schema(
-        self,
-        stack: Stack,
-        value: openapi.Schema,
-    ) -> python.TypeHint:
+    @resolve_ref
+    def process_schema(self, value: openapi.Schema, stack: Stack) -> python.TypeHint:
         logger.debug('process schema %s', stack)
-
-        if isinstance(value, openapi.Reference):
-            return self.process_schema(*self.resolve_ref(value))
 
         assert isinstance(value, openapi.Schema)
 
@@ -46,7 +41,7 @@ class OpenApi30SchemaConverter:
 
             stack_attr = stack.push('properties')
             attributes = [
-                self.process_property(stack_attr.push(prop_name), prop_schema, prop_name in value.required)
+                self.process_property(prop_schema, stack_attr.push(prop_name), prop_name in value.required)
                 for prop_name, prop_schema in value.properties.items()
             ]
 
@@ -62,34 +57,29 @@ class OpenApi30SchemaConverter:
                 else python.ModelType.model,
             )
 
-        return self.get_type_hint(stack, value)
+        return self.get_type_hint(value, stack)
 
-    def process_property(
-        self,
-        stack: Stack,
-        value: openapi.Schema | openapi.Reference[openapi.Schema],
-        required: bool,
-    ) -> python.AttributeModel:
+    @resolve_ref
+    def process_property(self, value: openapi.Schema, stack: Stack, required: bool) -> python.AttributeModel:
         alias = value.lapidary_name or names.maybe_mangle_name(stack.top())
         names.check_name(alias, False)
 
         return python.AttributeModel(
             name=alias,
-            annotation=self.get_attr_annotation(stack, value, required),
+            annotation=self.get_attr_annotation(value, stack, required),
         )
 
+    @resolve_ref
     def get_attr_annotation(
         self,
+        value: openapi.Schema,
         stack: Stack,
-        value: openapi.Schema | openapi.Reference[openapi.Schema],
         required: bool,
     ) -> python.AttributeAnnotationModel:
         """
         if typ is a schema, then it's a nested schema. Name should be parent_class_name+prop_name, and module is the same.
         Otherwise, it's a reference; schema, module and name should be resolved from it and used to generate type_ref
         """
-        if isinstance(value, openapi.Reference):
-            return self.get_attr_annotation(*self.resolve_ref(value))
 
         name = stack.top()
 
@@ -117,17 +107,11 @@ class OpenApi30SchemaConverter:
         default = None if value.required else 'lapidary.runtime.absent.ABSENT'
 
         return python.AttributeAnnotationModel(
-            type=self.get_type_hint(stack, value), default=default, field_props=field_props
+            type=self.get_type_hint(value, stack), default=default, field_props=field_props
         )
 
-    def get_type_hint(
-        self,
-        stack: Stack,
-        value: openapi.Schema | openapi.Reference[openapi.Schema],
-    ) -> python.TypeHint:
-        if isinstance(value, openapi.Reference):
-            return self.get_type_hint(*self.resolve_ref(value))
-
+    @resolve_ref
+    def get_type_hint(self, value: openapi.Schema, stack: Stack) -> python.TypeHint:
         typ = self._get_type_hint(stack, value)
 
         required = True  # TODO
@@ -149,7 +133,7 @@ class OpenApi30SchemaConverter:
             if isinstance(sub_schema, openapi.Reference):
                 stack, sub_schema = self.resolve_ref(sub_schema)
 
-            type_hint = self.get_type_hint(stack.push(idx), sub_schema)
+            type_hint = self.get_type_hint(sub_schema, stack.push(idx))
             args.append(type_hint)
 
         return python.GenericTypeHint(
@@ -168,7 +152,7 @@ class OpenApi30SchemaConverter:
                 stack, 'Multiple component schemas (allOf, anyOf, oneOf) are currently unsupported.'
             )
 
-        return self.get_type_hint(stack, schemas[0])
+        return self.get_type_hint(schemas[0], stack)
 
     def _get_type_hint(
         self,
@@ -185,7 +169,7 @@ class OpenApi30SchemaConverter:
         elif value.type == openapi.Type.object:
             return resolve_type_hint(str(self.root_package), stack)
         elif value.type == openapi.Type.array:
-            return self._get_type_hint_array(stack.push('items'), value.items)
+            return self._get_type_hint_array(value.items, stack.push('items'))
         elif value.anyOf:
             return self._get_one_of_type_hint(stack, value)
         elif value.oneOf:
@@ -197,20 +181,9 @@ class OpenApi30SchemaConverter:
         else:
             raise NotImplementedError
 
-    def _get_type_hint_array(
-        self, stack: Stack, value: openapi.Schema | openapi.Reference[openapi.Schema]
-    ) -> python.TypeHint:
-        if isinstance(value, openapi.Reference):
-            return self._get_type_hint_array(*self.resolve_ref(value))
-
-        return self.get_type_hint(stack, value).list_of()
-
-    def resolve_type_hint(
-        self, stack: Stack, value: openapi.Schema | openapi.Reference[openapi.Schema]
-    ) -> python.TypeHint:
-        if isinstance(value, openapi.Reference):
-            return self.resolve_type_hint(*self.resolve_ref(value))
-        return self.get_type_hint(stack, value)
+    @resolve_ref
+    def _get_type_hint_array(self, value: openapi.Schema, stack: Stack) -> python.TypeHint:
+        return self.get_type_hint(value, stack).list_of()
 
     @property
     def schema_modules(self) -> Iterable[python.SchemaModule]:
