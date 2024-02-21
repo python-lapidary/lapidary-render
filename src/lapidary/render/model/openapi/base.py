@@ -1,5 +1,6 @@
 import re
 import typing
+from collections.abc import Mapping
 
 import pydantic
 
@@ -54,3 +55,8 @@ class ModelWithPatternProperties(BaseModel):
             value[field_name] = pattern_props
 
         return value
+
+
+def validate_example_xor_examples(values: Mapping[str, typing.Any]) -> None:
+    if 'examples' in values and 'example' in values:
+        raise ValueError('Only either example or examples is allowed')

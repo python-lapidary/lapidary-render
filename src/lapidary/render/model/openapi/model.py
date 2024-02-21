@@ -14,6 +14,7 @@ from .base import (
     ModelWithAdditionalProperties,
     ModelWithPatternProperties,
     PropertyPattern,
+    validate_example_xor_examples,
 )
 from .ext import LapidaryModelType
 
@@ -475,9 +476,12 @@ class ParameterBase(ExtendableModel):
 
     @pydantic.model_validator(mode='before')
     @staticmethod
-    def check_schema_xor_content(values: Mapping[str, typing.Any]):
-        if 'content' not in values and 'schema' not in values:
+    def _validate(values: Mapping[str, typing.Any]):
+        if not isinstance(values, Mapping | MediaType):
+            raise TypeError(type(values))
+        if 'content' not in values != 'schema' not in values:
             raise ValueError('content or schema required')
+        validate_example_xor_examples(values)
         return values
 
 
@@ -495,18 +499,17 @@ class Encoding(ExtendableModel):
 
 
 class MediaType(ExtendableModel):
-    schema_: typing.Annotated[Reference | Schema | None, pydantic.Field(alias='schema')] = None
+    schema_: typing.Annotated[Schema | Reference[Schema] | None, pydantic.Field(alias='schema')] = None
     example: typing.Any | None = None
     examples: dict[str, Reference | Example] | None = None
     encoding: dict[str, Encoding] | None = None
 
     @pydantic.model_validator(mode='before')
-    @classmethod
-    def _validate_example_xor_examples(cls, values: Mapping[str, typing.Any]):
+    @staticmethod
+    def _validate(values: Mapping[str, typing.Any]):
         if not isinstance(values, Mapping | MediaType):
             raise TypeError(type(values))
-        if 'examples' in values and 'example' in values:
-            raise ValueError('Only either example or examples is allowed')
+        validate_example_xor_examples(values)
         return values
 
 
