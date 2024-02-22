@@ -1,7 +1,8 @@
+import abc
 import typing
 from collections.abc import Mapping, Sequence
 from enum import Enum
-from typing import Self, cast
+from typing import Annotated, Literal, Self, cast
 
 import pydantic
 from typing_extensions import Doc
@@ -72,10 +73,6 @@ __all__ = [
     'Style4',
     'Tag',
     'Type',
-    'Type1',
-    'Type2',
-    'Type3',
-    'Type4',
     'XML',
 ]
 
@@ -91,9 +88,9 @@ class Reference[Target](BaseModel):
 
 
 class Contact(ExtendableModel):
-    name: str | None
-    url: str | None
-    email: pydantic.EmailStr | None
+    name: str | None = None
+    url: str | None = None
+    email: pydantic.EmailStr | None = None
 
 
 class License(ExtendableModel):
@@ -118,22 +115,22 @@ class Type(Enum):
 
 class Discriminator(pydantic.BaseModel):
     propertyName: str
-    mapping: dict[str, str] | None
+    mapping: dict[str, str] | None = None
 
 
 class XML(ExtendableModel):
-    name: str | None
-    namespace: pydantic.AnyUrl | None
-    prefix: str | None
+    name: str | None = None
+    namespace: pydantic.AnyUrl | None = None
+    prefix: str | None = None
     attribute: bool | None = False
     wrapped: bool | None = False
 
 
 class Example(ExtendableModel):
-    summary: str | None
-    description: str | None
-    value: typing.Any | None
-    externalValue: str | None
+    summary: str | None = None
+    description: str | None = None
+    value: typing.Any | None = None
+    externalValue: str | None = None
 
 
 class Style(Enum):
@@ -246,32 +243,27 @@ class ParameterLocation(pydantic.RootModel):
     ]
 
 
-class Type1(Enum):
-    apiKey = 'apiKey'
-
-
 class In4(Enum):
     header = 'header'
     query = 'query'
     cookie = 'cookie'
 
 
-class APIKeySecurityScheme(ExtendableModel):
-    type: Type1
+class SecuritySchemeBase(abc.ABC, ExtendableModel):
+    type: str
+    description: str | None = None
+
+
+class APIKeySecurityScheme(SecuritySchemeBase):
+    type: Literal['apiKey']
     name: str
     in_: typing.Annotated[In4, pydantic.Field(alias='in')]
-    description: str | None
 
 
-class Type2(Enum):
-    http = 'http'
-
-
-class HTTPSecurityScheme(ExtendableModel):
+class HTTPSecurityScheme(SecuritySchemeBase):
+    type: Literal['http']
     scheme: str
-    bearerFormat: str | None
-    description: str | None
-    type: Type2
+    bearerFormat: str | None = None
 
     @pydantic.model_validator(mode='after')
     def _validate_bearer_format(self) -> typing.Self:
@@ -281,21 +273,9 @@ class HTTPSecurityScheme(ExtendableModel):
         return self
 
 
-class Type3(Enum):
-    oauth2 = 'oauth2'
-
-
-class Type4(Enum):
-    openIdConnect = 'openIdConnect'
-
-
-class OpenIdConnectSecurityScheme(pydantic.BaseModel):
-    class Config:
-        extra = pydantic.Extra.forbid
-
-    type: Type4
+class OpenIdConnectSecurityScheme(SecuritySchemeBase):
+    type: Literal['openIdConnect']
     openIdConnectUrl: str
-    description: str | None
 
 
 class ImplicitOAuthFlow(pydantic.BaseModel):
@@ -303,7 +283,7 @@ class ImplicitOAuthFlow(pydantic.BaseModel):
         extra = pydantic.Extra.forbid
 
     authorizationUrl: str
-    refreshUrl: str | None
+    refreshUrl: str | None = None
     scopes: dict[str, str]
 
 
@@ -445,17 +425,12 @@ class Link(ExtendableModel):
     server: Server | None = None
 
 
-class OAuth2SecurityScheme(pydantic.BaseModel):
-    class Config:
-        extra = pydantic.Extra.forbid
-
-    type: Type3
+class OAuth2SecurityScheme(SecuritySchemeBase):
+    type: Literal['oauth2']
     flows: OAuthFlows
-    description: str | None = None
 
 
-class SecurityScheme(pydantic.RootModel):
-    root: APIKeySecurityScheme | HTTPSecurityScheme | OAuth2SecurityScheme | OpenIdConnectSecurityScheme
+type SecurityScheme = APIKeySecurityScheme | HTTPSecurityScheme | OAuth2SecurityScheme | OpenIdConnectSecurityScheme
 
 
 class ParameterBase(ExtendableModel):
@@ -487,7 +462,7 @@ class ParameterBase(ExtendableModel):
 
 class Header(ParameterBase):
     in_: typing.Annotated[ParamLocation, pydantic.Field(alias='in')] = ParamLocation.header
-    style: Style | None = 'simple'
+    style: Style = Style.simple
 
 
 class Encoding(ExtendableModel):
@@ -583,7 +558,7 @@ class Callback(ModelWithAdditionalProperties):
 
 
 class Components(ExtendableModel):
-    schemas: dict[str, Reference[Schema] | Schema] | None = None
+    schemas: Annotated[dict[str, Reference[Schema] | Schema], pydantic.Field(default_factory=dict)]
     responses: dict[str, Reference[Response] | Response] | None = None
     parameters: dict[str, Reference[Parameter] | Parameter] | None = None
     examples: dict[str, Reference[Example] | Example] | None = None

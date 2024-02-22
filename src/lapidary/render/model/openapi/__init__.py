@@ -52,10 +52,6 @@ __all__ = [
     'Style4',
     'Tag',
     'Type',
-    'Type1',
-    'Type2',
-    'Type3',
-    'Type4',
     'XML',
 ]
 
