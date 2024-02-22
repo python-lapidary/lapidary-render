@@ -2,11 +2,12 @@ import logging
 from pathlib import Path
 from typing import Annotated
 
+import anyio
 import typer
 
 from .config import Config
-from .model import OpenApi30Converter, openapi, python
-from .spec import load_spec
+from .main import get_model, init_project
+from .main import render as render_
 
 HELP_FORMAT_STRICT = 'Use black in slow (strict checking) mode'
 
@@ -29,61 +30,36 @@ def version():
 
 @app.command()
 def init(
-    schema_path: Path,
-    project_root: Path,
-    package_name: str,
-    patch: Annotated[
-        list[Path],
-        typer.Option(
-            help="""A JSON Patch file or a directory of thereof. Can be used multiple times,
-                     in which case only files are accepted.""",
-        ),
-    ] = None,
-    format_strict: Annotated[bool, typer.Option(help=HELP_FORMAT_STRICT)] = False,
-    render: bool = True,
-    cache: bool = True,
+    document: Annotated[str, typer.Argument(help='Path of URL of the OpenAPI document.')],
+    project_root: Annotated[Path, typer.Argument(help='Root directory of the generated project')],
+    package_name: Annotated[str, typer.Argument(help='Root package for the generated code.')],
+    cache: Annotated[bool, typer.Option(help='Save parsed document as a pickle file.')] = False,
+    save: Annotated[bool, typer.Option(help='Copy the document in the project.')] = False,
 ):
-    """Create a new project from scratch."""
-
-    if project_root.exists():
-        logger.error(f'Target "{project_root}" exists')
-        raise typer.Exit(code=1)
-
-    from .main import init_project
+    """Create a new project."""
 
     config = Config(
         package=package_name,
-        format_strict=format_strict,
+        document_path=document,
         cache=cache,
     )
 
-    init_project(schema_path, project_root, config, render, patch)
+    anyio.run(init_project, project_root, config, save)
+
+
+@app.command()
+def render(
+    project_root: Annotated[Path, typer.Argument()] = Path(),
+    cache: bool = False,
+) -> None:
+    anyio.run(render_, project_root, cache)
 
 
 @app.command()
 def dump_model(
-    schema_path: Path,
-    patch: Annotated[
-        list[Path],
-        typer.Option(
-            help="""A JSON Patch file or a directory of thereof. Can be used multiple times,
-              in which case only files are accepted.""",
-        ),
-    ] = None,
+    project_root: Annotated[Path, typer.Argument()] = Path(),
 ):
     from pprint import pprint
 
-    config = Config(
-        package='package',
-        format_strict=False,
-        cache=False,
-    )
-
-    logger.info('Parse OpenAPI schema')
-    oa_doc = load_spec(schema_path, patch, config)
-    oa_model = openapi.OpenApiModel.model_validate(oa_doc)
-
-    logger.info('Prepare model')
-    model = OpenApi30Converter(python.ModulePath(config.package), oa_model).process()
-
+    model = anyio.run(get_model, project_root)
     pprint(model)

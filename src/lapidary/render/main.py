@@ -1,73 +1,49 @@
 import importlib.metadata
 import logging
-import os
-import shutil
-from collections.abc import Collection
-from pathlib import Path
+import pathlib
 
+import anyio
 import jinja2
 import jinja2.loaders
-import yaml
-from rybak.jinja import JinjaAdapter
+from anyio import Path
 
-from .config import Config
-from .model import openapi, python
-from .model.openapi_conv import OpenApi30Converter
-from .spec import load_spec
+from .config import Config, load_config
+from .load import get_document_text, load_document
+from .model import OpenApi30Converter, openapi, python
 
 logger = logging.getLogger(__name__)
 logging.getLogger('rybak').setLevel(logging.DEBUG)
 
 
-def init_project(
-    schema_path: Path,
+async def init_project(
     project_root: Path,
     config: Config,
-    render: bool,
-    patches: Collection[Path],
-):
-    # (project_root / config.openapi_root).mkdir(parents=True)
-    # package_path = project_root / config.gen_root / config.package
-    # package_path.mkdir(parents=True)
-    #
-    # copy_schema(config, project_root, schema_path)
-    # if patches:
-    #     copy_patches(config, project_root, patches)
+    save_document: bool,
+) -> None:
+    """Create project directory and pyproject file, download or copy the OpenAPI document"""
 
-    logger.info('Parse OpenAPI schema')
-    oa_doc = load_spec(schema_path, patches, config)
+    if project_root.exists():
+        raise Exception('Target exists')
 
-    excludes = ['includes', 'gen/{{model.package}}/auth.py.jinja']
-    if not render:
-        logger.info('Skip rendering client.')
-        excludes.append('gen')
-
-    oa_model = openapi.OpenApiModel.model_validate(oa_doc)
-
-    logger.info('Prepare model')
+    if save_document:
+        config.document_path = copy_document(config, project_root)
 
     from rybak import render
+    from rybak.jinja import JinjaAdapter
 
-    model = OpenApi30Converter(python.ModulePath(config.package), oa_model).process()
-
-    logger.info('Render project')
     environment = jinja2.Environment(
         loader=jinja2.loaders.PackageLoader('lapidary.render'),
     )
-    environment.globals.update(
-        dict(
-            as_module_path=python.ModulePath,
-            os=os,
-        )
-    )
-    environment.filters.update(dict(toyaml=yaml.safe_dump))
+    excludes = [
+        'includes',
+        'gen',
+    ]
     render(
         JinjaAdapter(environment),
         dict(
-            model=model,
-            document=oa_doc,
             get_version=importlib.metadata.version,
-            auth_module=None,
+            config=config.model_dump(exclude_unset=True, exclude_defaults=True),
+            document=await load_document(project_root, config, False),
         ),
         project_root,
         exclude_extend=excludes,
@@ -75,24 +51,50 @@ def init_project(
     )
 
 
-def copy_schema(config: Config, project_root: Path, schema_path: Path):
-    logger.info('Copy OpenAPI schema to %s', config.get_openapi(project_root))
-    shutil.copyfile(schema_path, config.get_openapi(project_root))
+async def render(project_root: Path, cache: bool) -> None:
+    model = await get_model(project_root, cache)
+
+    logger.info('Render project')
+
+    from rybak import render
+    from rybak.jinja import JinjaAdapter
+
+    environment = jinja2.Environment(
+        loader=jinja2.loaders.PackageLoader('lapidary.render'),
+    )
+    excludes = [
+        'includes',
+        'pyproject.toml.jinja',
+        'gen/{{model.package}}/auth.py.jinja',  # TODO auth
+    ]
+    render(
+        JinjaAdapter(environment),
+        dict(
+            model=model,
+            get_version=importlib.metadata.version,
+        ),
+        project_root,
+        exclude_extend=excludes,
+        remove_suffixes=['.jinja'],
+    )
 
 
-def copy_patches(config: Config, project_root: Path, patches: Collection[Path]) -> None:
-    patches_dir = config.get_patches(project_root)
-    logger.info('Copy patches to %s', patches_dir)
-    assert patches
+async def get_model(project_root: pathlib.Path, cache: bool) -> python.ClientModel:
+    config = load_config(project_root)
 
-    if len(patches) > 1:
-        if not all(path.is_file() for path in patches):
-            raise ValueError('When passing multiple patch paths, all must be files')
+    logger.info('Parse OpenAPI document')
+    oa_doc = await load_document(anyio.Path(project_root), config, cache)
 
-        patches_dir.mkdir()
+    oa_model = openapi.OpenApiModel.model_validate(oa_doc)
 
-        for file in patches:
-            shutil.copyfile(file, patches_dir / file.name)
+    logger.info('Prepare python model')
+    return OpenApi30Converter(python.ModulePath(config.package), oa_model).process()
 
-    else:
-        shutil.copytree(next(iter(patches)), patches_dir)
+
+async def copy_document(config: Config, project_root: Path) -> Path:
+    document_text, path = get_document_text(config.document_path)
+
+    target = project_root / 'src' / 'openapi' / Path(path).name
+    await target.parent.mkdir(parents=True)
+    await target.write_text(document_text)
+    return target.relative_to(project_root)

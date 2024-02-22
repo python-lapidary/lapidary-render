@@ -1,33 +1,19 @@
-import dataclasses
 import tomllib
 from pathlib import Path
+
+import pydantic
 
 PYPROJ_TOML = 'pyproject.toml'
 
 
-@dataclasses.dataclass
-class Config:
+class Config(pydantic.BaseModel):
+    document_path: str
     package: str
-    format_strict: bool = False
-    cache: bool = True
-
-    openapi_root: str = 'src/openapi'
-    gen_root: str = 'gen'
-    patches: str = 'patches'
-
-    def get_patches(self, project_root: Path) -> Path:
-        return project_root / self.openapi_root / self.patches
-
-    def get_openapi(self, project_root: Path) -> Path:
-        return project_root / self.openapi_root / 'openapi.yaml'
+    patches: str = 'sec/patches'
 
 
 def load_config(project_root: Path) -> Config:
-    pyproj_path = project_root / PYPROJ_TOML
-    if not pyproj_path.exists():
-        raise FileNotFoundError(pyproj_path)
-
-    with pyproj_path.open('br') as fb:
-        pyproj = tomllib.load(fb)
+    text = (project_root / PYPROJ_TOML).read_text()
+    pyproj = tomllib.loads(text)
     pyproj_dict = pyproj['tool']['lapidary']
-    return Config(**pyproj_dict)
+    return Config.model_validate(pyproj_dict)

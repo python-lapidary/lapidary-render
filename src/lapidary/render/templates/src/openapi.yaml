@@ -1,2 +1,0 @@
-# {% include 'includes/header.txt' %}
-{{ document | toyaml }}
