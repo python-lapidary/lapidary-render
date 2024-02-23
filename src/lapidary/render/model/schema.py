@@ -24,14 +24,6 @@ class OpenApi30SchemaConverter:
         self.schema_types: MutableMapping[Stack, python.SchemaClass] = {}
 
     @resolve_ref
-    def process_schema(self, value: openapi.Schema, stack: Stack) -> python.TypeHint:
-        assert isinstance(value, openapi.Schema)
-
-        logger.debug('process schema %s', stack)
-        if value.type == openapi.Type.object:
-            self._process_schema_object(value, stack)
-        return self.get_type_hint(value, stack)
-
     def _process_schema_object(self, value: openapi.Schema, stack: Stack) -> None:
         if stack in self.schema_types:
             return
@@ -111,12 +103,15 @@ class OpenApi30SchemaConverter:
         default = None if value.required else 'lapidary.runtime.absent.ABSENT'
 
         return python.AttributeAnnotationModel(
-            type=self.get_type_hint(value, stack), default=default, field_props=field_props
+            type=self.process_schema(value, stack), default=default, field_props=field_props
         )
 
     @resolve_ref
-    def get_type_hint(self, value: openapi.Schema, stack: Stack) -> python.TypeHint:
-        typ = self._get_type_hint(stack, value)
+    def process_schema(self, value: openapi.Schema, stack: Stack) -> python.TypeHint:
+        assert isinstance(value, openapi.Schema)
+        logger.debug('process schema %s', stack)
+
+        typ = self._process_schema(stack, value)
 
         required = True  # TODO
 
@@ -132,18 +127,8 @@ class OpenApi30SchemaConverter:
         stack: Stack,
         schema: openapi.Schema,
     ) -> python.TypeHint:
-        args = []
-        for idx, sub_schema in enumerate(schema.oneOf):
-            if isinstance(sub_schema, openapi.Reference):
-                stack, sub_schema = self.resolve_ref(sub_schema)
-
-            type_hint = self.get_type_hint(sub_schema, stack.push(idx))
-            args.append(type_hint)
-
-        return python.GenericTypeHint(
-            module='typing',
-            name='Union',
-            args=tuple(args),
+        return python.GenericTypeHint.union_of(
+            tuple(self.process_schema(sub_schema, stack.push(idx)) for idx, sub_schema in enumerate(schema.oneOf))
         )
 
     def _get_composite_type_hint(
@@ -152,30 +137,26 @@ class OpenApi30SchemaConverter:
         schemas: list[openapi.Schema | openapi.Reference],
     ) -> python.TypeHint:
         if len(schemas) != 1:
-            raise NotImplementedError(
-                stack, 'Multiple component schemas (allOf, anyOf, oneOf) are currently unsupported.'
-            )
+            raise NotImplementedError(stack, 'Multiple component schemas (allOf, anyOf) are currently unsupported.')
 
-        return self.get_type_hint(schemas[0], stack)
+        return self.process_schema(schemas[0], stack)
 
-    def _get_type_hint(
+    def _process_schema(
         self,
         stack: Stack,
         value: openapi.Schema,
     ) -> python.TypeHint:
-        match value:
-            case openapi.Schema(oneOf=x) if x is not None:
-                pass
         if value.type == openapi.Type.string:
             return python.TypeHint.from_type(STRING_FORMATS.get(value.format, str))
         elif value.type in PRIMITIVE_TYPES:
             return python.BuiltinTypeHint.from_str(PRIMITIVE_TYPES[value.type].__name__)
         elif value.type == openapi.Type.object:
+            self._process_schema_object(value, stack)
             return resolve_type_hint(str(self.root_package), stack)
         elif value.type == openapi.Type.array:
-            return self._get_type_hint_array(value.items, stack.push('items'))
+            return self.process_schema(value.items, stack.push('items')).list_of()
         elif value.anyOf:
-            return self._get_one_of_type_hint(stack, value)
+            return self._get_composite_type_hint(stack.push('anyOf'), value.anyOf)
         elif value.oneOf:
             return self._get_one_of_type_hint(stack, value)
         elif value.allOf:
@@ -184,10 +165,6 @@ class OpenApi30SchemaConverter:
             return python.TypeHint.from_str('typing:Any')
         else:
             raise NotImplementedError
-
-    @resolve_ref
-    def _get_type_hint_array(self, value: openapi.Schema, stack: Stack) -> python.TypeHint:
-        return self.get_type_hint(value, stack).list_of()
 
     @property
     def schema_modules(self) -> Iterable[python.SchemaModule]:
