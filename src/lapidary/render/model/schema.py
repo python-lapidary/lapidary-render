@@ -25,39 +25,43 @@ class OpenApi30SchemaConverter:
 
     @resolve_ref
     def process_schema(self, value: openapi.Schema, stack: Stack) -> python.TypeHint:
-        logger.debug('process schema %s', stack)
-
         assert isinstance(value, openapi.Schema)
 
-        name = value.lapidary_name or stack.top()
-
-        path = str(stack)
-        if path not in self.schema_types:
-            base_type = (
-                python.TypeHint.from_type(Exception)
-                if value.lapidary_model_type is openapi.LapidaryModelType.exception
-                else python.TypeHint.from_str('pydantic:BaseModel')
-            )
-
-            stack_attr = stack.push('properties')
-            attributes = [
-                self.process_property(prop_schema, stack_attr.push(prop_name), prop_name in value.required)
-                for prop_name, prop_schema in value.properties.items()
-            ]
-
-            self.schema_types[stack] = python.SchemaClass(
-                class_name=name,
-                base_type=base_type,
-                allow_extra=value.additionalProperties is not False,
-                has_aliases=any(['alias' in attr.annotation.field_props for attr in attributes]),
-                attributes=attributes,
-                docstr=value.description or None,
-                model_type=python.ModelType[value.lapidary_model_type.name]
-                if value.lapidary_model_type
-                else python.ModelType.model,
-            )
-
+        logger.debug('process schema %s', stack)
+        if value.type == openapi.Type.object:
+            self._process_schema_object(value, stack)
         return self.get_type_hint(value, stack)
+
+    def _process_schema_object(self, value: openapi.Schema, stack: Stack) -> None:
+        if stack in self.schema_types:
+            return
+
+        name = value.lapidary_name or stack.top()
+        base_type = (
+            python.TypeHint.from_type(Exception)
+            if value.lapidary_model_type is openapi.LapidaryModelType.exception
+            else python.TypeHint.from_str('pydantic:BaseModel')
+        )
+
+        stack_attr = stack.push('properties')
+        attributes = [
+            self.process_property(prop_schema, stack_attr.push(prop_name), prop_name in value.required)
+            for prop_name, prop_schema in value.properties.items()
+        ]
+
+        model_type = (
+            python.ModelType[value.lapidary_model_type.name] if value.lapidary_model_type else python.ModelType.model
+        )
+
+        self.schema_types[stack] = python.SchemaClass(
+            class_name=name,
+            base_type=base_type,
+            allow_extra=value.additionalProperties is not False,
+            has_aliases=any(['alias' in attr.annotation.field_props for attr in attributes]),
+            attributes=attributes,
+            docstr=value.description or None,
+            model_type=model_type,
+        )
 
     @resolve_ref
     def process_property(self, value: openapi.Schema, stack: Stack, required: bool) -> python.AttributeModel:
