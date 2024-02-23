@@ -9,8 +9,6 @@ from .config import Config
 from .main import get_model, init_project
 from .main import render as render_
 
-HELP_FORMAT_STRICT = 'Use black in slow (strict checking) mode'
-
 logging.basicConfig()
 logging.getLogger('lapidary').setLevel(logging.DEBUG)
 logger = logging.getLogger(__name__)
