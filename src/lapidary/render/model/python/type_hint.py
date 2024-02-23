@@ -38,10 +38,10 @@ class TypeHint(BaseModel):
         return [self.module]
 
     def union_with(self, other: Self | None) -> 'GenericTypeHint':
-        return GenericTypeHint(module='typing', name='Union', args=[self, other])
+        return GenericTypeHint(module='typing', name='Union', args=(self, other))
 
     def list_of(self) -> 'GenericTypeHint':
-        return GenericTypeHint(module='builtins', name='list', args=[self])
+        return GenericTypeHint(module='builtins', name='list', args=(self,))
 
     def _types(self) -> list[Self]:
         return [self]
