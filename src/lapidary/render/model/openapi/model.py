@@ -361,7 +361,7 @@ class Schema(ExtendableModel):
     minProperties: typing.Annotated[int | None, pydantic.Field(ge=0)] = 0
     required: typing.Annotated[list[str], pydantic.Field(min_items=1, default_factory=list), UniqueListValidator]
     properties: 'typing.Annotated[dict[str, Reference[Schema] | Schema], pydantic.Field(default_factory=dict)]'
-    additionalProperties: 'Reference | Schema | bool' = True
+    additionalProperties: 'bool | Reference[Schema] | Schema' = True
 
     # type == string or type = number or type == integer
     format: str | None = None
@@ -372,9 +372,9 @@ class Schema(ExtendableModel):
     ] = None
 
     not_: 'typing.Annotated[None | Reference[Schema] | Schema, pydantic.Field(alias="not")]' = None
-    allOf: 'list[Reference[Schema] | Schema] | None' = None
-    oneOf: 'list[Reference[Schema] | Schema] | None' = None
-    anyOf: 'list[Reference[Schema] | Schema] | None' = None
+    allOf: 'list[None | Reference[Schema] | Schema]' = None
+    oneOf: 'list[None | Reference[Schema] | Schema]' = None
+    anyOf: 'list[None | Reference[Schema] | Schema]' = None
 
     description: str | None = None
     default: typing.Any | None = None
@@ -447,7 +447,7 @@ class ParameterBase(ExtendableModel):
     allowReserved: bool | None = False
     schema_: typing.Annotated[None | Reference[Schema] | Schema, pydantic.Field(alias='schema')] = None
     example: typing.Any | None = None
-    examples: dict[str, Reference | Example] | None = None
+    examples: dict[str, Reference[Example] | Example] | None = None
 
     @pydantic.model_validator(mode='before')
     @staticmethod
@@ -474,9 +474,9 @@ class Encoding(ExtendableModel):
 
 
 class MediaType(ExtendableModel):
-    schema_: typing.Annotated[Schema | Reference[Schema] | None, pydantic.Field(alias='schema')] = None
+    schema_: typing.Annotated[None | Reference[Schema] | Schema, pydantic.Field(alias='schema')] = None
     example: typing.Any | None = None
-    examples: dict[str, Reference | Example] | None = None
+    examples: dict[str, Reference[Example] | Example] | None = None
     encoding: dict[str, Encoding] | None = None
 
     @pydantic.model_validator(mode='before')
@@ -492,7 +492,7 @@ class Response(ExtendableModel):
     description: str
     headers: dict[str, Reference[Header] | Header] | None = None
     content: 'typing.Annotated[dict[str, MediaType], pydantic.Field(default_factory=dict)]'
-    links: dict[str, Reference | Link] | None = None
+    links: dict[str, Reference[Link] | Link] | None = None
 
 
 class Responses(ExtendableModel, ModelWithPatternProperties):
@@ -529,11 +529,11 @@ class Operation(ExtendableModel):
     externalDocs: ExternalDocumentation | None = None
     operationId: str | None = None
     parameters: typing.Annotated[
-        list[Parameter | Reference[Parameter]], UniqueListValidator, pydantic.Field(default_factory=list)
+        list[Reference[Parameter] | Parameter], UniqueListValidator, pydantic.Field(default_factory=list)
     ]
-    requestBody: None | Reference | RequestBody = None
+    requestBody: None | Reference[RequestBody] | RequestBody = None
     responses: Responses
-    callbacks: 'dict[str, Reference | Callback] | None' = None
+    callbacks: 'dict[str, Reference[Callback] | Callback] | None' = None
     deprecated: bool | None = False
     security: list[SecurityRequirement] | None = None
     servers: list[Server] | None = None
@@ -544,7 +544,7 @@ class PathItem(BaseModel):
     description: str | None = None
     servers: list[Server] | None = None
     parameters: typing.Annotated[
-        list[Parameter | Reference[Parameter]], UniqueListValidator, pydantic.Field(default_factory=list)
+        list[Reference[Parameter] | Parameter], UniqueListValidator, pydantic.Field(default_factory=list)
     ]
     __pydantic_extra__: dict[str, Operation]
 
@@ -554,7 +554,7 @@ class Paths(ModelWithPatternProperties):
 
 
 class Callback(ModelWithAdditionalProperties):
-    __pydantic_extra__ = dict[str, Reference | PathItem]
+    __pydantic_extra__ = dict[str, Reference[PathItem] | PathItem]
 
 
 class Components(ExtendableModel):
