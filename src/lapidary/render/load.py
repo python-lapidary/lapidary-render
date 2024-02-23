@@ -86,9 +86,6 @@ class HttpTextLoader(TextLoader):
 
     async def load(self, path: str) -> tuple[str, str]:
         response = await self._client.get(path)
-        import pprint
-
-        pprint.pprint(response.headers)
         return response.text, response.url.path
 
 

@@ -61,5 +61,5 @@ def dump_model(
 ):
     from pprint import pprint
 
-    model = anyio.run(get_model, project_root)
+    model = anyio.run(get_model, project_root, False)
     pprint(model)
