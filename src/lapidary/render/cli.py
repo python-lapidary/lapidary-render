@@ -1,4 +1,5 @@
 import logging
+import sys
 from pathlib import Path
 from typing import Annotated
 
@@ -6,8 +7,6 @@ import anyio
 import typer
 
 from .config import Config
-from .main import get_model, init_project
-from .main import render as render_
 
 logging.basicConfig()
 logging.getLogger('lapidary').setLevel(logging.DEBUG)
@@ -36,6 +35,8 @@ def init(
 ):
     """Create a new project."""
 
+    from .main import init_project
+
     config = Config(
         package=package_name,
         document_path=document,
@@ -54,14 +55,16 @@ def render(
     project_root: Annotated[Path, typer.Argument()] = Path(),
     cache: bool = False,
 ) -> None:
-    anyio.run(render_, anyio.Path(project_root), cache)
+    from .main import render_project as render_project
+
+    anyio.run(render_project, anyio.Path(project_root), cache)
 
 
 @app.command()
 def dump_model(
     project_root: Annotated[Path, typer.Argument()] = Path(),
-):
-    from pprint import pprint
+    process: Annotated[bool, typer.Option(help='Output processed python model')] = False,
+) -> None:
+    from .main import dump_model as dump_model_
 
-    model = anyio.run(get_model, anyio.Path(project_root), False)
-    pprint(model)
+    anyio.run(dump_model_, anyio.Path(project_root), process, sys.stdout)

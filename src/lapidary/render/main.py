@@ -1,6 +1,7 @@
 import importlib.metadata
 import logging
 import pathlib
+from typing import TextIO
 
 import anyio
 import jinja2
@@ -61,8 +62,15 @@ async def init_project(
     )
 
 
-async def render(project_root: anyio.Path, cache: bool) -> None:
-    model = await get_model(project_root, cache)
+async def render_project(project_root: anyio.Path, cache: bool) -> None:
+    config = await load_config(project_root)
+
+    logger.info('Parse OpenAPI document')
+    oa_doc = await load_document(project_root, config, cache)
+    oa_model = openapi.OpenApiModel.model_validate(oa_doc)
+
+    logger.info('Prepare python model')
+    model = OpenApi30Converter(python.ModulePath(config.package), oa_model).process()
 
     logger.info('Render project')
 
@@ -90,13 +98,17 @@ async def render(project_root: anyio.Path, cache: bool) -> None:
     )
 
 
-async def get_model(project_root: anyio.Path, cache: bool) -> python.ClientModel:
+async def dump_model(project_root: anyio.Path, process: bool, output: TextIO):
+    from pprint import pprint
+
     config = await load_config(project_root)
+    oa_doc = await load_document(project_root, config, False)
 
-    logger.info('Parse OpenAPI document')
-    oa_doc = await load_document(project_root, config, cache)
+    if not process:
+        yaml = ruamel.yaml.YAML(typ='safe')
+        yaml.dump(oa_doc, output)
 
-    oa_model = openapi.OpenApiModel.model_validate(oa_doc)
-
-    logger.info('Prepare python model')
-    return OpenApi30Converter(python.ModulePath(config.package), oa_model).process()
+    else:
+        oa_model = openapi.OpenApiModel.model_validate(oa_doc)
+        py_model = OpenApi30Converter(python.ModulePath(config.package), oa_model).process()
+        pprint(py_model, output)
