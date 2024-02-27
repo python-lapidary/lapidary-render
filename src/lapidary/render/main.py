@@ -5,10 +5,10 @@ import pathlib
 import anyio
 import jinja2
 import jinja2.loaders
-from anyio import Path
+import ruamel.yaml
 
 from .config import Config, load_config
-from .load import get_document_text, load_document
+from .load import document_handler_for, load_document
 from .model import OpenApi30Converter, openapi, python
 
 logger = logging.getLogger(__name__)
@@ -16,17 +16,26 @@ logging.getLogger('rybak').setLevel(logging.DEBUG)
 
 
 async def init_project(
-    project_root: Path,
+    project_root: anyio.Path,
     config: Config,
     save_document: bool,
 ) -> None:
     """Create project directory and pyproject file, download or copy the OpenAPI document"""
 
-    if project_root.exists():
-        raise Exception('Target exists')
+    if await project_root.exists():
+        raise FileExistsError
+
+    document_handler = document_handler_for(anyio.Path(), config.document_path)
 
     if save_document:
-        config.document_path = copy_document(config, project_root)
+        document_root = anyio.Path('src/openapi')
+        target_dir = project_root / document_root
+        await target_dir.mkdir(parents=True)
+        file_name = await document_handler.save_to(target_dir)
+        config.document_path = document_root / file_name
+
+    yaml = ruamel.yaml.YAML(typ='safe')
+    document = yaml.load(await document_handler.load())
 
     from rybak import TreeTemplate
     from rybak.jinja import JinjaAdapter
@@ -46,9 +55,9 @@ async def init_project(
         dict(
             get_version=importlib.metadata.version,
             config=config.model_dump(exclude_unset=True, exclude_defaults=True),
-            document=await load_document(project_root, config, False),
+            document=document,
         ),
-        project_root,
+        pathlib.Path(project_root),
     )
 
 
@@ -77,26 +86,17 @@ async def render(project_root: anyio.Path, cache: bool) -> None:
             model=model,
             get_version=importlib.metadata.version,
         ),
-        project_root,
+        pathlib.Path(project_root),
     )
 
 
-async def get_model(project_root: pathlib.Path, cache: bool) -> python.ClientModel:
-    config = load_config(project_root)
+async def get_model(project_root: anyio.Path, cache: bool) -> python.ClientModel:
+    config = await load_config(project_root)
 
     logger.info('Parse OpenAPI document')
-    oa_doc = await load_document(anyio.Path(project_root), config, cache)
+    oa_doc = await load_document(project_root, config, cache)
 
     oa_model = openapi.OpenApiModel.model_validate(oa_doc)
 
     logger.info('Prepare python model')
     return OpenApi30Converter(python.ModulePath(config.package), oa_model).process()
-
-
-async def copy_document(config: Config, project_root: Path) -> Path:
-    document_text, path = get_document_text(config.document_path)
-
-    target = project_root / 'src' / 'openapi' / Path(path).name
-    await target.parent.mkdir(parents=True)
-    await target.write_text(document_text)
-    return target.relative_to(project_root)

@@ -42,7 +42,11 @@ def init(
         cache=cache,
     )
 
-    anyio.run(init_project, project_root, config, save)
+    try:
+        anyio.run(init_project, anyio.Path(project_root), config, save)
+    except FileExistsError:
+        print('Target exists')
+        raise typer.Exit(-1)
 
 
 @app.command()
@@ -50,7 +54,7 @@ def render(
     project_root: Annotated[Path, typer.Argument()] = Path(),
     cache: bool = False,
 ) -> None:
-    anyio.run(render_, project_root, cache)
+    anyio.run(render_, anyio.Path(project_root), cache)
 
 
 @app.command()
@@ -59,5 +63,5 @@ def dump_model(
 ):
     from pprint import pprint
 
-    model = anyio.run(get_model, project_root, False)
+    model = anyio.run(get_model, anyio.Path(project_root), False)
     pprint(model)
