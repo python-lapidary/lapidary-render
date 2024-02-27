@@ -31,7 +31,7 @@ platformdirs = "^4.2.0"
 pydantic = "^2.5.2"
 python-mimeparse = "^1.6.0"
 ruamel-yaml = "^0.18.6"
-rybak = {path = "../../rybak", extras = ["jinja"], develop = true}
+rybak = "^0.3.0"
 typer = "^0.9.0"
 
 [tool.poetry.scripts]

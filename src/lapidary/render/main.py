@@ -28,54 +28,56 @@ async def init_project(
     if save_document:
         config.document_path = copy_document(config, project_root)
 
-    from rybak import render
+    from rybak import TreeTemplate
     from rybak.jinja import JinjaAdapter
 
-    environment = jinja2.Environment(
-        loader=jinja2.loaders.PackageLoader('lapidary.render'),
-    )
-    excludes = [
-        'includes',
-        'gen',
-    ]
-    render(
-        JinjaAdapter(environment),
+    TreeTemplate(
+        JinjaAdapter(
+            jinja2.Environment(
+                loader=jinja2.loaders.PackageLoader('lapidary.render'),
+            )
+        ),
+        exclude_extend=[
+            'includes',
+            'gen',
+        ],
+        remove_suffixes=['.jinja'],
+    ).render(
         dict(
             get_version=importlib.metadata.version,
             config=config.model_dump(exclude_unset=True, exclude_defaults=True),
             document=await load_document(project_root, config, False),
         ),
         project_root,
-        exclude_extend=excludes,
-        remove_suffixes=['.jinja'],
     )
 
 
-async def render(project_root: Path, cache: bool) -> None:
+async def render(project_root: anyio.Path, cache: bool) -> None:
     model = await get_model(project_root, cache)
 
     logger.info('Render project')
 
-    from rybak import render
+    from rybak import TreeTemplate
     from rybak.jinja import JinjaAdapter
 
-    environment = jinja2.Environment(
-        loader=jinja2.loaders.PackageLoader('lapidary.render'),
-    )
-    excludes = [
-        'includes',
-        'pyproject.toml.jinja',
-        'gen/{{model.package}}/auth.py.jinja',  # TODO auth
-    ]
-    render(
-        JinjaAdapter(environment),
+    TreeTemplate(
+        JinjaAdapter(
+            jinja2.Environment(
+                loader=jinja2.loaders.PackageLoader('lapidary.render'),
+            )
+        ),
+        exclude_extend=[
+            'includes',
+            'pyproject.toml.jinja',
+            'gen/{{model.package}}/auth.py.jinja',  # TODO auth
+        ],
+        remove_suffixes=['.jinja'],
+    ).render(
         dict(
             model=model,
             get_version=importlib.metadata.version,
         ),
         project_root,
-        exclude_extend=excludes,
-        remove_suffixes=['.jinja'],
     )
 
 
