@@ -1,11 +1,7 @@
 import dataclasses as dc
 import enum
-import typing
 from collections.abc import Iterable, Mapping
-from typing import Annotated, Any, NamedTuple
-
-import pydantic
-from typing_extensions import Doc
+from typing import Any
 
 import lapidary.runtime.model.params as runtime
 
@@ -16,11 +12,10 @@ MimeMap = Mapping[MimeType, TypeHint]
 ResponseMap = Mapping[ResponseCode, MimeMap]
 
 
-@dc.dataclass(frozen=True)
-class AttributeAnnotationModel:
+@dc.dataclass
+class AttributeAnnotation:
     type: TypeHint
-    field_props: dict[str, typing.Any]
-
+    field_props: dict[str, Any]
     default: str | None = None
     style: str | None = None
     explode: bool | None = None
@@ -28,9 +23,9 @@ class AttributeAnnotationModel:
 
 
 @dc.dataclass
-class AttributeModel:
+class Attribute:
     name: str
-    annotation: AttributeAnnotationModel
+    annotation: AttributeAnnotation
     deprecated: bool = False
     """Currently not used"""
 
@@ -40,44 +35,48 @@ class AttributeModel:
     """
 
 
-class AuthModel(pydantic.BaseModel):
+@dc.dataclass
+class Auth:
     pass
 
 
-class ApiKeyAuthModel(AuthModel):
+@dc.dataclass
+class ApiKeyAuth(Auth):
     param_name: str
     placement: runtime.ParamLocation
 
 
-class HttpAuthModel(AuthModel):
+@dc.dataclass
+class HttpAuth(Auth):
     scheme: str
     bearer_format: str | None
 
 
-class OperationFunctionModel(NamedTuple):
+@dc.dataclass
+class OperationFunction:
     name: str
     request_type: TypeHint | None
-    params: Iterable[AttributeModel] = ()
+    params: Iterable[Attribute] = ()
     response_type: TypeHint | None = None
     auth_name: str | None = None
     docstr: str | None = None
 
 
 @dc.dataclass(kw_only=True)
-class Parameter(AttributeModel):
+class Parameter(Attribute):
     in_: runtime.ParamLocation
-    default: Annotated[Any, Doc('Default value, used only for global headers.')] = None
+    default: Any = None
+    """Default value, used only for global headers."""
+
     media_type: str | None = None
 
 
 class ModelType(enum.Enum):
     model = 'python'
-    param_model = 'param_model'
     exception = 'exception'
-    enum = 'enum'
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass
 class SchemaClass:
     class_name: str
     base_type: TypeHint
@@ -85,7 +84,7 @@ class SchemaClass:
     allow_extra: bool = False
     has_aliases: bool = False
     docstr: str | None = None
-    attributes: list[AttributeModel] = dc.field(default_factory=list)
+    attributes: list[Attribute] = dc.field(default_factory=list)
     model_type: ModelType = ModelType.model
 
     @property
@@ -98,7 +97,7 @@ class SchemaClass:
 @dc.dataclass
 class ClientInit:
     default_auth: str | None = None
-    auth_models: typing.Mapping[str, AuthModel] = dc.field(default_factory=dict)
+    auth_models: Mapping[str, Auth] = dc.field(default_factory=dict)
     base_url: str | None = None
     headers: list[tuple[str, str]] = dc.field(default_factory=list)
     response_map: ResponseMap | None = dc.field(default_factory=dict)
@@ -107,4 +106,4 @@ class ClientInit:
 @dc.dataclass(frozen=True)
 class ClientClass:
     init_method: ClientInit
-    methods: list[OperationFunctionModel] = dc.field(default_factory=list)
+    methods: list[OperationFunction] = dc.field(default_factory=list)

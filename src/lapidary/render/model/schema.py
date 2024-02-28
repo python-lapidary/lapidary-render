@@ -56,11 +56,11 @@ class OpenApi30SchemaConverter:
         )
 
     @resolve_ref
-    def process_property(self, value: openapi.Schema, stack: Stack, required: bool) -> python.AttributeModel:
+    def process_property(self, value: openapi.Schema, stack: Stack, required: bool) -> python.Attribute:
         alias = value.lapidary_name or names.maybe_mangle_name(stack.top())
         names.check_name(alias, False)
 
-        return python.AttributeModel(
+        return python.Attribute(
             name=alias,
             annotation=self.get_attr_annotation(value, stack, required),
         )
@@ -71,7 +71,7 @@ class OpenApi30SchemaConverter:
         value: openapi.Schema,
         stack: Stack,
         required: bool,
-    ) -> python.AttributeAnnotationModel:
+    ) -> python.AttributeAnnotation:
         """
         if typ is a schema, then it's a nested schema. Name should be parent_class_name+prop_name, and module is the same.
         Otherwise, it's a reference; schema, module and name should be resolved from it and used to generate type_ref
@@ -102,7 +102,7 @@ class OpenApi30SchemaConverter:
 
         default = None if value.required else 'lapidary.runtime.absent.ABSENT'
 
-        return python.AttributeAnnotationModel(
+        return python.AttributeAnnotation(
             type=self.process_schema(value, stack), default=default, field_props=field_props
         )
 

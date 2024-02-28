@@ -3,15 +3,15 @@ from collections.abc import Iterable, MutableSequence
 from typing import Self
 
 from .model import (
-    ApiKeyAuthModel,
-    AttributeAnnotationModel,
-    AttributeModel,
-    AuthModel,
+    ApiKeyAuth,
+    Attribute,
+    AttributeAnnotation,
+    Auth,
     ClientClass,
     ClientInit,
-    HttpAuthModel,
+    HttpAuth,
     ModelType,
-    OperationFunctionModel,
+    OperationFunction,
     Parameter,
     ResponseMap,
     SchemaClass,

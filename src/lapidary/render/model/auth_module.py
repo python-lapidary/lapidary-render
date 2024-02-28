@@ -36,13 +36,13 @@ def get_auth_param_type(security_scheme: openapi.SecurityScheme) -> python.type_
 
 def get_auth_models(
     model: dict[str, openapi.Reference | openapi.SecurityScheme],
-) -> typing.Mapping[str, python.AuthModel]:
-    result: typing.Mapping[str, python.AuthModel] = {name: get_auth_model(scheme) for name, scheme in model.items()}
+) -> typing.Mapping[str, python.Auth]:
+    result: typing.Mapping[str, python.Auth] = {name: get_auth_model(scheme) for name, scheme in model.items()}
     return result
 
 
 @singledispatch
-def get_auth_model(scheme: typing.Any) -> python.AuthModel | None:
+def get_auth_model(scheme: typing.Any) -> python.Auth | None:
     raise NotImplementedError(scheme)
 
 
@@ -53,7 +53,7 @@ def _(scheme: openapi.SecurityScheme):
 
 @get_auth_model.register(openapi.APIKeySecurityScheme)
 def _(scheme: openapi.APIKeySecurityScheme):
-    return python.ApiKeyAuthModel(
+    return python.ApiKeyAuth(
         placement=ParamLocation[scheme.in_.value],
         param_name=scheme.name,
     )
@@ -61,7 +61,7 @@ def _(scheme: openapi.APIKeySecurityScheme):
 
 @get_auth_model.register(openapi.HTTPSecurityScheme)
 def _(scheme: openapi.HTTPSecurityScheme):
-    return python.HttpAuthModel(
+    return python.HttpAuth(
         scheme=scheme.scheme,
         bearer_format=scheme.bearerFormat,
     )

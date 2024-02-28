@@ -151,7 +151,7 @@ class OpenApi30Converter:
         )
         response_type = self.process_responses(value.responses, stack.push('responses')) if value.responses else None
 
-        model = python.OperationFunctionModel(
+        model = python.OperationFunction(
             name=value.operationId,
             request_type=request_type,
             params=list(params.values()),
