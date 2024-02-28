@@ -5,7 +5,6 @@ from enum import Enum
 from typing import Annotated, Literal, Self, cast
 
 import pydantic
-from typing_extensions import Doc
 
 from lapidary.runtime.model.params import ParamLocation
 
@@ -594,11 +593,9 @@ class OpenApiModel(ExtendableModel):
             alias='x-lapidary-headers-global',
             default_factory=dict,
         ),
-        Doc(
-            'Headers added to every request. '
-            'Unlike with operation headers, the default value found in the schema is sent over the wire'
-        ),
     ]
+    """Headers added to every request.
+    Unlike with operation headers, the default value found in the schema is sent over the wire"""
 
     lapidary_responses_global: typing.Annotated[
         Responses | None,
