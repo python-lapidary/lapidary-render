@@ -1,12 +1,11 @@
 import logging
-from collections.abc import Collection, Iterable, Mapping
+from collections.abc import Iterable, Mapping
 from typing import cast
 
 from mimeparse import parse_media_range
 
 from .. import names
 from . import openapi, python
-from .python import type_hint_or_union
 from .refs import resolve_ref
 from .schema import OpenApi30SchemaConverter
 from .stack import Stack
@@ -103,34 +102,28 @@ class OpenApi30Converter:
             for method, operation in path_item.model_extra.items():
                 self.process_operation(operation, path_stack.push(method), common_params)
 
-    def process_request_body(self, value: openapi.RequestBody, stack: Stack) -> python.TypeHint | None:
-        types = self.process_content(value.content, stack.push('content'))
-        return type_hint_or_union(types)
+    def process_request_body(self, value: openapi.RequestBody, stack: Stack) -> python.MimeMap:
+        return self.process_content(value.content, stack.push('content'))
 
-    def process_responses(self, value: openapi.Responses, stack: Stack) -> python.TypeHint:
-        types = {
-            typ
-            for code, response in value.responses.items()
-            for typ in self.process_response(response, stack.push(code))
-        }
-
-        return python.type_hint_or_union(types)
+    def process_responses(self, value: openapi.Responses, stack: Stack) -> python.ResponseMap:
+        return {code: self.process_response(response, stack.push(code)) for code, response in value.responses.items()}
 
     @resolve_ref
     def process_response(
         self,
         value: openapi.Response,
         stack: Stack,
-    ) -> Iterable[python.TypeHint]:
+    ) -> python.MimeMap:
+        assert isinstance(value, openapi.Response)
         return self.process_content(value.content, stack.push('content'))
 
-    def process_content(self, value: Mapping[str, openapi.MediaType], stack: Stack) -> Collection[python.TypeHint]:
-        types = set()
+    def process_content(self, value: Mapping[str, openapi.MediaType], stack: Stack) -> python.MimeMap:
+        types = {}
         for mime, media_type in value.items():
             mime_parsed = parse_media_range(mime)
             if mime_parsed[:2] != ('application', 'json'):
                 continue
-            types.add(self.schema_converter.process_schema(media_type.schema_, stack.push_all(mime, 'schema')))
+            types[mime] = self.schema_converter.process_schema(media_type.schema_, stack.push_all(mime, 'schema'))
         return types
 
     def process_operation(
@@ -146,17 +139,18 @@ class OpenApi30Converter:
 
         params = self._mk_params(value.parameters, stack.push('parameters'), common_params)
 
-        request_type = (
+        request_body = (
             self.process_request_body(value.requestBody, stack.push('requestBody')) if value.requestBody else None
         )
-        response_type = self.process_responses(value.responses, stack.push('responses')) if value.responses else None
+        responses = self.process_responses(value.responses, stack.push('responses'))
 
         model = python.OperationFunction(
             name=value.operationId,
-            request_type=request_type,
-            params=list(params.values()),
-            response_type=response_type,
-            auth_name=None,
+            method=stack.top(),
+            path=stack[-2],
+            request_body=request_body,
+            params=params,
+            responses=responses,
         )
 
         self.target.client.body.methods.append(model)

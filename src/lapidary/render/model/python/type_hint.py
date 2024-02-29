@@ -70,7 +70,7 @@ class BuiltinTypeHint(TypeHint):
 
 
 class GenericTypeHint(TypeHint):
-    args: tuple[TypeHint, ...]
+    args: tuple[TypeHint | None, ...]
 
     class Config:
         extra = Extra.forbid

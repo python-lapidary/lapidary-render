@@ -73,7 +73,7 @@ class OpenApi30SchemaConverter:
         required: bool,
     ) -> python.AttributeAnnotation:
         """
-        if typ is a schema, then it's a nested schema. Name should be parent_class_name+prop_name, and module is the same.
+        if type is a schema, then it's a nested schema. Name should be parent_class_name+prop_name, and module is the same.
         Otherwise, it's a reference; schema, module and name should be resolved from it and used to generate type_ref
         """
 

@@ -1,22 +1,15 @@
 import abc
 import dataclasses as dc
-import itertools
 from collections.abc import Iterable, Mapping
 
 from .model import ClientClass, SchemaClass
 from .module_path import ModulePath
-from .type_hint import TypeHint
+from .type_hint import GenericTypeHint, TypeHint
 
 template_imports = [
     'builtins',
-    'pydantic',
     'typing',
     'typing_extensions',
-]
-
-default_imports = [
-    'lapidary.runtime',
-    'httpx',
 ]
 
 
@@ -42,8 +35,12 @@ class SchemaModule(AbstractModule):
 
     @property
     def imports(self) -> Iterable[str]:
-        for cls in self.body:
-            yield from cls.imports
+        dependencies = GenericTypeHint.union_of(
+            *[dep for cls in self.body for dep in cls.dependencies]
+        ).args  # flatten unions
+        imports = sorted({imp for dep in dependencies if dep for imp in dep.imports() if imp not in template_imports})
+
+        return imports
 
 
 @dc.dataclass(frozen=True, kw_only=True)
@@ -59,41 +56,7 @@ class ClientModule(AbstractModule):
 
     @property
     def imports(self) -> Iterable[str]:
-        global_response_type_imports = {
-            import_
-            for mime_map in self.body.init_method.response_map.values()
-            for type_hint in mime_map.values()
-            for import_ in type_hint.imports()
-        }
+        dependencies = GenericTypeHint.union_of(*self.body.dependencies).args  # flatten unions
+        imports = sorted({imp for dep in dependencies if dep for imp in dep.imports() if imp not in template_imports})
 
-        request_response_type_imports = {
-            import_
-            for func in self.body.methods
-            for imports in itertools.chain(
-                map(
-                    lambda elem: elem.imports(),
-                    filter(lambda elem: elem is not None, (func.response_type, func.request_type)),
-                )
-            )
-            for import_ in imports
-        }
-
-        param_type_imports = {
-            imp
-            for attr in self.body.methods
-            for t in attr.params
-            for imp in t.annotation.type.imports()
-            if imp not in default_imports and imp not in template_imports
-        }
-
-        imports = list(
-            {
-                *default_imports,
-                *global_response_type_imports,
-                *request_response_type_imports,
-                *param_type_imports,
-            }
-        )
-
-        imports.sort()
         return imports

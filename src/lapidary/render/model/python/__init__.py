@@ -10,6 +10,7 @@ from .model import (
     ClientClass,
     ClientInit,
     HttpAuth,
+    MimeMap,
     ModelType,
     OperationFunction,
     Parameter,
@@ -28,6 +29,8 @@ class ClientModel:
     schemas: MutableSequence[SchemaModule] = dc.field(default_factory=list)
 
     def packages(self: Self) -> Iterable[ModulePath]:
+        # Used to create __init__.py files in otherwise empty packages
+
         packages = {ModulePath(self.package)}
 
         # for each schema module get its package

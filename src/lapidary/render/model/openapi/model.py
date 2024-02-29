@@ -546,6 +546,7 @@ class PathItem(BaseModel):
         list[Reference[Parameter] | Parameter], UniqueListValidator, pydantic.Field(default_factory=list)
     ]
     __pydantic_extra__: dict[str, Operation]
+    """Keys are HTTP methods"""
 
 
 class Paths(ModelWithPatternProperties):

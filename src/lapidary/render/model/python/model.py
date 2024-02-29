@@ -1,15 +1,16 @@
 import dataclasses as dc
 import enum
 from collections.abc import Iterable, Mapping
-from typing import Any
+from typing import Any, TypeAlias
 
 import lapidary.runtime.model.params as runtime
 
-from .type_hint import TypeHint
+from .type_hint import TypeHint, type_hint_or_union
 
-MimeType = ResponseCode = str
-MimeMap = Mapping[MimeType, TypeHint]
-ResponseMap = Mapping[ResponseCode, MimeMap]
+MimeType: TypeAlias = str
+ResponseCode: TypeAlias = str
+MimeMap: TypeAlias = Mapping[MimeType, TypeHint]
+ResponseMap: TypeAlias = Mapping[ResponseCode, MimeMap]
 
 
 @dc.dataclass
@@ -34,6 +35,10 @@ class Attribute:
     Used for op method params. Required params are rendered before optional, and optional have default value ABSENT
     """
 
+    @property
+    def dependencies(self) -> Iterable[TypeHint]:
+        return [self.annotation.type]
+
 
 @dc.dataclass
 class Auth:
@@ -55,11 +60,32 @@ class HttpAuth(Auth):
 @dc.dataclass
 class OperationFunction:
     name: str
-    request_type: TypeHint | None
-    params: Iterable[Attribute] = ()
-    response_type: TypeHint | None = None
-    auth_name: str | None = None
-    docstr: str | None = None
+    method: str
+    path: str
+    request_body: MimeMap
+    params: Mapping[str, 'Parameter']
+    responses: ResponseMap
+
+    @property
+    def dependencies(self) -> Iterable[TypeHint]:
+        yield self.request_body_type
+        for param_value in self.params.values():
+            yield from param_value.dependencies
+        yield self.response_body_type
+
+    @property
+    def request_body_type(self) -> TypeHint | None:
+        if not self.request_body:
+            return None
+        types = self.request_body.values()
+        return type_hint_or_union(types) if types else None
+
+    @property
+    def response_body_type(self) -> TypeHint | None:
+        types = set()
+        for mime_map in self.responses.values():
+            types.update(set(mime_map.values()))
+        return type_hint_or_union(types)
 
 
 @dc.dataclass(kw_only=True)
@@ -88,10 +114,10 @@ class SchemaClass:
     model_type: ModelType = ModelType.model
 
     @property
-    def imports(self) -> Iterable[str]:
-        yield from self.base_type.imports()
+    def dependencies(self) -> Iterable[TypeHint]:
+        yield self.base_type
         for prop in self.attributes:
-            yield from prop.annotation.type.imports()
+            yield from prop.dependencies
 
 
 @dc.dataclass
@@ -100,10 +126,21 @@ class ClientInit:
     auth_models: Mapping[str, Auth] = dc.field(default_factory=dict)
     base_url: str | None = None
     headers: list[tuple[str, str]] = dc.field(default_factory=list)
-    response_map: ResponseMap | None = dc.field(default_factory=dict)
+    response_map: ResponseMap = dc.field(default_factory=dict)
+
+    @property
+    def dependencies(self) -> Iterable[TypeHint]:
+        for mime_map in self.response_map.values():
+            yield from mime_map.values()
 
 
 @dc.dataclass(frozen=True)
 class ClientClass:
     init_method: ClientInit
     methods: list[OperationFunction] = dc.field(default_factory=list)
+
+    @property
+    def dependencies(self) -> Iterable[TypeHint]:
+        yield from self.init_method.dependencies
+        for fn in self.methods:
+            yield from fn.dependencies

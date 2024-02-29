@@ -1,17 +1,34 @@
 {%- import 'includes/type_hint.py.jinja' as th %}
-{%- macro render_param(param) %}
-        {{ param.name }}: {{ th.type_hint(param.annotation.type, path) }}{% if not param.required %} = lapidary.runtime.absent.ABSENT{% endif %},
+{%- macro render_param(name, param) %}
+        {{ name }}: {{ th.type_hint(param.annotation.type, path) }}{% if not param.required %} = lapidary.runtime.absent.ABSENT{% endif %},
 {%- endmacro %}
+{%- macro render_mime_map(mime_map) -%}
+{
+{%- for media_type, type_hint in mime_map.items() %}
+    '{{ media_type }}': {{ th.type_hint(type_hint) }},
+{%- endfor %}
+}{% endmacro %}
     async def {{ func.name }}(
         self,
-{%- if func.request_type is not none %}
-        request_body: {{ th.type_hint(func.request_type, path) }}, /, {% endif %}
+{%- if func.request_body_type is not none %}
+        request_body: Annotated[
+            {{ th.type_hint(func.request_body_type, path) }},
+            RequestBody({{ render_mime_map(func.request_body) | indent(12, False) }}),
+        ],
+{%- endif %}
 {%- if func.params | length > 0 %}
         *,{% endif %}
-{%- for param in func.params if param.required %}
-        {{- render_param(param) }}
-{%- endfor %}{% for param in func.params if not param.required %}
-        {{- render_param(param) }}
+{%- for param_name, param in func.params.items() if param.required %}
+        {{- render_param(param_name, param) }}
+{%- endfor %}{% for param_name, param in func.params.items() if not param.required %}
+        {{- render_param(param_name, param) }}
 {%- endfor %}
-    ) -> {{ th.type_hint(func.response_type, path) }}:
-        ...
+    ) -> Annotated[
+        {{ th.type_hint(func.response_body_type, path) }},
+        Responses({
+            {%- for code, mime_map in func.responses.items() %}
+            '{{ code }}': {{ render_mime_map(mime_map) | indent(12, False) }},
+            {%- endfor %}
+        })
+    ]:
+        pass

@@ -34,3 +34,6 @@ class Stack:
 
     def __eq__(self, other):
         return isinstance(other, Stack) and self.path == other.path
+
+    def __getitem__(self, item: int) -> str | int:
+        return self.path[item]

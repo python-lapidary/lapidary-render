@@ -47,7 +47,7 @@ extend-exclude = [
     "src/lapidary/render/templates/",
     "tests/e2e",
 ]
-extend-ignore = ['F401', 'F403', 'F405']
+extend-ignore = ['F401', 'F403', 'F405', 'UP040']
 line-length = 120
 namespace-packages = ["lapidary/render"]
 src = ["src"]

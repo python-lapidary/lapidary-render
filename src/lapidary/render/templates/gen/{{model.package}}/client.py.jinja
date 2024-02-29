@@ -5,9 +5,25 @@ __all__ = [
     'Auth',
 ]
 
-import lapidary.runtime
-from {{ model.package }}.auth import Auth
+from typing_extensions import Annotated, Optional, Union
+from lapidary.runtime import *
 
+{% for imp in model.client.imports -%}
+import {{ imp }}
+{% endfor %}
 
-class ApiClient(lapidary.runtime.ClientBase):
+class ApiClient(ClientBase):
+    def __init__(
+        self,
+        *,
+        base_url
+{%- if model.base_urls | length > 0 -%}
+        = '{{ model.base_urls[0] }}',
+{%- endif %}
+    ):
+        super().__init__(base_url)
+{% for func in model.client.body.methods %}
+{%- include 'includes/client/method_operation.py.jinja' %}
+{%- else %}
     pass
+{%- endfor %}
