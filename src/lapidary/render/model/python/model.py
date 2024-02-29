@@ -3,8 +3,7 @@ import enum
 from collections.abc import Iterable, Mapping
 from typing import Any, TypeAlias
 
-import lapidary.runtime.model.params as runtime
-
+from ..openapi import ParameterLocation as ParamLocation
 from .type_hint import TypeHint, type_hint_or_union
 
 MimeType: TypeAlias = str
@@ -48,7 +47,7 @@ class Auth:
 @dc.dataclass
 class ApiKeyAuth(Auth):
     param_name: str
-    placement: runtime.ParamLocation
+    placement: ParamLocation
 
 
 @dc.dataclass
@@ -89,12 +88,24 @@ class OperationFunction:
 
 
 @dc.dataclass(kw_only=True)
-class Parameter(Attribute):
-    in_: runtime.ParamLocation
+class Parameter:
+    name: str
+    annotation: AttributeAnnotation
+
+    required: bool
+    """
+    Used for op method params. Required params are rendered before optional, and optional have default value ABSENT
+    """
+
+    in_: ParamLocation
     default: Any = None
     """Default value, used only for global headers."""
 
     media_type: str | None = None
+
+    @property
+    def dependencies(self) -> Iterable[TypeHint]:
+        return [self.annotation.type]
 
 
 class ModelType(enum.Enum):

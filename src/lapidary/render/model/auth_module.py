@@ -1,8 +1,6 @@
 import typing
 from functools import singledispatch
 
-from lapidary.runtime.model.params import ParamLocation
-
 from . import openapi, python
 
 
@@ -54,7 +52,7 @@ def _(scheme: openapi.SecurityScheme):
 @get_auth_model.register(openapi.APIKeySecurityScheme)
 def _(scheme: openapi.APIKeySecurityScheme):
     return python.ApiKeyAuth(
-        placement=ParamLocation[scheme.in_.value],
+        placement=python.ParamLocation[scheme.in_.value],
         param_name=scheme.name,
     )
 
