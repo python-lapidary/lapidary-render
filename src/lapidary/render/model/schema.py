@@ -116,9 +116,9 @@ class OpenApi30SchemaConverter:
         required = True  # TODO
 
         if value.nullable:
-            typ = typ.union_with(python.BuiltinTypeHint.from_str('None'))
+            typ = python.GenericTypeHint.union_of(typ, python.BuiltinTypeHint.from_str('None'))
         if not required:
-            typ = typ.union_with(python.TypeHint.from_type(Absent))
+            typ = python.GenericTypeHint.union_of(typ, python.TypeHint.from_type(Absent))
 
         return typ
 
@@ -128,7 +128,7 @@ class OpenApi30SchemaConverter:
         schema: openapi.Schema,
     ) -> python.TypeHint:
         return python.GenericTypeHint.union_of(
-            tuple(self.process_schema(sub_schema, stack.push(idx)) for idx, sub_schema in enumerate(schema.oneOf))
+            *tuple(self.process_schema(sub_schema, stack.push(idx)) for idx, sub_schema in enumerate(schema.oneOf))
         )
 
     def _get_composite_type_hint(
@@ -154,7 +154,7 @@ class OpenApi30SchemaConverter:
             self._process_schema_object(value, stack)
             return resolve_type_hint(str(self.root_package), stack)
         elif value.type == openapi.Type.array:
-            return self.process_schema(value.items, stack.push('items')).list_of()
+            return python.GenericTypeHint.list_of(self.process_schema(value.items, stack.push('items')))
         elif value.anyOf:
             return self._get_composite_type_hint(stack.push('anyOf'), value.anyOf)
         elif value.oneOf:
