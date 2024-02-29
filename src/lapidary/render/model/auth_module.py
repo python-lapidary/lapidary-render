@@ -10,10 +10,8 @@ def get_auth_module(openapi_model: openapi.OpenApiModel, module: python.ModulePa
         if openapi_model.components and openapi_model.components.securitySchemes
         else {}
     )
-    imports = list({import_ for scheme in schemes.values() for import_ in scheme.imports()})
     return python.AuthModule(
         schemes=schemes,
-        imports=imports,
         path=module,
     )
 
