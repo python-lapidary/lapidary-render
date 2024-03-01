@@ -1,15 +1,12 @@
-from collections.abc import Collection
-from typing import Self
+import dataclasses as dc
+from collections.abc import Collection, Iterable
+from typing import Self, cast
 
-from pydantic import BaseModel, Extra
 
-
-class TypeHint(BaseModel):
+@dc.dataclass(slots=True, frozen=True)
+class TypeHint:
     module: str
     name: str
-
-    class Config:
-        extra = Extra.forbid
 
     def __repr__(self):
         return self.full_name()
@@ -49,11 +46,9 @@ class TypeHint(BaseModel):
         return self.module.__hash__() * 14159 + self.name.__hash__()
 
 
+@dc.dataclass(slots=True, frozen=True)
 class BuiltinTypeHint(TypeHint):
     module: str = 'builtins'
-
-    class Config:
-        extra = Extra.forbid
 
     def __repr__(self):
         return self.full_name()
@@ -69,18 +64,16 @@ class BuiltinTypeHint(TypeHint):
         return self.name
 
 
+@dc.dataclass(slots=True, frozen=True)
 class GenericTypeHint(TypeHint):
-    args: tuple[TypeHint | None, ...]
-
-    class Config:
-        extra = Extra.forbid
+    args: Iterable[TypeHint | None]
 
     @staticmethod
     def union_of(*types: TypeHint) -> 'GenericTypeHint':
         args = set()
         for typ in types:
             if typ and typ.is_union():
-                args.update(typ.args)
+                args.update(cast(GenericTypeHint, typ).args)
             else:
                 args.add(typ)
         return GenericTypeHint(module='typing', name='Union', args=sorted(args, key=str))
@@ -124,4 +117,4 @@ def type_hint_or_union(types: Collection[TypeHint]) -> TypeHint | None:
     if len(types) == 1:
         return next(iter(types))
     else:
-        return TypeHint(module='typing', name='Union', types=types)
+        return GenericTypeHint.union_of(*types)
