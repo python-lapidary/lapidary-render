@@ -53,7 +53,7 @@ class Type(Enum):
     string = 'string'
 
 
-class Discriminator(pydantic.BaseModel):
+class Discriminator(BaseModel):
     propertyName: str
     mapping: dict[str, str] | None = None
 
@@ -128,19 +128,13 @@ class OpenIdConnectSecurityScheme(SecuritySchemeBase):
     openIdConnectUrl: str
 
 
-class ImplicitOAuthFlow(pydantic.BaseModel):
-    class Config:
-        extra = pydantic.Extra.forbid
-
+class ImplicitOAuthFlow(BaseModel):
     authorizationUrl: str
     refreshUrl: str | None = None
     scopes: dict[str, str]
 
 
-class PasswordOAuthFlow(pydantic.BaseModel):
-    class Config:
-        extra = pydantic.Extra.forbid
-
+class PasswordOAuthFlow(BaseModel):
     tokenUrl: str
     refreshUrl: str | None = None
     scopes: dict[str, str] | None = None
@@ -150,10 +144,7 @@ class ClientCredentialsFlow(PasswordOAuthFlow):
     pass
 
 
-class AuthorizationCodeOAuthFlow(pydantic.BaseModel):
-    class Config:
-        extra = pydantic.Extra.forbid
-
+class AuthorizationCodeOAuthFlow(BaseModel):
     authorizationUrl: str
     tokenUrl: str
     refreshUrl: str | None = None
@@ -256,10 +247,7 @@ class Tag(ExtendableModel):
     externalDocs: ExternalDocumentation | None = None
 
 
-class OAuthFlows(pydantic.BaseModel):
-    class Config:
-        extra = pydantic.Extra.forbid
-
+class OAuthFlows(BaseModel):
     implicit: ImplicitOAuthFlow | None = None
     password: PasswordOAuthFlow | None = None
     clientCredentials: ClientCredentialsFlow | None = None
@@ -296,7 +284,7 @@ class ParameterBase(ExtendableModel):
     explode: bool | None = None
     allowReserved: bool | None = False
     schema_: typing.Annotated[None | Reference[Schema] | Schema, pydantic.Field(alias='schema')] = None
-    example: typing.Any | None = None
+    example: typing.Any = None
     examples: dict[str, Reference[Example] | Example] | None = None
 
     @pydantic.model_validator(mode='before')
@@ -389,7 +377,7 @@ class Operation(ExtendableModel):
     servers: list[Server] | None = None
 
 
-class PathItem(BaseModel):
+class PathItem(ModelWithAdditionalProperties):
     summary: str | None = None
     description: str | None = None
     servers: list[Server] | None = None
