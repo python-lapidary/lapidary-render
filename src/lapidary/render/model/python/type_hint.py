@@ -3,7 +3,7 @@ from collections.abc import Collection, Iterable
 from typing import Self, cast
 
 
-@dc.dataclass(slots=True, frozen=True)
+@dc.dataclass(slots=True, frozen=True, kw_only=True)
 class TypeHint:
     module: str
     name: str
@@ -46,7 +46,7 @@ class TypeHint:
         return self.module.__hash__() * 14159 + self.name.__hash__()
 
 
-@dc.dataclass(slots=True, frozen=True)
+@dc.dataclass(slots=True, frozen=True, kw_only=True)
 class BuiltinTypeHint(TypeHint):
     module: str = 'builtins'
 
@@ -64,7 +64,7 @@ class BuiltinTypeHint(TypeHint):
         return self.name
 
 
-@dc.dataclass(slots=True, frozen=True)
+@dc.dataclass(slots=True, frozen=True, kw_only=True)
 class GenericTypeHint(TypeHint):
     args: Iterable[TypeHint | None]
 
@@ -91,7 +91,7 @@ class GenericTypeHint(TypeHint):
         return self.full_name()
 
     def full_name(self) -> str:
-        return f'{super().full_name()}[{", ".join(arg.full_name() for arg in self.args)}]'
+        return f'{super(GenericTypeHint, self).full_name()}[{", ".join(arg.full_name() for arg in self.args)}]'
 
     @property
     def origin(self) -> TypeHint:
@@ -102,10 +102,12 @@ class GenericTypeHint(TypeHint):
         return GenericTypeHint(module='builtins', name='list', args=(item,))
 
     def __eq__(self, other) -> bool:
-        return super().__eq__(other) and (isinstance(other, GenericTypeHint) and self.args == other.args)
+        return super(GenericTypeHint, self).__eq__(other) and (
+            isinstance(other, GenericTypeHint) and self.args == other.args
+        )
 
     def __hash__(self) -> int:
-        hash_ = super().__hash__()
+        hash_ = super(GenericTypeHint, self).__hash__()
         for arg in self.args:
             hash_ = (hash_ << 1) + arg.__hash__()
         return hash_
