@@ -67,28 +67,28 @@ class OpenApi30Converter:
         if not isinstance(value, openapi.ParameterBase):
             raise TypeError(f'Expected Parameter object at {stack}, got {type(value).__name__}.')
         if value.schema_:
-            return python.Parameter(
-                name=value.effective_name,
-                annotation=self.schema_converter.get_attr_annotation(
-                    value.schema_, stack.push('schema'), value.required
-                ),
-                required=value.required,
-                in_=value.in_,
-            )
+            media_type: str | None = None
+            # encoding: str | None = None
+            typ = self.schema_converter.process_schema(value.schema_, stack.push('schema'), value.required)
         elif value.content:
             media_type, media_type_obj = next(iter(value.content.items()))
-
-            return python.Parameter(
-                name=value.effective_name,
-                annotation=self.schema_converter.get_attr_annotation(
-                    media_type_obj.schema_, stack.push_all('content', media_type), value.required
-                ),
-                required=value.required,
-                in_=value.in_,
-                media_type=media_type,
+            # encoding = media_type_obj.encoding
+            typ = self.schema_converter.process_schema(
+                media_type_obj.schema_, stack.push_all('content', media_type), value.required
             )
         else:
             raise TypeError(f'{stack}: schema or content is required')
+
+        return python.Parameter(
+            name=value.lapidary_name or names.get_param_python_name(value),
+            alias=value.name,
+            type=typ,
+            in_=value.in_,
+            style=value.style,
+            explode=value.explode,
+            required=value.required,
+            media_type=media_type,
+        )
 
     def process_paths(self, value: openapi.Paths, stack: Stack) -> None:
         for path, path_item in value.paths.items():
@@ -160,14 +160,14 @@ class OpenApi30Converter:
         value: list[openapi.Parameter | openapi.Reference[openapi.Parameter]],
         stack: Stack,
         common_params: Iterable[python.Parameter],
-    ):
+    ) -> Iterable[python.Parameter]:
         params = {}
         for param in common_params:
-            params[names.get_param_python_name(param)] = param
+            params[param.name] = param
         for idx, oa_param in enumerate(value):
             param = self.process_parameter(oa_param, stack.push(idx))
-            params[names.get_param_python_name(param)] = param
-        return params
+            params[param.name] = param
+        return list(params.values())
 
     def resolve_ref[Target](self, ref: openapi.Reference[Target]) -> tuple[Target, Stack]:
         """Resolve reference to OpenAPI object and its direct path."""

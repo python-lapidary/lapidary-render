@@ -2,11 +2,12 @@
 
 __all__ = [
     'ApiClient',
-    'Auth',
 ]
 
-from typing_extensions import Annotated, Optional, Union
+import typing
+from typing_extensions import Annotated, Optional, Self
 from lapidary.runtime import *
+
 
 {% for imp in model.client.imports -%}
 import {{ imp }}

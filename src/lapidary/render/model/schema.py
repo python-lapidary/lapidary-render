@@ -5,8 +5,6 @@ import uuid
 from collections import defaultdict
 from collections.abc import Callable, Iterable, MutableMapping
 
-from lapidary.runtime.absent import Absent
-
 from .. import json_pointer, names
 from . import openapi, python
 from .refs import resolve_ref
@@ -107,18 +105,14 @@ class OpenApi30SchemaConverter:
         )
 
     @resolve_ref
-    def process_schema(self, value: openapi.Schema, stack: Stack) -> python.TypeHint:
+    def process_schema(self, value: openapi.Schema, stack: Stack, required: bool = True) -> python.TypeHint:
         assert isinstance(value, openapi.Schema)
         logger.debug('process schema %s', stack)
 
         typ = self._process_schema(stack, value)
 
-        required = True  # TODO
-
-        if value.nullable:
+        if value.nullable or not required:
             typ = python.GenericTypeHint.union_of(typ, python.BuiltinTypeHint.from_str('None'))
-        if not required:
-            typ = python.GenericTypeHint.union_of(typ, python.TypeHint.from_type(Absent))
 
         return typ
 

@@ -4,6 +4,7 @@ from collections.abc import Iterable, Mapping
 from typing import Any, TypeAlias
 
 from ..openapi import ParameterLocation as ParamLocation
+from ..openapi import Style as ParamStyle
 from .type_hint import TypeHint, type_hint_or_union
 
 MimeType: TypeAlias = str
@@ -62,14 +63,14 @@ class OperationFunction:
     method: str
     path: str
     request_body: MimeMap
-    params: Mapping[str, 'Parameter']
+    params: Iterable['Parameter']
     responses: ResponseMap
 
     @property
     def dependencies(self) -> Iterable[TypeHint]:
         yield self.request_body_type
-        for param_value in self.params.values():
-            yield from param_value.dependencies
+        for param in self.params:
+            yield from param.dependencies
         yield self.response_body_type
 
     @property
@@ -90,11 +91,16 @@ class OperationFunction:
 @dc.dataclass(kw_only=True)
 class Parameter:
     name: str
-    annotation: AttributeAnnotation
+    """Python name"""
+
+    alias: str | None
+    """Header name"""
+
+    type: TypeHint
 
     required: bool
     """
-    Used for op method params. Required params are rendered before optional, and optional have default value ABSENT
+    Required params are rendered before optional, and optional have default value None
     """
 
     in_: ParamLocation
@@ -102,10 +108,12 @@ class Parameter:
     """Default value, used only for global headers."""
 
     media_type: str | None = None
+    style: ParamStyle | None
+    explode: bool | None
 
     @property
     def dependencies(self) -> Iterable[TypeHint]:
-        return [self.annotation.type]
+        yield self.type
 
 
 class ModelType(enum.Enum):
