@@ -37,11 +37,27 @@ class OpenApi30Converter:
     def process(self) -> python.ClientModel:
         stack = Stack()
 
+        self.process_servers(self.src.servers, stack.push('servers'))
         self.process_global_responses(self.src.lapidary_responses_global, stack.push('x-lapidary-responses-global'))
         self.process_global_headers(self.src.lapidary_headers_global, stack.push('x-lapidary-headers-global'))
         self.process_paths(self.src.paths, stack.push('paths'))
         self.target.schemas.extend(self.schema_converter.schema_modules)
         return self.target
+
+    def process_servers(self, value: list[openapi.Server], _: Stack) -> None:
+        server_len = len(value)
+        if server_len == 0:
+            logger.warning('No servers found')
+            return
+        elif server_len > 0:
+            logger.warning('Multiple servers found, using the first')
+
+        server = value[0]
+        server_url = server.url
+        if server.variables:
+            server_url = server_url.format(**{name: var.default for name, var in server.variables.items()})
+
+        self.target.client.body.init_method.base_url = server_url
 
     def process_global_headers(self, value: Mapping[str, openapi.Header], stack: Stack) -> None:
         logger.debug('Process global headers %s', stack)

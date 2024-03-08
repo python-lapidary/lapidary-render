@@ -17,10 +17,7 @@ class ApiClient(ClientBase):
     def __init__(
         self,
         *,
-        base_url
-{%- if model.base_urls | length > 0 -%}
-        = '{{ model.base_urls[0] }}',
-{%- endif %}
+        base_url{% if model.client.body.init_method.base_url %}='{{ model.client.body.init_method.base_url }}'{% endif %},
     ):
         super().__init__(base_url)
 {% for func in model.client.body.methods %}

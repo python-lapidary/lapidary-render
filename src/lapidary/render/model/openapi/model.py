@@ -35,13 +35,13 @@ class Contact(ExtendableModel):
 
 class License(ExtendableModel):
     name: str
-    url: str | None
+    url: str | None = None
 
 
 class ServerVariable(ExtendableModel):
-    enum: list[str] | None
+    enum: list[str] | None = None
     default: str
-    description: str | None
+    description: str | None = None
 
 
 class Type(Enum):
