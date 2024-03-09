@@ -5,8 +5,6 @@ import uuid
 from collections import defaultdict
 from collections.abc import Callable, Iterable, MutableMapping
 
-from lapidary.runtime.absent import Absent
-
 from .. import json_pointer, names
 from . import openapi, python
 from .refs import resolve_ref
@@ -56,11 +54,11 @@ class OpenApi30SchemaConverter:
         )
 
     @resolve_ref
-    def process_property(self, value: openapi.Schema, stack: Stack, required: bool) -> python.AttributeModel:
+    def process_property(self, value: openapi.Schema, stack: Stack, required: bool) -> python.Attribute:
         alias = value.lapidary_name or names.maybe_mangle_name(stack.top())
         names.check_name(alias, False)
 
-        return python.AttributeModel(
+        return python.Attribute(
             name=alias,
             annotation=self.get_attr_annotation(value, stack, required),
         )
@@ -71,9 +69,9 @@ class OpenApi30SchemaConverter:
         value: openapi.Schema,
         stack: Stack,
         required: bool,
-    ) -> python.AttributeAnnotationModel:
+    ) -> python.AttributeAnnotation:
         """
-        if typ is a schema, then it's a nested schema. Name should be parent_class_name+prop_name, and module is the same.
+        if type is a schema, then it's a nested schema. Name should be parent_class_name+prop_name, and module is the same.
         Otherwise, it's a reference; schema, module and name should be resolved from it and used to generate type_ref
         """
 
@@ -102,23 +100,19 @@ class OpenApi30SchemaConverter:
 
         default = None if value.required else 'lapidary.runtime.absent.ABSENT'
 
-        return python.AttributeAnnotationModel(
+        return python.AttributeAnnotation(
             type=self.process_schema(value, stack), default=default, field_props=field_props
         )
 
     @resolve_ref
-    def process_schema(self, value: openapi.Schema, stack: Stack) -> python.TypeHint:
+    def process_schema(self, value: openapi.Schema, stack: Stack, required: bool = True) -> python.TypeHint:
         assert isinstance(value, openapi.Schema)
         logger.debug('process schema %s', stack)
 
         typ = self._process_schema(stack, value)
 
-        required = True  # TODO
-
-        if value.nullable:
-            typ = typ.union_with(python.BuiltinTypeHint.from_str('None'))
-        if not required:
-            typ = typ.union_with(python.TypeHint.from_type(Absent))
+        if value.nullable or not required:
+            typ = python.GenericTypeHint.union_of(typ, python.BuiltinTypeHint.from_str('None'))
 
         return typ
 
@@ -128,7 +122,7 @@ class OpenApi30SchemaConverter:
         schema: openapi.Schema,
     ) -> python.TypeHint:
         return python.GenericTypeHint.union_of(
-            tuple(self.process_schema(sub_schema, stack.push(idx)) for idx, sub_schema in enumerate(schema.oneOf))
+            *tuple(self.process_schema(sub_schema, stack.push(idx)) for idx, sub_schema in enumerate(schema.oneOf))
         )
 
     def _get_composite_type_hint(
@@ -154,7 +148,7 @@ class OpenApi30SchemaConverter:
             self._process_schema_object(value, stack)
             return resolve_type_hint(str(self.root_package), stack)
         elif value.type == openapi.Type.array:
-            return self.process_schema(value.items, stack.push('items')).list_of()
+            return python.GenericTypeHint.list_of(self.process_schema(value.items, stack.push('items')))
         elif value.anyOf:
             return self._get_composite_type_hint(stack.push('anyOf'), value.anyOf)
         elif value.oneOf:

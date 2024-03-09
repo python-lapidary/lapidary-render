@@ -1,0 +1,8 @@
+openapi: 3.0.2
+info:
+  title: Test single server
+  description: ''
+  version: 1.0.0
+servers:
+- url: https://petstore3.swagger.io/api/v3
+paths: {}

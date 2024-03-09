@@ -1,14 +1,13 @@
 import abc
+import enum
 import typing
 from collections.abc import Mapping, Sequence
 from enum import Enum
 from typing import Annotated, Literal, Self, cast
 
 import pydantic
-from typing_extensions import Doc
 
-from lapidary.runtime.model.params import ParamLocation
-
+from ...json_pointer import decode_json_pointer
 from .base import (
     BaseModel,
     ExtendableModel,
@@ -18,65 +17,6 @@ from .base import (
     validate_example_xor_examples,
 )
 from .ext import LapidaryModelType
-
-__all__ = [
-    'APIKeySecurityScheme',
-    'AuthorizationCodeOAuthFlow',
-    'Callback',
-    'ClientCredentialsFlow',
-    'Components',
-    'Contact',
-    'Discriminator',
-    'Encoding',
-    'Example',
-    'ExternalDocumentation',
-    'HTTPSecurityScheme',
-    'Header',
-    'ImplicitOAuthFlow',
-    'In',
-    'In1',
-    'In2',
-    'In3',
-    'In4',
-    'Info',
-    'License',
-    'Link',
-    'MediaType',
-    'OAuth2SecurityScheme',
-    'OAuthFlows',
-    'OpenApiModel',
-    'OpenIdConnectSecurityScheme',
-    'Operation',
-    'Parameter',
-    'ParameterBase',
-    'ParameterLocation',
-    'ParameterLocationItem',
-    'ParameterLocationItem1',
-    'ParameterLocationItem2',
-    'ParameterLocationItem3',
-    'PasswordOAuthFlow',
-    'PathItem',
-    'Paths',
-    'Reference',
-    'RequestBody',
-    'Required',
-    'Response',
-    'Responses',
-    'Schema',
-    'SecurityRequirement',
-    'SecurityScheme',
-    'Server',
-    'ServerVariable',
-    'Style',
-    'Style1',
-    'Style2',
-    'Style4',
-    'Tag',
-    'Type',
-    'XML',
-]
-
-from ...json_pointer import decode_json_pointer
 
 
 class Reference[Target](BaseModel):
@@ -95,13 +35,13 @@ class Contact(ExtendableModel):
 
 class License(ExtendableModel):
     name: str
-    url: str | None
+    url: str | None = None
 
 
 class ServerVariable(ExtendableModel):
-    enum: list[str] | None
+    enum: list[str] | None = None
     default: str
-    description: str | None
+    description: str | None = None
 
 
 class Type(Enum):
@@ -113,7 +53,7 @@ class Type(Enum):
     string = 'string'
 
 
-class Discriminator(pydantic.BaseModel):
+class Discriminator(BaseModel):
     propertyName: str
     mapping: dict[str, str] | None = None
 
@@ -134,7 +74,13 @@ class Example(ExtendableModel):
 
 
 class Style(Enum):
+    deepObject = 'deepObject'
+    form = 'form'
+    label = 'label'
+    matrix = 'matrix'
+    pipeDelimited = 'pipeDelimited'
     simple = 'simple'
+    spaceDelimited = 'spaceDelimited'
 
 
 class SecurityRequirement(pydantic.RootModel):
@@ -146,107 +92,11 @@ class ExternalDocumentation(ExtendableModel):
     url: str
 
 
-class In(Enum):
+class ParameterLocation(enum.Enum):
+    cookie = 'cookie'
+    header = 'header'
     path = 'path'
-
-
-class Style1(Enum):
-    matrix = 'matrix'
-    label = 'label'
-    simple = 'simple'
-
-
-class Required(Enum):
-    bool_True = True
-
-
-class ParameterLocationItem(pydantic.BaseModel):
-    """
-    Parameter in path
-    """
-
-    in_: typing.Annotated[In | None, pydantic.Field(alias='in')]
-    style: Style1 | None = 'simple'
-    required: Required
-
-    class Config:
-        extra = pydantic.Extra.forbid
-        allow_population_by_field_name = True
-
-
-class In1(Enum):
     query = 'query'
-
-
-class Style2(Enum):
-    form = 'form'
-    spaceDelimited = 'spaceDelimited'
-    pipeDelimited = 'pipeDelimited'
-    deepObject = 'deepObject'
-
-
-class ParameterLocationItem1(pydantic.BaseModel):
-    """
-    Parameter in query
-    """
-
-    in_: typing.Annotated[In1 | None, pydantic.Field(alias='in')]
-    style: Style2 | None = 'form'
-
-    class Config:
-        extra = pydantic.Extra.forbid
-        allow_population_by_field_name = True
-
-
-class In2(Enum):
-    header = 'header'
-
-
-class ParameterLocationItem2(pydantic.BaseModel):
-    """
-    Parameter in header
-    """
-
-    in_: typing.Annotated[In2 | None, pydantic.Field(alias='in')]
-    style: Style | None = 'simple'
-
-    class Config:
-        extra = pydantic.Extra.forbid
-        allow_population_by_field_name = True
-
-
-class In3(Enum):
-    cookie = 'cookie'
-
-
-class Style4(Enum):
-    form = 'form'
-
-
-class ParameterLocationItem3(pydantic.BaseModel):
-    """
-    Parameter in cookie
-    """
-
-    in_: typing.Annotated[In3 | None, pydantic.Field(alias='in')]
-    style: Style4 | None = 'form'
-
-    class Config:
-        extra = pydantic.Extra.forbid
-        allow_population_by_field_name = True
-
-
-class ParameterLocation(pydantic.RootModel):
-    root: typing.Annotated[
-        ParameterLocationItem | ParameterLocationItem1 | ParameterLocationItem2 | ParameterLocationItem3,
-        pydantic.Field(description='Parameter location'),
-    ]
-
-
-class In4(Enum):
-    header = 'header'
-    query = 'query'
-    cookie = 'cookie'
 
 
 class SecuritySchemeBase(abc.ABC, ExtendableModel):
@@ -257,7 +107,7 @@ class SecuritySchemeBase(abc.ABC, ExtendableModel):
 class APIKeySecurityScheme(SecuritySchemeBase):
     type: Literal['apiKey']
     name: str
-    in_: typing.Annotated[In4, pydantic.Field(alias='in')]
+    in_: typing.Annotated[ParameterLocation, pydantic.Field(alias='in')]
 
 
 class HTTPSecurityScheme(SecuritySchemeBase):
@@ -278,19 +128,13 @@ class OpenIdConnectSecurityScheme(SecuritySchemeBase):
     openIdConnectUrl: str
 
 
-class ImplicitOAuthFlow(pydantic.BaseModel):
-    class Config:
-        extra = pydantic.Extra.forbid
-
+class ImplicitOAuthFlow(BaseModel):
     authorizationUrl: str
     refreshUrl: str | None = None
     scopes: dict[str, str]
 
 
-class PasswordOAuthFlow(pydantic.BaseModel):
-    class Config:
-        extra = pydantic.Extra.forbid
-
+class PasswordOAuthFlow(BaseModel):
     tokenUrl: str
     refreshUrl: str | None = None
     scopes: dict[str, str] | None = None
@@ -300,10 +144,7 @@ class ClientCredentialsFlow(PasswordOAuthFlow):
     pass
 
 
-class AuthorizationCodeOAuthFlow(pydantic.BaseModel):
-    class Config:
-        extra = pydantic.Extra.forbid
-
+class AuthorizationCodeOAuthFlow(BaseModel):
     authorizationUrl: str
     tokenUrl: str
     refreshUrl: str | None = None
@@ -406,10 +247,7 @@ class Tag(ExtendableModel):
     externalDocs: ExternalDocumentation | None = None
 
 
-class OAuthFlows(pydantic.BaseModel):
-    class Config:
-        extra = pydantic.Extra.forbid
-
+class OAuthFlows(BaseModel):
     implicit: ImplicitOAuthFlow | None = None
     password: PasswordOAuthFlow | None = None
     clientCredentials: ClientCredentialsFlow | None = None
@@ -434,7 +272,7 @@ type SecurityScheme = APIKeySecurityScheme | HTTPSecurityScheme | OAuth2Security
 
 
 class ParameterBase(ExtendableModel):
-    in_: typing.Annotated[ParamLocation, pydantic.Field(alias='in')]
+    in_: typing.Annotated[ParameterLocation, pydantic.Field(alias='in')]
     description: str | None = None
     required: bool = False
     deprecated: bool = False
@@ -446,7 +284,7 @@ class ParameterBase(ExtendableModel):
     explode: bool | None = None
     allowReserved: bool | None = False
     schema_: typing.Annotated[None | Reference[Schema] | Schema, pydantic.Field(alias='schema')] = None
-    example: typing.Any | None = None
+    example: typing.Any = None
     examples: dict[str, Reference[Example] | Example] | None = None
 
     @pydantic.model_validator(mode='before')
@@ -461,14 +299,14 @@ class ParameterBase(ExtendableModel):
 
 
 class Header(ParameterBase):
-    in_: typing.Annotated[ParamLocation, pydantic.Field(alias='in')] = ParamLocation.header
+    in_: typing.Annotated[ParameterLocation, pydantic.Field(alias='in')] = ParameterLocation.header
     style: Style = Style.simple
 
 
 class Encoding(ExtendableModel):
     contentType: str | None = None
     headers: dict[str, Header] | None = None
-    style: Style2 | None = None
+    style: Style | None = None
     explode: bool | None = None
     allowReserved: bool | None = False
 
@@ -539,7 +377,7 @@ class Operation(ExtendableModel):
     servers: list[Server] | None = None
 
 
-class PathItem(BaseModel):
+class PathItem(ModelWithAdditionalProperties):
     summary: str | None = None
     description: str | None = None
     servers: list[Server] | None = None
@@ -547,6 +385,7 @@ class PathItem(BaseModel):
         list[Reference[Parameter] | Parameter], UniqueListValidator, pydantic.Field(default_factory=list)
     ]
     __pydantic_extra__: dict[str, Operation]
+    """Keys are HTTP methods"""
 
 
 class Paths(ModelWithPatternProperties):
@@ -594,11 +433,9 @@ class OpenApiModel(ExtendableModel):
             alias='x-lapidary-headers-global',
             default_factory=dict,
         ),
-        Doc(
-            'Headers added to every request. '
-            'Unlike with operation headers, the default value found in the schema is sent over the wire'
-        ),
     ]
+    """Headers added to every request.
+    Unlike with operation headers, the default value found in the schema is sent over the wire"""
 
     lapidary_responses_global: typing.Annotated[
         Responses | None,

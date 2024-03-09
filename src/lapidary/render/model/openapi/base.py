@@ -10,7 +10,7 @@ from ...pydantic_utils import find_annotation_optional
 class BaseModel(pydantic.BaseModel):
     model_config = pydantic.ConfigDict(
         populate_by_name=True,
-        extra='allow',
+        extra='forbid',
         frozen=True,
     )
 

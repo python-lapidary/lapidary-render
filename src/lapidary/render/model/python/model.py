@@ -1,26 +1,22 @@
 import dataclasses as dc
 import enum
-import typing
 from collections.abc import Iterable, Mapping
-from typing import Annotated, Any, NamedTuple
+from typing import Any, TypeAlias
 
-import pydantic
-from typing_extensions import Doc
+from ..openapi import ParameterLocation as ParamLocation
+from ..openapi import Style as ParamStyle
+from .type_hint import TypeHint, type_hint_or_union
 
-import lapidary.runtime.model.params as runtime
-
-from .type_hint import TypeHint
-
-MimeType = ResponseCode = str
-MimeMap = Mapping[MimeType, TypeHint]
-ResponseMap = Mapping[ResponseCode, MimeMap]
+MimeType: TypeAlias = str
+ResponseCode: TypeAlias = str
+MimeMap: TypeAlias = Mapping[MimeType, TypeHint]
+ResponseMap: TypeAlias = Mapping[ResponseCode, MimeMap]
 
 
-@dc.dataclass(frozen=True)
-class AttributeAnnotationModel:
+@dc.dataclass
+class AttributeAnnotation:
     type: TypeHint
-    field_props: dict[str, typing.Any]
-
+    field_props: dict[str, Any]
     default: str | None = None
     style: str | None = None
     explode: bool | None = None
@@ -28,9 +24,9 @@ class AttributeAnnotationModel:
 
 
 @dc.dataclass
-class AttributeModel:
+class Attribute:
     name: str
-    annotation: AttributeAnnotationModel
+    annotation: AttributeAnnotation
     deprecated: bool = False
     """Currently not used"""
 
@@ -39,45 +35,93 @@ class AttributeModel:
     Used for op method params. Required params are rendered before optional, and optional have default value ABSENT
     """
 
+    @property
+    def dependencies(self) -> Iterable[TypeHint]:
+        return [self.annotation.type]
 
-class AuthModel(pydantic.BaseModel):
+
+@dc.dataclass
+class Auth:
     pass
 
 
-class ApiKeyAuthModel(AuthModel):
+@dc.dataclass
+class ApiKeyAuth(Auth):
     param_name: str
-    placement: runtime.ParamLocation
+    placement: ParamLocation
 
 
-class HttpAuthModel(AuthModel):
+@dc.dataclass
+class HttpAuth(Auth):
     scheme: str
     bearer_format: str | None
 
 
-class OperationFunctionModel(NamedTuple):
+@dc.dataclass
+class OperationFunction:
     name: str
-    request_type: TypeHint | None
-    params: Iterable[AttributeModel] = ()
-    response_type: TypeHint | None = None
-    auth_name: str | None = None
-    docstr: str | None = None
+    method: str
+    path: str
+    request_body: MimeMap
+    params: Iterable['Parameter']
+    responses: ResponseMap
+
+    @property
+    def dependencies(self) -> Iterable[TypeHint]:
+        yield self.request_body_type
+        for param in self.params:
+            yield from param.dependencies
+        yield self.response_body_type
+
+    @property
+    def request_body_type(self) -> TypeHint | None:
+        if not self.request_body:
+            return None
+        types = self.request_body.values()
+        return type_hint_or_union(types) if types else None
+
+    @property
+    def response_body_type(self) -> TypeHint | None:
+        types = set()
+        for mime_map in self.responses.values():
+            types.update(set(mime_map.values()))
+        return type_hint_or_union(types)
 
 
 @dc.dataclass(kw_only=True)
-class Parameter(AttributeModel):
-    in_: runtime.ParamLocation
-    default: Annotated[Any, Doc('Default value, used only for global headers.')] = None
+class Parameter:
+    name: str
+    """Python name"""
+
+    alias: str | None
+    """Header name"""
+
+    type: TypeHint
+
+    required: bool
+    """
+    Required params are rendered before optional, and optional have default value None
+    """
+
+    in_: ParamLocation
+    default: Any = None
+    """Default value, used only for global headers."""
+
     media_type: str | None = None
+    style: ParamStyle | None
+    explode: bool | None
+
+    @property
+    def dependencies(self) -> Iterable[TypeHint]:
+        yield self.type
 
 
 class ModelType(enum.Enum):
     model = 'python'
-    param_model = 'param_model'
     exception = 'exception'
-    enum = 'enum'
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass
 class SchemaClass:
     class_name: str
     base_type: TypeHint
@@ -85,26 +129,37 @@ class SchemaClass:
     allow_extra: bool = False
     has_aliases: bool = False
     docstr: str | None = None
-    attributes: list[AttributeModel] = dc.field(default_factory=list)
+    attributes: list[Attribute] = dc.field(default_factory=list)
     model_type: ModelType = ModelType.model
 
     @property
-    def imports(self) -> Iterable[str]:
-        yield from self.base_type.imports()
+    def dependencies(self) -> Iterable[TypeHint]:
+        yield self.base_type
         for prop in self.attributes:
-            yield from prop.annotation.type.imports()
+            yield from prop.dependencies
 
 
 @dc.dataclass
 class ClientInit:
     default_auth: str | None = None
-    auth_models: typing.Mapping[str, AuthModel] = dc.field(default_factory=dict)
+    auth_models: Mapping[str, Auth] = dc.field(default_factory=dict)
     base_url: str | None = None
     headers: list[tuple[str, str]] = dc.field(default_factory=list)
-    response_map: ResponseMap | None = dc.field(default_factory=dict)
+    response_map: ResponseMap = dc.field(default_factory=dict)
+
+    @property
+    def dependencies(self) -> Iterable[TypeHint]:
+        for mime_map in self.response_map.values():
+            yield from mime_map.values()
 
 
 @dc.dataclass(frozen=True)
 class ClientClass:
     init_method: ClientInit
-    methods: list[OperationFunctionModel] = dc.field(default_factory=list)
+    methods: list[OperationFunction] = dc.field(default_factory=list)
+
+    @property
+    def dependencies(self) -> Iterable[TypeHint]:
+        yield from self.init_method.dependencies
+        for fn in self.methods:
+            yield from fn.dependencies

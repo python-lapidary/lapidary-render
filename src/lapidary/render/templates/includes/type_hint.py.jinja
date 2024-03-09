@@ -7,8 +7,8 @@
     {%- endif %}
     {%- if type_ref.args is defined %}[
         {%- for arg in type_ref.args %}
-            {{ type_hint(arg, module_path) }},
-    {%- endfor %}
+            {{- type_hint(arg, module_path) }},
+    {%- endfor -%}
         ]
     {%- endif %}
 {%- endmacro -%}
