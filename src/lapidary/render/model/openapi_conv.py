@@ -44,12 +44,13 @@ class OpenApi30Converter:
         self.target.schemas.extend(self.schema_converter.schema_modules)
         return self.target
 
-    def process_servers(self, value: list[openapi.Server], _: Stack) -> None:
-        server_len = len(value)
-        if server_len == 0:
+    def process_servers(self, value: list[openapi.Server], stack: Stack) -> None:
+        logger.debug('Process servers %s', stack)
+
+        if not value:
             logger.warning('No servers found')
             return
-        elif server_len > 0:
+        if len(value) > 0:
             logger.warning('Multiple servers found, using the first')
 
         server = value[0]

@@ -11,13 +11,14 @@ yaml = ruamel.yaml.YAML(typ='safe')
 
 yaml_home = Path(__file__).parent / 'servers'
 test_files = [
+    (yaml_home / 'none.yaml', None),
     (yaml_home / 'single.yaml', 'https://petstore3.swagger.io/api/v3'),
     (yaml_home / 'single-vars.yaml', 'https://petstore3.production.swagger.io/api/v3'),
 ]
 
 
 @pytest.mark.parametrize('document_path, expected', test_files)
-def test_servers(document_path: Path, expected: str):
+def test_servers(document_path: Path, expected: str | None):
     doc_text = document_path.read_text()
     document = openapi.OpenApiModel.model_validate(yaml.load(doc_text))
 
