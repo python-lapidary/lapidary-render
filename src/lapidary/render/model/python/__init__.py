@@ -24,7 +24,7 @@ __all__ = [
 ]
 
 import dataclasses as dc
-from collections.abc import Iterable, MutableSequence
+from collections.abc import Iterable, MutableMapping, MutableSequence
 from typing import Self
 
 from ..openapi import ParameterLocation as ParamLocation
@@ -36,6 +36,7 @@ from .model import (
     ClientClass,
     ClientInit,
     HttpAuth,
+    ImplicitOAuth2Flow,
     MimeMap,
     ModelType,
     OperationFunction,
@@ -53,6 +54,7 @@ class ClientModel:
     client: ClientModule
     package: str
     schemas: MutableSequence[SchemaModule] = dc.field(default_factory=list)
+    security_schemes: MutableMapping[str, Auth] = dc.field(default_factory=dict)
 
     def packages(self: Self) -> Iterable[ModulePath]:
         # Used to create __init__.py files in otherwise empty packages

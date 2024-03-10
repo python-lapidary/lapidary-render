@@ -1,0 +1,7 @@
+def {{ auth_name }}(scopes=Iterable[Literal{{ auth.scopes.keys() | list }}], **kwargs) -> httpx.Auth:
+    return httpx_auth.OAuth2Implicit(
+        authorization_url='{{ auth.authorization_url }}',
+        refresh_url={% if auth.refresh_url %}'{{ auth.refresh_url  }}' {% else %}None{% endif %},
+        scopes=scopes,
+        **kwargs,
+    )

@@ -44,16 +44,51 @@ class Auth:
     pass
 
 
-@dc.dataclass
+@dc.dataclass(kw_only=True)
 class ApiKeyAuth(Auth):
-    param_name: str
-    placement: ParamLocation
+    name: str
+    location: ParamLocation
+    format: str = '{}'
+    type: str = 'api_key'
 
 
-@dc.dataclass
+@dc.dataclass(kw_only=True)
 class HttpAuth(Auth):
     scheme: str
     bearer_format: str | None
+    type: str = 'http'
+
+
+@dc.dataclass(kw_only=True)
+class OpenIdConnectAuth(Auth):
+    url: str
+    type: str = 'openIdConnect'
+
+
+@dc.dataclass(kw_only=True)
+class OAuth2AuthBase(Auth):
+    scopes: dict[str, str]
+
+
+@dc.dataclass(kw_only=True)
+class ImplicitOAuth2Flow(OAuth2AuthBase):
+    authorization_url: str
+    type: str = 'oauth2_implicit'
+
+
+@dc.dataclass(kw_only=True)
+class PasswordOAuth2Flow(OAuth2AuthBase):
+    token_url: str
+    refresh_url: str | None = None
+    type: str = 'oauth2_password'
+
+
+@dc.dataclass
+class AuthorizationCodeOAuth2FLow(OAuth2AuthBase):
+    authorization_url: str
+    tokenUrl: str
+    refresh_url: str | None = None
+    type: str = 'oauth2_authorization_code'
 
 
 @dc.dataclass

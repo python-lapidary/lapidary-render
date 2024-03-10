@@ -1,3 +1,4 @@
+import functools
 import logging
 from collections.abc import Iterable, Mapping
 from typing import cast
@@ -40,6 +41,7 @@ class OpenApi30Converter:
         self.process_servers(self.src.servers, stack.push('servers'))
         self.process_global_responses(self.src.lapidary_responses_global, stack.push('x-lapidary-responses-global'))
         self.process_global_headers(self.src.lapidary_headers_global, stack.push('x-lapidary-headers-global'))
+        self.process_security(self.src.security, stack.push('security'))
         self.process_paths(self.src.paths, stack.push('paths'))
         self.target.schemas.extend(self.schema_converter.schema_modules)
         return self.target
@@ -161,6 +163,8 @@ class OpenApi30Converter:
         )
         responses = self.process_responses(value.responses, stack.push('responses'))
 
+        self.process_security(value.security, stack.push('security'))
+
         model = python.OperationFunction(
             name=value.operationId,
             method=stack.top(),
@@ -185,6 +189,70 @@ class OpenApi30Converter:
             param = self.process_parameter(oa_param, stack.push(idx))
             params[param.name] = param
         return list(params.values())
+
+    def process_security(self, value: list[openapi.SecurityRequirement] | None, stack: Stack) -> None:
+        logger.debug('process security %s', stack)
+        if value is None:
+            return
+
+        for idx, item in enumerate(value):
+            self.process_security_requirement(item, stack.push(idx))
+
+    def process_security_requirement(
+        self, value: openapi.SecurityRequirement, stack: Stack
+    ) -> Mapping[str, Iterable[str]]:
+        logger.debug('process security requirement %s', stack)
+        schemes_root = Stack(('#', 'components', 'securitySchemes'))
+        for scheme_name, scopes in value.root.items():
+            scheme_stack = schemes_root.push(scheme_name)
+            self.process_security_scheme(
+                openapi.Reference[openapi.SecuritySchemeBase](ref=str(scheme_stack)), scheme_stack
+            )
+        return value.root
+
+    @resolve_ref
+    def process_security_scheme(
+        self, value: openapi.SecuritySchemeBase, stack: Stack
+    ) -> Iterable[tuple[str, python.Auth]]:
+        return self.process_security_scheme_(value, stack)
+
+    @functools.singledispatchmethod
+    def process_security_scheme_(
+        self, value: openapi.SecuritySchemeBase, stack: Stack
+    ) -> Iterable[tuple[str, python.Auth]]:
+        raise NotImplementedError(type(value))
+
+    @process_security_scheme_.register(openapi.APIKeySecurityScheme)
+    def _(self, value: openapi.APIKeySecurityScheme, stack: Stack) -> None:
+        logger.debug('process API key security scheme %s', stack)
+        flow_name = f'api_key_{stack.top()}'
+        if flow_name not in self.target.security_schemes:
+            self.target.security_schemes[flow_name] = python.ApiKeyAuth(
+                name=value.name, location=value.in_, format=value.format
+            )
+
+    @process_security_scheme_.register(openapi.OAuth2SecurityScheme)
+    def _(self, value: openapi.OAuth2SecurityScheme, stack: Stack) -> None:
+        logger.debug('process OAuth2 security scheme %s', stack)
+        auth_name = stack.top()
+        if value.flows.implicit:
+            flow_name = f'oauth2_implicit_{auth_name}'
+            if flow_name not in self.target.security_schemes:
+                flow = value.flows.implicit
+
+                if flow.refreshUrl:
+                    raise NotImplementedError(stack.push_all('flows', 'implicit', 'refreshUrl'))
+
+                self.target.security_schemes[flow_name] = python.ImplicitOAuth2Flow(
+                    authorization_url=flow.authorizationUrl,
+                    scopes=flow.scopes,
+                )
+        if value.flows.password:
+            raise NotImplementedError
+        if value.flows.authorizationCode:
+            raise NotImplementedError
+        if value.flows.clientCredentials:
+            raise NotImplementedError
 
     def resolve_ref[Target](self, ref: openapi.Reference[Target]) -> tuple[Target, Stack]:
         """Resolve reference to OpenAPI object and its direct path."""

@@ -29,3 +29,7 @@ class ApiClient(ClientBase):
 {%- else %}
     pass
 {%- endfor %}
+
+{% for auth_name, auth in model.security_schemes.items() -%}
+    {% include "includes/security/" + auth.type + ".py.jinja" %}
+{% endfor %}
