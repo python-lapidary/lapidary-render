@@ -30,7 +30,7 @@ class OpenApi30SchemaConverter:
         base_type = (
             python.TypeHint.from_type(Exception)
             if value.lapidary_model_type is openapi.LapidaryModelType.exception
-            else python.TypeHint.from_str('pydantic:BaseModel')
+            else python.TypeHint.from_str('lapidary.runtime:ModelBase')
         )
 
         stack_attr = stack.push('properties')
@@ -61,6 +61,7 @@ class OpenApi30SchemaConverter:
         return python.Attribute(
             name=alias,
             annotation=self.get_attr_annotation(value, stack, required),
+            required=required,
         )
 
     @resolve_ref
@@ -96,13 +97,12 @@ class OpenApi30SchemaConverter:
         if direction:
             field_props['direction'] = direction
             # TODO better handle direction
-            # required = False
 
-        default = None if value.required else 'lapidary.runtime.absent.ABSENT'
+        typ = self.process_schema(value, stack)
+        if value.nullable or not required or bool(direction):
+            typ = python.GenericTypeHint.union_of(typ, None)
 
-        return python.AttributeAnnotation(
-            type=self.process_schema(value, stack), default=default, field_props=field_props
-        )
+        return python.AttributeAnnotation(type=typ, field_props=field_props)
 
     @resolve_ref
     def process_schema(self, value: openapi.Schema, stack: Stack, required: bool = True) -> python.TypeHint:

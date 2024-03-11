@@ -5,7 +5,10 @@ __all__ = [
 ]
 
 import typing
-from typing_extensions import Annotated, Optional, Self
+
+import httpx
+from typing_extensions import Self
+from typing import Annotated, Union
 from lapidary.runtime import *
 
 
@@ -18,8 +21,9 @@ class ApiClient(ClientBase):
         self,
         *,
         base_url{% if model.client.body.init_method.base_url %}='{{ model.client.body.init_method.base_url }}'{% endif %},
+        **kwargs,
     ):
-        super().__init__(base_url)
+        super().__init__(base_url, **kwargs)
 {% for func in model.client.body.methods %}
 {%- include 'includes/client/method_operation.py.jinja' %}
 {%- else %}

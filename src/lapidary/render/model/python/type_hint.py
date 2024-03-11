@@ -69,7 +69,7 @@ class GenericTypeHint(TypeHint):
     args: Iterable[TypeHint | None]
 
     @staticmethod
-    def union_of(*types: TypeHint) -> 'GenericTypeHint':
+    def union_of(*types: TypeHint | None) -> 'GenericTypeHint':
         args = set()
         for typ in types:
             if typ and typ.is_union():

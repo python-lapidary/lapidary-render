@@ -218,14 +218,14 @@ class Schema(ExtendableModel):
     anyOf: 'list[None | Reference[Schema] | Schema]' = None
 
     description: str | None = None
-    default: typing.Any | None = None
-    nullable: bool | None = False
+    default: typing.Any = None
+    nullable: bool = False
     discriminator: Discriminator | None = None
-    readOnly: bool | None = False
-    writeOnly: bool | None = False
-    example: typing.Any | None = None
+    readOnly: bool = False
+    writeOnly: bool = False
+    example: typing.Any = None
     externalDocs: ExternalDocumentation | None = None
-    deprecated: bool | None = False
+    deprecated: bool = False
     xml: XML | None = None
 
     lapidary_names: typing.Annotated[

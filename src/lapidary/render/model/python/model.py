@@ -17,7 +17,6 @@ ResponseMap: TypeAlias = Mapping[ResponseCode, MimeMap]
 class AttributeAnnotation:
     type: TypeHint
     field_props: dict[str, Any]
-    default: str | None = None
     style: str | None = None
     explode: bool | None = None
     allowReserved: bool | None = False
@@ -27,13 +26,13 @@ class AttributeAnnotation:
 class Attribute:
     name: str
     annotation: AttributeAnnotation
+    required: bool
+    """
+    Used for op method params. Required params are rendered before optional, and optional have default value None
+    """
+
     deprecated: bool = False
     """Currently not used"""
-
-    required: bool | None = None
-    """
-    Used for op method params. Required params are rendered before optional, and optional have default value ABSENT
-    """
 
     @property
     def dependencies(self) -> Iterable[TypeHint]:
