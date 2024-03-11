@@ -7,7 +7,7 @@
     {%- endif %}
     {%- if type_ref.args is defined %}[
         {%- for arg in type_ref.args %}
-            {{- type_hint(arg, module_path) }},
+            {{- type_hint(arg, module_path) }}{% if not loop.last %}, {% endif %}
     {%- endfor -%}
         ]
     {%- endif %}
