@@ -39,6 +39,9 @@ class SchemaModule(AbstractModule):
             *[dep for cls in self.body for dep in cls.dependencies]
         ).args  # flatten unions
         imports = sorted({imp for dep in dependencies if dep for imp in dep.imports() if imp not in template_imports})
+        path_str = str(self.path)
+        if path_str in imports:
+            imports.remove(path_str)
 
         return imports
 
