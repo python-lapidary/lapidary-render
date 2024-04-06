@@ -56,7 +56,7 @@ def parse(text: str) -> JSON:
 
 
 async def load_patches(patches_root: anyio.Path, cache: bool, cache_root: anyio.Path) -> JsonPatch | None:
-    patches = [p async for p in patches_root.rglob('**/*.[yamljson]')]
+    patches = [p async for p in patches_root.rglob('*[yamljson]')]
 
     if not patches:
         return None
@@ -66,8 +66,8 @@ async def load_patches(patches_root: anyio.Path, cache: bool, cache_root: anyio.
         [
             op
             for p in patches
-            if p.suffix in ('yaml', 'yml', 'json')
-            for op in await load_parse(patches_root, p, cache, cache_root)
+            if p.suffix in ('.yaml', '.yml', '.json')
+            for op in await load_parse(patches_root, p.relative_to(patches_root), cache, cache_root)
         ]
     )
 

@@ -9,7 +9,7 @@ PYPROJ_TOML = 'pyproject.toml'
 class Config(pydantic.BaseModel):
     document_path: str
     package: str
-    patches: str = 'sec/patches'
+    patches: str = 'src/patches'
 
 
 async def load_config(project_root: anyio.Path) -> Config:
