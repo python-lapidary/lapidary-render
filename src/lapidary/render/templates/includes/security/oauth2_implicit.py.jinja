@@ -3,11 +3,13 @@
 
 
 def {{ auth.type }}_{{ auth.name }}(
-    scope: Union[Iterable[{{ scopes_type }}, None]] = None,
+    scope: Union[Iterable[{{ scopes_type }}], None] = None,
     **kwargs,
 ) -> NamedAuth:
+    if scope is not None:
+        kwargs['scope'] = ' '.join(scope)
+
     return '{{ auth.name }}', httpx_auth.OAuth2Implicit(
         authorization_url='{{ auth.authorization_url }}',
-        scope=' '.join(scope),
         **kwargs,
     )

@@ -214,6 +214,7 @@ class OpenApi30Converter:
             )
         return value.root
 
+    # need separate method to resolve references before calling a single-dispatched method
     @resolve_ref
     def process_security_scheme(
         self, value: openapi.SecuritySchemeBase, stack: Stack
@@ -221,9 +222,7 @@ class OpenApi30Converter:
         return self.process_security_scheme_(value, stack)
 
     @functools.singledispatchmethod
-    def process_security_scheme_(
-        self, value: openapi.SecuritySchemeBase, stack: Stack
-    ) -> Iterable[tuple[str, python.Auth]]:
+    def process_security_scheme_(self, value: openapi.SecuritySchemeBase, stack: Stack) -> None:
         raise NotImplementedError(type(value))
 
     @process_security_scheme_.register(openapi.APIKeySecurityScheme)

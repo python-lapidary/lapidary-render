@@ -1,0 +1,16 @@
+openapi: 3.0.2
+info:
+  title: security schemes
+  description: ''
+  version: 1.0.0
+paths: {}
+components:
+  securitySchemes:
+    headerApiKey:
+      name: Authorization
+      type: apiKey
+      in: header
+    cookieApiKey:
+      name: Authorization
+      type: apiKey
+      in: cookie
