@@ -21,6 +21,7 @@ __all__ = [
     'TypeHint',
     'type_hint_or_union',
     'ParamLocation',
+    'NONE',
 ]
 
 import dataclasses as dc
@@ -45,7 +46,7 @@ from .model import (
 )
 from .module import AuthModule, ClientModule, SchemaModule
 from .module_path import ModulePath
-from .type_hint import BuiltinTypeHint, GenericTypeHint, TypeHint, type_hint_or_union
+from .type_hint import NONE, BuiltinTypeHint, GenericTypeHint, TypeHint, type_hint_or_union
 
 
 @dc.dataclass

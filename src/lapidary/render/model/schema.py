@@ -100,7 +100,7 @@ class OpenApi30SchemaConverter:
 
         typ = self.process_schema(value, stack)
         if value.nullable or not required or bool(direction):
-            typ = python.GenericTypeHint.union_of(typ, None)
+            typ = python.GenericTypeHint.union_of(typ, python.NONE)
 
         return python.AttributeAnnotation(type=typ, field_props=field_props)
 

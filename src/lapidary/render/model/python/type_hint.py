@@ -66,10 +66,10 @@ class BuiltinTypeHint(TypeHint):
 
 @dc.dataclass(slots=True, frozen=True, kw_only=True)
 class GenericTypeHint(TypeHint):
-    args: Iterable[TypeHint | None]
+    args: Iterable[TypeHint]
 
     @staticmethod
-    def union_of(*types: TypeHint | None) -> 'GenericTypeHint':
+    def union_of(*types: TypeHint) -> 'GenericTypeHint':
         args = set()
         for typ in types:
             if typ and typ.is_union():
@@ -113,9 +113,29 @@ class GenericTypeHint(TypeHint):
         return hash_
 
 
-def type_hint_or_union(types: Collection[TypeHint]) -> TypeHint | None:
+class NoneTypeHint(TypeHint):
+    def __init__(self):
+        pass
+
+    def full_name(self):
+        return 'None'
+
+    def imports(self) -> Iterable[str]:
+        return ()
+
+    def __eq__(self, other) -> bool:
+        return isinstance(other, NoneTypeHint)
+
+    def __hash__(self) -> int:
+        return -1
+
+
+NONE = NoneTypeHint()
+
+
+def type_hint_or_union(types: Collection[TypeHint]) -> TypeHint:
     if not types:
-        return None
+        return NONE
     if len(types) == 1:
         return next(iter(types))
     else:
