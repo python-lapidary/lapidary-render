@@ -3,13 +3,15 @@
 # {% include 'includes/header.txt' %}
 
 from collections.abc import Iterable
+from typing import Union
 
 import httpx
 import httpx_auth
-from typing_extensions import Literal
+from typing_extensions import Literal, TypeAlias
+from lapidary.runtime import NamedAuth
 
 
 {% for auth_name, auth in model.security_schemes.items() -%}
 {% include "includes/security/" + auth.type + ".py.jinja" %}
 
-{% endfor %}
+{% endfor -%}

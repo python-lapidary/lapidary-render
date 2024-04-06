@@ -5,6 +5,8 @@ from typing import cast
 
 from mimeparse import parse_media_range
 
+from lapidary.runtime import SecurityRequirements
+
 from .. import names
 from . import openapi, python
 from .refs import resolve_ref
@@ -41,7 +43,7 @@ class OpenApi30Converter:
         self.process_servers(self.src.servers, stack.push('servers'))
         self.process_global_responses(self.src.lapidary_responses_global, stack.push('x-lapidary-responses-global'))
         self.process_global_headers(self.src.lapidary_headers_global, stack.push('x-lapidary-headers-global'))
-        self.process_security(self.src.security, stack.push('security'))
+        self.target.client.body.init_method.security = self.process_security(self.src.security, stack.push('security'))
         self.process_paths(self.src.paths, stack.push('paths'))
         self.target.schemas.extend(self.schema_converter.schema_modules)
         return self.target
@@ -162,8 +164,7 @@ class OpenApi30Converter:
             self.process_request_body(value.requestBody, stack.push('requestBody')) if value.requestBody else None
         )
         responses = self.process_responses(value.responses, stack.push('responses'))
-
-        self.process_security(value.security, stack.push('security'))
+        security = self.process_security(value.security, stack.push('security'))
 
         model = python.OperationFunction(
             name=value.operationId,
@@ -172,6 +173,7 @@ class OpenApi30Converter:
             request_body=request_body,
             params=params,
             responses=responses,
+            security=security,
         )
 
         self.target.client.body.methods.append(model)
@@ -190,13 +192,15 @@ class OpenApi30Converter:
             params[param.name] = param
         return list(params.values())
 
-    def process_security(self, value: list[openapi.SecurityRequirement] | None, stack: Stack) -> None:
+    def process_security(
+        self, value: list[openapi.SecurityRequirement] | None, stack: Stack
+    ) -> Iterable[SecurityRequirements] | None:
         logger.debug('process security %s', stack)
         if value is None:
-            return
+            return None
 
-        for idx, item in enumerate(value):
-            self.process_security_requirement(item, stack.push(idx))
+        security = [self.process_security_requirement(item, stack.push(idx)) for idx, item in enumerate(value)]
+        return security or None
 
     def process_security_requirement(
         self, value: openapi.SecurityRequirement, stack: Stack

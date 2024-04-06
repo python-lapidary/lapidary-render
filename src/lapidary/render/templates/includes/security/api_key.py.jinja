@@ -1,6 +1,5 @@
-def {{ auth_name }}(api_key: str, **kwargs) -> httpx.Auth:
-    return httpx_auth.{{ auth.location.value | capitalize }}ApiKey(
+def {{ auth_name }}(api_key: str) -> NamedAuth:
+    return '{{ auth_name }}', httpx_auth.{{ auth.location.value | capitalize }}ApiKey(
         api_key='{{ auth.format }}'.format(api_key),
         header_name='{{ auth.name }}',
-        **kwargs,
     )
