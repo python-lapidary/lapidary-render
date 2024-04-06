@@ -74,7 +74,7 @@ class OpenApi30Converter:
             return
 
         self.global_responses = {
-            self.process_response(response, stack.push(code)) for code, response in value.responses.items()
+            code: self.process_response(response, stack.push(code)) for code, response in value.responses.items()
         }
 
     @resolve_ref
