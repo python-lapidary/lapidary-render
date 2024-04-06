@@ -229,10 +229,11 @@ class OpenApi30Converter:
     @process_security_scheme_.register(openapi.APIKeySecurityScheme)
     def _(self, value: openapi.APIKeySecurityScheme, stack: Stack) -> None:
         logger.debug('process API key security scheme %s', stack)
-        flow_name = f'api_key_{stack.top()}'
+        auth_name = stack.top()
+        flow_name = f'api_key_{auth_name}'
         if flow_name not in self.target.security_schemes:
             self.target.security_schemes[flow_name] = python.ApiKeyAuth(
-                name=value.name, location=value.in_, format=value.format
+                name=auth_name, key=value.name, location=value.in_, format=value.format
             )
 
     @process_security_scheme_.register(openapi.OAuth2SecurityScheme)
@@ -248,6 +249,7 @@ class OpenApi30Converter:
                     raise NotImplementedError(stack.push_all('flows', 'implicit', 'refreshUrl'))
 
                 self.target.security_schemes[flow_name] = python.ImplicitOAuth2Flow(
+                    name=auth_name,
                     authorization_url=flow.authorizationUrl,
                     scopes=flow.scopes,
                 )

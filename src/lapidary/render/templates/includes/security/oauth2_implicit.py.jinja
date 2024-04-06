@@ -2,11 +2,11 @@
 {{ scopes_type }}: TypeAlias = Literal{{ auth.scopes.keys() | list }}
 
 
-def {{ auth_name }}(
+def {{ auth.type }}_{{ auth.name }}(
     scope: Union[{{ scopes_type }}, Iterable[{{ scopes_type }}, None]] = None,
     **kwargs,
 ) -> NamedAuth:
-    return '{{ auth_name }}', httpx_auth.OAuth2Implicit(
+    return '{{ auth.name }}', httpx_auth.OAuth2Implicit(
         authorization_url='{{ auth.authorization_url }}',
         scope=scope if isinstance(scope, str) else ' '.join(scope),
         **kwargs,

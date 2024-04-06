@@ -42,14 +42,15 @@ class Attribute:
 
 @dc.dataclass
 class Auth:
-    pass
+    name: str
+    type: str
 
 
 @dc.dataclass(kw_only=True)
 class ApiKeyAuth(Auth):
-    name: str
+    key: str
     location: ParamLocation
-    format: str = '{}'
+    format: str
     type: str = 'api_key'
 
 
@@ -84,7 +85,7 @@ class PasswordOAuth2Flow(OAuth2AuthBase):
     type: str = 'oauth2_password'
 
 
-@dc.dataclass
+@dc.dataclass(kw_only=True)
 class AuthorizationCodeOAuth2FLow(OAuth2AuthBase):
     authorization_url: str
     tokenUrl: str
