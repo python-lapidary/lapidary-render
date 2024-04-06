@@ -30,7 +30,7 @@ class TypeHint:
         else:
             return TypeHint(module=module, name=name)
 
-    def imports(self) -> list[str]:
+    def imports(self) -> Iterable[str]:
         return [self.module]
 
     def is_union(self) -> bool:

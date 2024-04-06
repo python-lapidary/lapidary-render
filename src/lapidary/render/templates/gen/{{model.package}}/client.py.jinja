@@ -20,7 +20,7 @@ class ApiClient(ClientBase):
     def __init__(
         self,
         *,
-        base_url{% if model.client.body.init_method.base_url %}='{{ model.client.body.init_method.base_url }}'{% endif %},
+        base_url: str{% if model.client.body.init_method.base_url %} = '{{ model.client.body.init_method.base_url }}'{% endif %},
         **kwargs,
     ):
         super().__init__(base_url, **kwargs)
