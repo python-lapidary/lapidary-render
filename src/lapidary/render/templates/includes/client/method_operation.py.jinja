@@ -12,7 +12,7 @@
     '{{ media_type }}': {{ th.type_hint(type_hint) }},
 {%- endfor %}
 }{% endmacro %}
-    @{{ func.method }}('{{ func.path }}')
+    @{{ func.method }}('{{ func.path }}'{% if func.security is not none %}, security={{ func.security }}{% endif %})
     async def {{ func.name }}(
         self: Self,
 {%- if func.request_body_type is not none %}

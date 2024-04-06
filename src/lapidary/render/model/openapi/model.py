@@ -6,6 +6,7 @@ from enum import Enum
 from typing import Annotated, Literal, Self, cast
 
 import pydantic
+import pydantic.alias_generators
 
 from ...json_pointer import decode_json_pointer
 from .base import (
@@ -100,6 +101,9 @@ class ParameterLocation(enum.Enum):
 
 
 class SecuritySchemeBase(abc.ABC, ExtendableModel):
+    model_config = pydantic.ConfigDict(
+        alias_generator=pydantic.alias_generators.to_camel,
+    )
     type: str
     description: str | None = None
 
@@ -109,23 +113,18 @@ class APIKeySecurityScheme(SecuritySchemeBase):
     name: str
     in_: typing.Annotated[ParameterLocation, pydantic.Field(alias='in')]
 
+    format: Annotated[str, pydantic.Field(alias='x-lapidary-format')] = '{}'
+
 
 class HTTPSecurityScheme(SecuritySchemeBase):
     type: Literal['http']
     scheme: str
-    bearerFormat: str | None = None
-
-    @pydantic.model_validator(mode='after')
-    def _validate_bearer_format(self) -> typing.Self:
-        if self.scheme.lower() != 'bearer':
-            raise ValueError('bearerFormat is only allowed if "schema" is "bearer"')
-
-        return self
+    bearer_format: str | None = None
 
 
 class OpenIdConnectSecurityScheme(SecuritySchemeBase):
     type: Literal['openIdConnect']
-    openIdConnectUrl: str
+    open_id_connect_url: str
 
 
 class ImplicitOAuthFlow(BaseModel):
@@ -247,13 +246,6 @@ class Tag(ExtendableModel):
     externalDocs: ExternalDocumentation | None = None
 
 
-class OAuthFlows(BaseModel):
-    implicit: ImplicitOAuthFlow | None = None
-    password: PasswordOAuthFlow | None = None
-    clientCredentials: ClientCredentialsFlow | None = None
-    authorizationCode: AuthorizationCodeOAuthFlow | None = None
-
-
 class Link(ExtendableModel):
     operationId: str | None = None
     operationRef: str | None = None
@@ -261,6 +253,13 @@ class Link(ExtendableModel):
     requestBody: typing.Any | None = None
     description: str | None = None
     server: Server | None = None
+
+
+class OAuthFlows(ExtendableModel):
+    implicit: ImplicitOAuthFlow | None = None
+    password: PasswordOAuthFlow | None = None
+    clientCredentials: ClientCredentialsFlow | None = None
+    authorizationCode: AuthorizationCodeOAuthFlow | None = None
 
 
 class OAuth2SecurityScheme(SecuritySchemeBase):

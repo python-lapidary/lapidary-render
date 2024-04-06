@@ -1,0 +1,15 @@
+{%- set scopes_type = auth_name + "Scopes" -%}
+{{ scopes_type }}: TypeAlias = Literal{{ auth.scopes.keys() | list }}
+
+
+def {{ auth.type }}_{{ auth.name }}(
+    scope: Union[Iterable[{{ scopes_type }}], None] = None,
+    **kwargs,
+) -> NamedAuth:
+    if scope is not None:
+        kwargs['scope'] = ' '.join(scope)
+
+    return '{{ auth.name }}', httpx_auth.OAuth2Implicit(
+        authorization_url='{{ auth.authorization_url }}',
+        **kwargs,
+    )

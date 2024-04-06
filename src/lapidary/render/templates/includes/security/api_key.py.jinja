@@ -1,0 +1,7 @@
+{% if auth.location.key == 'cookie' %}{% set authClass = 'CookieApiKey' %}{% else %}{% set authClass = 'httpx_auth.'+auth.location.value.capitalize()+'ApiKey' %}{% endif -%}
+
+def {{ auth_name }}(api_key: str) -> NamedAuth:
+    return '{{ auth.name }}', {{ authClass }}(
+        api_key='{{ auth.format }}'.format(api_key),
+        header_name='{{ auth.key }}',
+    )

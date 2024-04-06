@@ -33,7 +33,7 @@ __all__ = [
     'Responses',
     'Schema',
     'SecurityRequirement',
-    'SecurityScheme',
+    'SecuritySchemeBase',
     'Server',
     'ServerVariable',
     'Style',

@@ -1,0 +1,15 @@
+{% import 'includes/type_hint.py.jinja' as th -%}
+
+# {% include 'includes/header.txt' %}
+from collections.abc import Iterable
+from typing import Union
+
+import httpx_auth
+from typing_extensions import Literal, TypeAlias
+from lapidary.runtime import NamedAuth
+
+
+{% for auth_name, auth in model.security_schemes.items() -%}
+{% include "includes/security/" + auth.type + ".py.jinja" %}
+
+{% endfor -%}

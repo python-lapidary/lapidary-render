@@ -4,6 +4,7 @@ from collections.abc import Iterable, Mapping
 from typing import Any, TypeAlias
 
 from ..openapi import ParameterLocation as ParamLocation
+from ..openapi import SecurityRequirement
 from ..openapi import Style as ParamStyle
 from .type_hint import TypeHint, type_hint_or_union
 
@@ -41,19 +42,55 @@ class Attribute:
 
 @dc.dataclass
 class Auth:
-    pass
+    name: str
+    type: str
 
 
-@dc.dataclass
+@dc.dataclass(kw_only=True)
 class ApiKeyAuth(Auth):
-    param_name: str
-    placement: ParamLocation
+    key: str
+    location: ParamLocation
+    format: str
+    type: str = 'api_key'
 
 
-@dc.dataclass
+@dc.dataclass(kw_only=True)
 class HttpAuth(Auth):
     scheme: str
     bearer_format: str | None
+    type: str = 'http'
+
+
+@dc.dataclass(kw_only=True)
+class OpenIdConnectAuth(Auth):
+    url: str
+    type: str = 'openIdConnect'
+
+
+@dc.dataclass(kw_only=True)
+class OAuth2AuthBase(Auth):
+    scopes: dict[str, str]
+
+
+@dc.dataclass(kw_only=True)
+class ImplicitOAuth2Flow(OAuth2AuthBase):
+    authorization_url: str
+    type: str = 'oauth2_implicit'
+
+
+@dc.dataclass(kw_only=True)
+class PasswordOAuth2Flow(OAuth2AuthBase):
+    token_url: str
+    refresh_url: str | None = None
+    type: str = 'oauth2_password'
+
+
+@dc.dataclass(kw_only=True)
+class AuthorizationCodeOAuth2FLow(OAuth2AuthBase):
+    authorization_url: str
+    tokenUrl: str
+    refresh_url: str | None = None
+    type: str = 'oauth2_authorization_code'
 
 
 @dc.dataclass
@@ -64,6 +101,7 @@ class OperationFunction:
     request_body: MimeMap
     params: Iterable['Parameter']
     responses: ResponseMap
+    security: Iterable[SecurityRequirement] | None
 
     @property
     def dependencies(self) -> Iterable[TypeHint]:
@@ -145,6 +183,7 @@ class ClientInit:
     base_url: str | None = None
     headers: list[tuple[str, str]] = dc.field(default_factory=list)
     response_map: ResponseMap = dc.field(default_factory=dict)
+    security: list[SecurityRequirement] | None = None
 
     @property
     def dependencies(self) -> Iterable[TypeHint]:
