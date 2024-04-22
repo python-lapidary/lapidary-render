@@ -142,7 +142,8 @@ class OpenApi30SchemaConverter:
         value: openapi.Schema,
     ) -> python.TypeHint:
         if value.type == openapi.Type.string:
-            return python.TypeHint.from_type(STRING_FORMATS.get(value.format, str))
+            typ = STRING_FORMATS.get(value.format, str) if value.format else str
+            return python.TypeHint.from_type(typ)
         elif value.type in PRIMITIVE_TYPES:
             return python.BuiltinTypeHint.from_str(PRIMITIVE_TYPES[value.type].__name__)
         elif value.type == openapi.Type.object:
