@@ -1,6 +1,6 @@
 import dataclasses as dc
 from collections.abc import Collection, Iterable
-from typing import Self, cast
+from typing import cast
 
 
 @dc.dataclass(slots=True, frozen=True, kw_only=True)
@@ -34,6 +34,9 @@ class TypeHint:
         return [self.module]
 
     def is_union(self) -> bool:
+        return False
+
+    def is_none(self) -> bool:
         return False
 
     def _types(self) -> 'Iterable[TypeHint]':
@@ -128,6 +131,9 @@ class NoneTypeHint(TypeHint):
 
     def __hash__(self) -> int:
         return -1
+
+    def is_none(self) -> bool:
+        return True
 
 
 NONE = NoneTypeHint()

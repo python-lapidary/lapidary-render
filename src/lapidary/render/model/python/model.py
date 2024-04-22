@@ -6,7 +6,7 @@ from typing import Any, TypeAlias
 from ..openapi import ParameterLocation as ParamLocation
 from ..openapi import SecurityRequirement
 from ..openapi import Style as ParamStyle
-from .type_hint import TypeHint, type_hint_or_union
+from .type_hint import NONE, TypeHint, type_hint_or_union
 
 MimeType: TypeAlias = str
 ResponseCode: TypeAlias = str
@@ -111,14 +111,14 @@ class OperationFunction:
         yield self.response_body_type
 
     @property
-    def request_body_type(self) -> TypeHint | None:
+    def request_body_type(self) -> TypeHint:
         if not self.request_body:
-            return None
+            return NONE
         types = self.request_body.values()
-        return type_hint_or_union(types) if types else None
+        return type_hint_or_union(types)
 
     @property
-    def response_body_type(self) -> TypeHint | None:
+    def response_body_type(self) -> TypeHint:
         types = set()
         for mime_map in self.responses.values():
             types.update(set(mime_map.values()))

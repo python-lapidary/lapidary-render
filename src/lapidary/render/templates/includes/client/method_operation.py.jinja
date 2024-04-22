@@ -15,7 +15,7 @@
     @{{ func.method }}('{{ func.path }}'{% if func.security is not none %}, security={{ func.security }}{% endif %})
     async def {{ func.name }}(
         self: Self,
-{%- if func.request_body_type is not none %}
+{%- if not func.request_body_type.is_none() %}
         request_body: Annotated[
             {{ th.type_hint(func.request_body_type, path) }},
             RequestBody({{ render_mime_map(func.request_body) | indent(12, False) }}),

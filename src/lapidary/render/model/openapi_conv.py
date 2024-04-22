@@ -161,7 +161,7 @@ class OpenApi30Converter:
         params = self._mk_params(value.parameters, stack.push('parameters'), common_params)
 
         request_body = (
-            self.process_request_body(value.requestBody, stack.push('requestBody')) if value.requestBody else None
+            self.process_request_body(value.requestBody, stack.push('requestBody')) if value.requestBody else {}
         )
         responses = self.process_responses(value.responses, stack.push('responses'))
         security = self.process_security(value.security, stack.push('security'))
@@ -193,7 +193,7 @@ class OpenApi30Converter:
         return list(params.values())
 
     def process_security(
-        self, value: list[openapi.SecurityRequirement] | None, stack: Stack
+        self, value: Iterable[openapi.SecurityRequirement] | None, stack: Stack
     ) -> Iterable[SecurityRequirements] | None:
         logger.debug('process security %s', stack)
         if value is None:
@@ -216,10 +216,8 @@ class OpenApi30Converter:
 
     # need separate method to resolve references before calling a single-dispatched method
     @resolve_ref
-    def process_security_scheme(
-        self, value: openapi.SecuritySchemeBase, stack: Stack
-    ) -> Iterable[tuple[str, python.Auth]]:
-        return self.process_security_scheme_(value, stack)
+    def process_security_scheme(self, value: openapi.SecuritySchemeBase, stack: Stack) -> None:
+        self.process_security_scheme_(value, stack)
 
     @functools.singledispatchmethod
     def process_security_scheme_(self, value: openapi.SecuritySchemeBase, stack: Stack) -> None:
