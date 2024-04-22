@@ -120,10 +120,10 @@ class OpenApi30SchemaConverter:
     def _get_one_of_type_hint(
         self,
         stack: Stack,
-        schema: openapi.Schema,
+        one_of: Iterable[openapi.Reference[openapi.Schema] | openapi.Schema],
     ) -> python.TypeHint:
         return python.GenericTypeHint.union_of(
-            *tuple(self.process_schema(sub_schema, stack.push(idx)) for idx, sub_schema in enumerate(schema.oneOf))
+            *tuple(self.process_schema(sub_schema, stack.push(idx)) for idx, sub_schema in enumerate(one_of))
         )
 
     def _get_composite_type_hint(
@@ -153,7 +153,7 @@ class OpenApi30SchemaConverter:
         elif value.anyOf:
             return self._get_composite_type_hint(stack.push('anyOf'), value.anyOf)
         elif value.oneOf:
-            return self._get_one_of_type_hint(stack, value)
+            return self._get_one_of_type_hint(stack.push('oneOf'), value.oneOf)
         elif value.allOf:
             return self._get_composite_type_hint(stack.push('allOf'), value.allOf)
         elif value.type is None:
