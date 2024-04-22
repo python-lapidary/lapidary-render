@@ -48,7 +48,7 @@ class OpenApi30Converter:
         self.target.schemas.extend(self.schema_converter.schema_modules)
         return self.target
 
-    def process_servers(self, value: list[openapi.Server], stack: Stack) -> None:
+    def process_servers(self, value: list[openapi.Server] | None, stack: Stack) -> None:
         logger.debug('Process servers %s', stack)
 
         if not value:
@@ -72,7 +72,7 @@ class OpenApi30Converter:
         for header_name, header in value.items():
             self.global_headers[header_name] = self.process_parameter(header, stack.push(header_name))
 
-    def process_global_responses(self, value: openapi.Responses, stack: Stack) -> None:
+    def process_global_responses(self, value: openapi.Responses | None, stack: Stack) -> None:
         logger.debug('Process global responses %s', stack)
         if not value:
             return
@@ -169,7 +169,7 @@ class OpenApi30Converter:
         model = python.OperationFunction(
             name=value.operationId,
             method=stack.top(),
-            path=stack[-2],
+            path=cast(str, stack[-2]),
             request_body=request_body,
             params=params,
             responses=responses,

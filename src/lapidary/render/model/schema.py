@@ -3,10 +3,11 @@ import itertools
 import logging
 import uuid
 from collections import defaultdict
-from collections.abc import Callable, Iterable, MutableMapping
+from collections.abc import Callable, Iterable, MutableMapping, Sequence
 
 from .. import json_pointer, names
 from . import openapi, python
+from .openapi import Reference
 from .refs import resolve_ref
 from .stack import Stack
 
@@ -219,7 +220,7 @@ def get_direction(read_only: bool | None, write_only: bool | None) -> str | None
 
 def resolve_type_hint(root_package: str, pointer: str | Stack) -> python.TypeHint:
     if isinstance(pointer, Stack):
-        parts = pointer.path[1:]
+        parts: Sequence[str] = pointer.path[1:]
     else:
         parts = pointer.split('/')[1:]
     module_name = '.'.join(
@@ -230,4 +231,5 @@ def resolve_type_hint(root_package: str, pointer: str | Stack) -> python.TypeHin
     top: str | int = parts[-1]
     if isinstance(top, int):
         top = parts[-2] + str(top)
+    assert isinstance(top, str)
     return python.TypeHint(module=module_name, name=top)

@@ -65,7 +65,8 @@ class ClientModel:
         # for each schema module get its package
         for schema in self.schemas:
             path = schema.path
-            while path := path.parent():
-                packages.add(path)
+            while path_ := path.parent():
+                packages.add(path_)
+                path = path_
 
         return packages

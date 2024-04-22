@@ -2,7 +2,7 @@ import abc
 import hashlib
 import logging
 import pickle
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from typing import Self, cast
 
 import anyio
@@ -67,7 +67,7 @@ async def load_patches(patches_root: anyio.Path, cache: bool, cache_root: anyio.
             op
             for p in patches
             if p.suffix in ('.yaml', '.yml', '.json')
-            for op in await load_parse(patches_root, p.relative_to(patches_root), cache, cache_root)
+            for op in cast(Iterable, await load_parse(patches_root, p.relative_to(patches_root), cache, cache_root))
         ]
     )
 
@@ -112,6 +112,7 @@ class HttpDocumentHandler(DocumentHandler[str]):
         if not self._cache:
             response = await self._client.get(self._path)
             self._cache = response.text
+        assert self._cache is not None
         return self._cache
 
     def _file_name(self) -> str:

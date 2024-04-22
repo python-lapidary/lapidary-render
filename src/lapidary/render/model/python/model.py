@@ -181,9 +181,9 @@ class ClientInit:
     default_auth: str | None = None
     auth_models: Mapping[str, Auth] = dc.field(default_factory=dict)
     base_url: str | None = None
-    headers: list[tuple[str, str]] = dc.field(default_factory=list)
+    headers: Iterable[tuple[str, str]] = dc.field(default_factory=list)
     response_map: ResponseMap = dc.field(default_factory=dict)
-    security: list[SecurityRequirement] | None = None
+    security: Iterable[SecurityRequirement] | None = None
 
     @property
     def dependencies(self) -> Iterable[TypeHint]:

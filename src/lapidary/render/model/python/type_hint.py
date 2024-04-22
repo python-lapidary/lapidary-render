@@ -36,7 +36,7 @@ class TypeHint:
     def is_union(self) -> bool:
         return False
 
-    def _types(self) -> list[Self]:
+    def _types(self) -> 'Iterable[TypeHint]':
         return [self]
 
     def __eq__(self, other) -> bool:
@@ -70,7 +70,7 @@ class GenericTypeHint(TypeHint):
 
     @staticmethod
     def union_of(*types: TypeHint) -> 'GenericTypeHint':
-        args = set()
+        args: set[TypeHint] = set()
         for typ in types:
             if typ and typ.is_union():
                 args.update(cast(GenericTypeHint, typ).args)
@@ -84,7 +84,7 @@ class GenericTypeHint(TypeHint):
     def imports(self) -> list[str]:
         return [imp for typ in self._types() for imp in TypeHint.imports(typ) if imp != 'builtins']
 
-    def _types(self) -> list[TypeHint]:
+    def _types(self) -> Iterable[TypeHint]:
         return [self, *[typ for arg in self.args for typ in arg._types()]]
 
     def __repr__(self) -> str:

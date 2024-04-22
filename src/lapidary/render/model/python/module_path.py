@@ -11,7 +11,7 @@ class ModulePath:
             module = module.strip()
             if module == '' or module.strip() != module:
                 raise ValueError()
-            parts = module.split(ModulePath._SEP)
+            parts: Iterable[str] = module.split(ModulePath._SEP)
         else:
             parts = module
 
@@ -44,7 +44,9 @@ class ModulePath:
     def __repr__(self):
         return ModulePath._SEP.join(self.parts)
 
-    def __eq__(self, other: typing.Self):
+    def __eq__(self, other: object):
+        if not isinstance(other, ModulePath):
+            return NotImplemented
         return self.parts == other.parts
 
     def __hash__(self) -> int:
