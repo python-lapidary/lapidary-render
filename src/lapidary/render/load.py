@@ -48,6 +48,7 @@ async def parse_cache(text: str, cache_root: anyio.Path) -> JSON:
         d = parse(text)
         await cache_root.mkdir(parents=True, exist_ok=True)
         await cache_path.write_bytes(pickle.dumps(d, pickle.HIGHEST_PROTOCOL))
+        return d
 
 
 def parse(text: str) -> JSON:
