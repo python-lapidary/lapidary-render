@@ -212,9 +212,9 @@ class Schema(ExtendableModel):
     ] = None
 
     not_: 'typing.Annotated[None | Reference[Schema] | Schema, pydantic.Field(alias="not")]' = None
-    allOf: 'list[None | Reference[Schema] | Schema]' = None
-    oneOf: 'list[None | Reference[Schema] | Schema]' = None
-    anyOf: 'list[None | Reference[Schema] | Schema]' = None
+    allOf: 'None | list[Reference[Schema] | Schema]' = None
+    oneOf: 'None | list[Reference[Schema] | Schema]' = None
+    anyOf: 'None | list[Reference[Schema] | Schema]' = None
 
     description: str | None = None
     default: typing.Any = None
@@ -279,7 +279,7 @@ class ParameterBase(ExtendableModel):
 
     content: 'typing.Annotated[dict[str, MediaType] | None, pydantic.Field(maxProperties=1, minProperties=1)]' = None
 
-    style: str | None = None
+    style: Style | None = None
     explode: bool | None = None
     allowReserved: bool | None = False
     schema_: typing.Annotated[None | Reference[Schema] | Schema, pydantic.Field(alias='schema')] = None
