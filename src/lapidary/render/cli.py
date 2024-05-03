@@ -55,7 +55,7 @@ def render(
     project_root: Annotated[Path, typer.Argument()] = Path(),
     cache: bool = False,
 ) -> None:
-    from .main import render_project as render_project
+    from .main import render_project
 
     anyio.run(render_project, anyio.Path(project_root), cache)
 
