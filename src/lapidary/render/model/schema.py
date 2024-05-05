@@ -20,12 +20,12 @@ class OpenApi30SchemaConverter:
     def __init__(self, root_package: python.ModulePath, resolve_ref_: ResolveRefFn) -> None:
         self.root_package = root_package
         self.resolve_ref = staticmethod(resolve_ref_)
-        self.schema_types: MutableMapping[Stack, python.SchemaClass] = {}
+        self.schema_types: MutableMapping[Stack, tuple[python.SchemaClass, python.TypeHint]] = {}
 
     @resolve_ref
-    def _process_schema_object(self, value: openapi.Schema, stack: Stack) -> None:
+    def _process_schema_object(self, value: openapi.Schema, stack: Stack) -> python.TypeHint:
         if stack in self.schema_types:
-            return
+            return self.schema_types[stack][1]
 
         name = value.lapidary_name or stack.top()
         base_type = (
@@ -44,7 +44,8 @@ class OpenApi30SchemaConverter:
             python.ModelType[value.lapidary_model_type.name] if value.lapidary_model_type else python.ModelType.model
         )
 
-        self.schema_types[stack] = python.SchemaClass(
+        type_hint = resolve_type_hint(str(self.root_package), stack)
+        schema_class = python.SchemaClass(
             class_name=name,
             base_type=base_type,
             allow_extra=value.additionalProperties is not False,
@@ -53,6 +54,8 @@ class OpenApi30SchemaConverter:
             docstr=value.description or None,
             model_type=model_type,
         )
+        self.schema_types[stack] = schema_class, type_hint
+        return type_hint
 
     @resolve_ref
     def process_property(self, value: openapi.Schema, stack: Stack, required: bool) -> python.Attribute:
@@ -147,8 +150,7 @@ class OpenApi30SchemaConverter:
         elif value.type in PRIMITIVE_TYPES:
             return python.BuiltinTypeHint.from_str(PRIMITIVE_TYPES[value.type].__name__)
         elif value.type == openapi.Type.object:
-            self._process_schema_object(value, stack)
-            return resolve_type_hint(str(self.root_package), stack)
+            return self._process_schema_object(value, stack)
         elif value.type == openapi.Type.array:
             return python.GenericTypeHint.list_of(self.process_schema(value.items, stack.push('items')))
         elif value.anyOf:
@@ -165,8 +167,8 @@ class OpenApi30SchemaConverter:
     @property
     def schema_modules(self) -> Iterable[python.SchemaModule]:
         modules: dict[python.ModulePath, list[python.SchemaClass]] = defaultdict(list)
-        for pointer, schema_class in self.schema_types.items():
-            hint = resolve_type_hint(str(self.root_package), pointer)
+        for pointer, schema_class_type in self.schema_types.items():
+            schema_class, hint = schema_class_type
             modules[python.ModulePath(hint.module)].append(schema_class)
         return [
             python.SchemaModule(
