@@ -115,7 +115,7 @@ class OpenApi30SchemaConverter:
         typ = self._process_schema(stack, value)
 
         if value.nullable or not required:
-            typ = python.GenericTypeHint.union_of(typ, python.BuiltinTypeHint.from_str('None'))
+            typ = python.GenericTypeHint.union_of(typ, python.NONE)
 
         return typ
 
