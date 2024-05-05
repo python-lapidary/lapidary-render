@@ -7,7 +7,6 @@ from collections.abc import Callable, Iterable, MutableMapping, Sequence
 
 from .. import json_pointer, names
 from . import openapi, python
-from .openapi import Reference
 from .refs import resolve_ref
 from .stack import Stack
 
