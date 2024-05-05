@@ -90,6 +90,8 @@ class DocumentHandler[P: str | anyio.Path](abc.ABC):
 
 class FileDocumentHandler(DocumentHandler[anyio.Path]):
     def __init__(self, project_root: anyio.Path, path: anyio.Path) -> None:
+        assert isinstance(project_root, anyio.Path)
+        assert isinstance(path, anyio.Path)
         super().__init__(path)
         self._project_root = project_root
 
