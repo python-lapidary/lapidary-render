@@ -195,7 +195,7 @@ class OpenApi30Converter:
     def process_security(
         self, value: Iterable[openapi.SecurityRequirement] | None, stack: Stack
     ) -> Iterable[SecurityRequirements] | None:
-        logger.debug('process security %s', stack)
+        logger.debug('Process security %s', stack)
         if value is None:
             return None
 
@@ -205,7 +205,7 @@ class OpenApi30Converter:
     def process_security_requirement(
         self, value: openapi.SecurityRequirement, stack: Stack
     ) -> Mapping[str, Iterable[str]]:
-        logger.debug('process security requirement %s', stack)
+        logger.debug('Process security requirement %s', stack)
         schemes_root = Stack(('#', 'components', 'securitySchemes'))
         for scheme_name, scopes in value.root.items():
             scheme_stack = schemes_root.push(scheme_name)
@@ -225,7 +225,7 @@ class OpenApi30Converter:
 
     @process_security_scheme_.register(openapi.APIKeySecurityScheme)
     def _(self, value: openapi.APIKeySecurityScheme, stack: Stack) -> None:
-        logger.debug('process API key security scheme %s', stack)
+        logger.debug('Process API key security scheme %s', stack)
         auth_name = stack.top()
         flow_name = f'api_key_{auth_name}'
         if flow_name not in self.target.security_schemes:
@@ -235,7 +235,7 @@ class OpenApi30Converter:
 
     @process_security_scheme_.register(openapi.OAuth2SecurityScheme)
     def _(self, value: openapi.OAuth2SecurityScheme, stack: Stack) -> None:
-        logger.debug('process OAuth2 security scheme %s', stack)
+        logger.debug('Process OAuth2 security scheme %s', stack)
         auth_name = stack.top()
         if value.flows.implicit:
             flow_name = f'oauth2_implicit_{auth_name}'

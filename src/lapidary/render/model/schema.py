@@ -110,7 +110,7 @@ class OpenApi30SchemaConverter:
     @resolve_ref
     def process_schema(self, value: openapi.Schema, stack: Stack, required: bool = True) -> python.TypeHint:
         assert isinstance(value, openapi.Schema)
-        logger.debug('process schema %s', stack)
+        logger.debug('Process schema %s', stack)
 
         typ = self._process_schema(stack, value)
 
