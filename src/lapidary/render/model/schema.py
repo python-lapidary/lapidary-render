@@ -112,7 +112,7 @@ class OpenApi30SchemaConverter:
         assert isinstance(value, openapi.Schema)
         logger.debug('Process schema %s', stack)
 
-        typ = self._process_schema(stack, value)
+        typ = self._process_schema(value, stack)
 
         if value.nullable or not required:
             typ = python.GenericTypeHint.union_of(typ, python.NONE)
@@ -140,8 +140,8 @@ class OpenApi30SchemaConverter:
 
     def _process_schema(
         self,
-        stack: Stack,
         value: openapi.Schema,
+        stack: Stack,
     ) -> python.TypeHint:
         if value.type == openapi.Type.string:
             typ = STRING_FORMATS.get(value.format, str) if value.format else str
