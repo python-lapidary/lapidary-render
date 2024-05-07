@@ -7,7 +7,7 @@ from mimeparse import parse_media_range
 
 from lapidary.runtime import SecurityRequirements
 
-from .. import names
+from .. import json_pointer, names
 from . import openapi, python
 from .refs import resolve_ref
 from .schema import OpenApi30SchemaConverter
@@ -113,15 +113,20 @@ class OpenApi30Converter:
 
     def process_paths(self, value: openapi.Paths, stack: Stack) -> None:
         for path, path_item in value.paths.items():
-            path_stack = stack.push(path)
-            common_params_stack = path_stack.push('parameters')
-            common_params = [
-                self.process_parameter(param, common_params_stack.push(idx))
-                for idx, param in enumerate(path_item.parameters)
-            ]
+            self.process_path(path_item, stack.push(json_pointer.encode_json_pointer(path)))
 
-            for method, operation in path_item.model_extra.items():
-                self.process_operation(operation, path_stack.push(method), common_params)
+    def process_path(
+        self,
+        value: openapi.PathItem,
+        stack: Stack,
+    ) -> None:
+        common_params_stack = stack.push('parameters')
+        common_params = [
+            self.process_parameter(param, common_params_stack.push(idx)) for idx, param in enumerate(value.parameters)
+        ]
+
+        for method, operation in value.model_extra.items():
+            self.process_operation(operation, stack.push(method), common_params)
 
     def process_request_body(self, value: openapi.RequestBody, stack: Stack) -> python.MimeMap:
         return self.process_content(value.content, stack.push('content'))
