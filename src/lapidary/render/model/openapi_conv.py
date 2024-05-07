@@ -81,6 +81,9 @@ class OpenApi30Converter:
             code: self.process_response(response, stack.push(code)) for code, response in value.responses.items()
         }
 
+    # Not providing process_parameters (plural) as each caller calls it in a different context
+    # (list, map or map with defaults)
+
     @resolve_ref
     def process_parameter(self, value: openapi.Parameter, stack: Stack) -> python.Parameter:
         logger.debug('process_parameter %s', stack)
@@ -101,7 +104,7 @@ class OpenApi30Converter:
             raise TypeError(f'{stack}: schema or content is required')
 
         return python.Parameter(
-            name=value.lapidary_name or names.get_param_python_name(value),
+            name=parameter_name(value),
             alias=value.name,
             type=typ,
             in_=value.in_,
@@ -129,6 +132,7 @@ class OpenApi30Converter:
             self.process_operation(operation, stack.push(method), common_params)
 
     def process_request_body(self, value: openapi.RequestBody, stack: Stack) -> python.MimeMap:
+        # TODO handle required
         return self.process_content(value.content, stack.push('content'))
 
     def process_responses(self, value: openapi.Responses, stack: Stack) -> python.ResponseMap:
@@ -266,3 +270,7 @@ class OpenApi30Converter:
         """Resolve reference to OpenAPI object and its direct path."""
         value, pointer = self.src.resolve_ref(ref)
         return cast(Target, value), Stack.from_str(pointer)
+
+
+def parameter_name(value: openapi.Parameter) -> str:
+    return value.lapidary_name or names.get_param_python_name(value)
