@@ -12,7 +12,7 @@ class TypeHint:
         return self.full_name()
 
     def full_name(self):
-        return self.module + '.' + self.name if self.module != 'builtins' else self.name
+        return self.module + ':' + self.name if self.module != 'builtins' else self.name
 
     @staticmethod
     def from_str(path: str) -> 'TypeHint':
