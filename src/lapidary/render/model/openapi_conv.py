@@ -98,7 +98,7 @@ class OpenApi30Converter:
             media_type, media_type_obj = next(iter(value.content.items()))
             # encoding = media_type_obj.encoding
             typ = self.schema_converter.process_schema(
-                media_type_obj.schema_, stack.push_all('content', media_type), value.required
+                media_type_obj.schema_, stack.push('content', media_type), value.required
             )
         else:
             raise TypeError(f'{stack}: schema or content is required')
@@ -125,7 +125,8 @@ class OpenApi30Converter:
     ) -> None:
         common_params_stack = stack.push('parameters')
         common_params = [
-            self.process_parameter(param, common_params_stack.push(idx)) for idx, param in enumerate(value.parameters)
+            self.process_parameter(param, common_params_stack.push(str(idx)))
+            for idx, param in enumerate(value.parameters)
         ]
 
         for method, operation in value.model_extra.items():
@@ -153,7 +154,7 @@ class OpenApi30Converter:
             mime_parsed = parse_media_range(mime)
             if mime_parsed[:2] != ('application', 'json'):
                 continue
-            types[mime] = self.schema_converter.process_schema(media_type.schema_, stack.push_all(mime, 'schema'))
+            types[mime] = self.schema_converter.process_schema(media_type.schema_, stack.push(mime, 'schema'))
         return types
 
     def process_operation(
@@ -178,7 +179,7 @@ class OpenApi30Converter:
         model = python.OperationFunction(
             name=value.operationId,
             method=stack.top(),
-            path=cast(str, stack[-2]),
+            path=json_pointer.decode_json_pointer(stack[-2]),
             request_body=request_body,
             params=params,
             responses=responses,
@@ -197,7 +198,7 @@ class OpenApi30Converter:
         for param in common_params:
             params[param.name] = param
         for idx, oa_param in enumerate(value):
-            param = self.process_parameter(oa_param, stack.push(idx))
+            param = self.process_parameter(oa_param, stack.push(str(idx)))
             params[param.name] = param
         return list(params.values())
 
@@ -208,7 +209,7 @@ class OpenApi30Converter:
         if value is None:
             return None
 
-        security = [self.process_security_requirement(item, stack.push(idx)) for idx, item in enumerate(value)]
+        security = [self.process_security_requirement(item, stack.push(str(idx))) for idx, item in enumerate(value)]
         return security or None
 
     def process_security_requirement(
@@ -252,7 +253,7 @@ class OpenApi30Converter:
                 flow = value.flows.implicit
 
                 if flow.refreshUrl:
-                    raise NotImplementedError(stack.push_all('flows', 'implicit', 'refreshUrl'))
+                    raise NotImplementedError(stack.push('flows', 'implicit', 'refreshUrl'))
 
                 self.target.security_schemes[flow_name] = python.ImplicitOAuth2Flow(
                     name=auth_name,

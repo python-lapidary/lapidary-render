@@ -125,7 +125,7 @@ class OpenApi30SchemaConverter:
         one_of: Iterable[openapi.Reference[openapi.Schema] | openapi.Schema],
     ) -> python.TypeHint:
         return python.GenericTypeHint.union_of(
-            *tuple(self.process_schema(sub_schema, stack.push(idx)) for idx, sub_schema in enumerate(one_of))
+            *tuple(self.process_schema(sub_schema, stack.push(str(idx))) for idx, sub_schema in enumerate(one_of))
         )
 
     def _get_composite_type_hint(

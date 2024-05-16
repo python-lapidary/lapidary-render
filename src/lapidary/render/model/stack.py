@@ -1,8 +1,6 @@
 from functools import lru_cache
 from typing import Self
 
-from ..json_pointer import encode_json_pointer
-
 
 class Stack:
     __slots__ = ('path',)
@@ -16,12 +14,9 @@ class Stack:
 
     @lru_cache(1)
     def __repr__(self):
-        return '/'.join(encode_json_pointer(str(elem)) for elem in self.path)
+        return '/'.join(self.path)
 
-    def push(self, name: str | int) -> Self:
-        return Stack(self.path + (name,))
-
-    def push_all(self, *names: str | int) -> Self:
+    def push(self, *names: str) -> Self:
         return Stack(self.path + names)
 
     def top(self) -> str:
@@ -33,5 +28,5 @@ class Stack:
     def __eq__(self, other):
         return isinstance(other, Stack) and self.path == other.path
 
-    def __getitem__(self, item: int) -> str | int:
+    def __getitem__(self, item: int) -> str:
         return self.path[item]
