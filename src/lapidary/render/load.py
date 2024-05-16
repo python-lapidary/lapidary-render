@@ -3,7 +3,7 @@ import hashlib
 import logging
 import pickle
 from collections.abc import Iterable, Mapping, Sequence
-from typing import Self, cast
+from typing import cast
 
 import anyio
 import httpx
@@ -13,24 +13,24 @@ from jsonpatch import JsonPatch
 
 from .config import Config
 
-type JSON = str | int | float | Mapping[str, Self] | Sequence[Self] | None
-
 logger = logging.getLogger(__name__)
 
 
-async def load_document(root: anyio.Path, config: Config, cache: bool) -> JSON:
+async def load_document(root: anyio.Path, config: Config, cache: bool) -> Mapping:
     cache_root = anyio.Path(platformdirs.user_cache_path('lapidary'))
 
     logger.info('Load OpenAPI document')
-    spec_dict = await load_parse(root, config.document_path, cache, cache_root)
+    spec_dict: dict = cast(dict, await load_parse(root, config.document_path, cache, cache_root))
 
     if (patch := await load_patches(root / config.patches, cache, cache_root)) is not None:
-        spec_dict = patch.apply(cast(dict, spec_dict))
+        spec_dict = patch.apply(spec_dict)
 
     return spec_dict
 
 
-async def load_parse(root: anyio.Path, path: str | anyio.Path, cache: bool, cache_root: anyio.Path) -> JSON:
+async def load_parse(
+    root: anyio.Path, path: str | anyio.Path, cache: bool, cache_root: anyio.Path
+) -> Mapping | Sequence:
     text = await document_handler_for(root, path).load()
     if cache:
         return await parse_cache(text, cache_root)
@@ -38,7 +38,7 @@ async def load_parse(root: anyio.Path, path: str | anyio.Path, cache: bool, cach
         return parse(text)
 
 
-async def parse_cache(text: str, cache_root: anyio.Path) -> JSON:
+async def parse_cache(text: str, cache_root: anyio.Path) -> Mapping:
     digest = hashlib.sha224(text.encode()).hexdigest()
     cache_path = anyio.Path((cache_root / digest).with_suffix('.pickle' + str(pickle.HIGHEST_PROTOCOL)))
     if await cache_path.exists():
@@ -51,7 +51,7 @@ async def parse_cache(text: str, cache_root: anyio.Path) -> JSON:
         return d
 
 
-def parse(text: str) -> JSON:
+def parse(text: str) -> Mapping:
     yaml = ruamel.yaml.YAML(typ='safe')
     return yaml.load(text)
 
