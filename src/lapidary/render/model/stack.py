@@ -1,9 +1,7 @@
 from functools import lru_cache
-from typing import Any, Self
+from typing import Self
 
 from ..json_pointer import encode_json_pointer
-
-type Item = tuple[str | int, Any]
 
 
 class Stack:
