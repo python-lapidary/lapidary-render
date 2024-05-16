@@ -43,7 +43,7 @@ class OpenApi30SchemaConverter:
             python.ModelType[value.lapidary_model_type.name] if value.lapidary_model_type else python.ModelType.model
         )
 
-        type_hint = resolve_type_hint(str(self.root_package), stack)
+        type_hint = resolve_type_hint(str(self.root_package), stack.push('schema', name))
         schema_class = python.SchemaClass(
             class_name=name,
             base_type=base_type,
@@ -168,7 +168,7 @@ class OpenApi30SchemaConverter:
         modules: dict[python.ModulePath, list[python.SchemaClass]] = defaultdict(list)
         for pointer, schema_class_type in self.schema_types.items():
             schema_class, hint = schema_class_type
-            modules[python.ModulePath(hint.module)].append(schema_class)
+            modules[python.ModulePath(hint.module) / '__init__'].append(schema_class)
         return [
             python.SchemaModule(
                 path=module,
