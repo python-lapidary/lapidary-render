@@ -38,6 +38,6 @@ def test_schema_array(document: openapi.OpenApiModel) -> None:
     )
 
     assert request[MIME_JSON] == python.GenericTypeHint(
-        module='builtins', name='list', args=(python.TypeHint.from_str('petstore.components.schemas:User'),)
+        module='builtins', name='list', args=(python.TypeHint.from_str('petstore.components.schemas.User.schema:User'),)
     )
     assert converter.schema_converter.schema_modules[0].body[0].class_name == 'User'
