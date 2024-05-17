@@ -3,6 +3,20 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Next]
 
+
+## [0.8.0](https://github.com/python-lapidary/lapidary/releases/tag/v0.9.0) - 2024-05-17
+### Added
+- Support for OAuth2 password flow.
+
+### Changed
+- Generate code for lapidary 0.9.0 .
+- Migrated from Copier to Rybak for generating directory tree.
+
+### Removed
+- Temporary removed nicer package names to simplify code.
+- Temporary removed support for paging.
+
+
 ## [0.8.0](https://github.com/python-lapidary/lapidary/releases/tag/v0.8.0) - 2023-01-02
 ### Added
 - Support for returning array result as an async iterator.
