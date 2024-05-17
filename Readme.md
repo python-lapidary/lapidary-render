@@ -1,63 +1,45 @@
-# Code generator
+# Lapidary Render
+## Synopsis
+
+Lapidary is an in-python DSL for Web API clients.
+
+Lapidary-render is a code generator that creates lapidary client code from an OpenAPI document.
+
 ## Installation
 
-lapidary-render requires python 3.9 or higher to run.
-
-I recommend installing via `pipx`
+I recommend installing via `pipx`:
 
 `pipx install lapidary-render`
 
-You can set python version for lapidary with `pipx install --python [path-to-python] lapidary-render`. See `pipx install --help` for details.
+Note that lapidary-render requires Python 3.12
 
 ## Usage
 
-`lapidary` command offers inline help and shell command completion. See `lapidary --help` for details.
+The `lapidary` command offers inline help and shell command completion. See `lapidary --help` for details.
 
-### lapidary init
+### `lapidary init`
 
-`lapidary init [--[no-]format-strict] [--[no-]render] SCHEMA_PATH PROJECT_ROOT PACKAGE_NAME`
+`lapidary init [--cache] [--save] SCHEMA_PATH PROJECT_ROOT PACKAGE_NAME`
 
-Lapidary will create
-- PROJECT_ROOT and all necessary directories,
-- \_\_init\_\_.py files,
-- pyproject.toml with [poetry](https://python-poetry.org/) configured,
-- py.typed
-- client.pyi with function stubs for all operations and a client.py with an empty client class.
-- [Pydantic](https://docs.pydantic.dev/) model classes for each schema.
+Initializes a project directory with a `pyproject.toml` file and optionally stores the OpenAPI document.
 
-All python files are generated in PROJECT_ROOT/gen directory.
+### `lapidary render`
 
-If a directory PROJECT_ROOT/src/patches exists, Lapidary will read all yaml files and apply them as JSONPatch against the original openapi file.
+`lapidary render [PROJECT_ROOT]`
 
-If the original openapi file is not compatible with Lapidary, running `lapidary init --no-render ...` will generate only the project structure without any
-models or stubs. Once you've prepared the patch, run `lapidary update`.
+Renders the client code in the project root. The default project root is the current directory.
 
-### lapidary update
+All python files are generated in the `PROJECT_ROOT/gen` directory.
 
-`lapidary update [--[no-]format-strict] [--[no-]cache] [PROJECT_ROOT]`
-
-Default PROJECT_ROOT is the current directory.
-
-The command
-- deletes PROJECT_ROOT/gen directory,
-- re-applies patches to openapi file
-- and generates python files
-
-### lapidary version
-
-`lapidary version`
-
-Prints the programs version and exits.
+If a directory `PROJECT_ROOT/src/patches` exists, Lapidary will read all JSON and YAML files and apply them as JSONPatch
+against the original OpenAPI file.
 
 ## Configuration
 
-Lapidary can be configured with a pyproject.yaml file, under [tool.lapidary] path.
+Lapidary can be configured with a `pyproject.yaml` file, under `[tool.lapidary]` path.
 
-Only `package` value is required, and it's set by `lapidary init`.
+Only the `package` value is required, and it's set by `lapidary init`.
 
-- package [str] - root package name
-- format [bool] - whether to format the generated code with black [default = True].
-- cache [bool] - whether to cache openapi and patches as pickle files. Only files larger than 50kB are cached [default = True].
-- src_root [str] - sources root, in PROJECT_ROOT [default = 'src'].
-- gen_root [str] = generated sources root, in PROJECT_ROOT [default = 'gen'].
-- patches [str] = patches directory, under sources root [default = 'patches'].
+- package [str] - root package name.
+- document_path [str] - path relative to the project root, or URL of the OpenAPI document.
+- patches [str] - patches directory, under sources root [default = 'src/patches'].
