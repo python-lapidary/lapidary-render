@@ -327,21 +327,19 @@ name = "lapidary"
 version = "0.9.0"
 description = "Python async OpenAPI client library"
 optional = false
-python-versions = "^3.9"
-files = []
-develop = true
+python-versions = "<4.0,>=3.9"
+files = [
+    {file = "lapidary-0.9.0-py3-none-any.whl", hash = "sha256:1026eadfa336216fa69785a05c9f9b21bca74ecb3633fa4354d7f769ac01f0e9"},
+    {file = "lapidary-0.9.0.tar.gz", hash = "sha256:63bf0c09d17f1d89308d47c1ae58617aedbeb460627984a4db6b1cbb1c11a93e"},
+]
 
 [package.dependencies]
-httpx = {version = "^0.27", extras = ["http2"]}
-httpx-auth = "^0.22"
-pydantic = {version = "^2.5.2", extras = ["email"]}
-pytest-asyncio = "^0.23.3"
-python-mimeparse = "^1.6.0"
-typing-extensions = {version = "^4.9.0", markers = "python_version < \"3.12\""}
-
-[package.source]
-type = "directory"
-url = "../lapidary"
+httpx = {version = ">=0.27,<0.28", extras = ["http2"]}
+httpx-auth = ">=0.22,<0.23"
+pydantic = {version = ">=2.5.2,<3.0.0", extras = ["email"]}
+pytest-asyncio = ">=0.23.3,<0.24.0"
+python-mimeparse = ">=1.6.0,<2.0.0"
+typing-extensions = {version = ">=4.9.0,<5.0.0", markers = "python_version < \"3.12\""}
 
 [[package]]
 name = "markupsafe"
@@ -818,4 +816,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "03869d1e62eba49f64fcdf2088bf7a90105341a862d0ca9ba21d19d8903fca35"
+content-hash = "48fd4731cfc56c86c773b6a481e88fc152fcdc7d364410530e11faf0a527c164"
