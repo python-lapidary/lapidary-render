@@ -7,7 +7,6 @@ from typing import cast
 
 import anyio
 import httpx
-import platformdirs
 import ruamel.yaml
 from jsonpatch import JsonPatch
 
@@ -16,39 +15,19 @@ from .config import Config
 logger = logging.getLogger(__name__)
 
 
-async def load_document(root: anyio.Path, config: Config, cache: bool) -> Mapping:
-    cache_root = anyio.Path(platformdirs.user_cache_path('lapidary'))
-
+async def load_document(root: anyio.Path, config: Config) -> Mapping:
     logger.info('Load OpenAPI document')
-    spec_dict: dict = cast(dict, await load_parse(root, config.document_path, cache, cache_root))
+    spec_dict: dict = cast(dict, await load_parse(root, config.document_path))
 
-    if (patch := await load_patches(root / config.patches, cache, cache_root)) is not None:
+    if (patch := await load_patches(root / config.patches)) is not None:
         spec_dict = patch.apply(spec_dict)
 
     return spec_dict
 
 
-async def load_parse(
-    root: anyio.Path, path: str | anyio.Path, cache: bool, cache_root: anyio.Path
-) -> Mapping | Sequence:
+async def load_parse(root: anyio.Path, path: str | anyio.Path) -> Mapping | Sequence:
     text = await document_handler_for(root, path).load()
-    if cache:
-        return await parse_cache(text, cache_root)
-    else:
-        return parse(text)
-
-
-async def parse_cache(text: str, cache_root: anyio.Path) -> Mapping:
-    digest = hashlib.sha224(text.encode()).hexdigest()
-    cache_path = anyio.Path((cache_root / digest).with_suffix('.pickle' + str(pickle.HIGHEST_PROTOCOL)))
-    if await cache_path.exists():
-        b = await cache_path.read_bytes()
-        return pickle.loads(b)
-    else:
-        d = parse(text)
-        await cache_root.mkdir(parents=True, exist_ok=True)
-        await cache_path.write_bytes(pickle.dumps(d, pickle.HIGHEST_PROTOCOL))
-        return d
+    return parse(text)
 
 
 def parse(text: str) -> Mapping:
@@ -56,7 +35,7 @@ def parse(text: str) -> Mapping:
     return yaml.load(text)
 
 
-async def load_patches(patches_root: anyio.Path, cache: bool, cache_root: anyio.Path) -> JsonPatch | None:
+async def load_patches(patches_root: anyio.Path) -> JsonPatch | None:
     patches = [p async for p in patches_root.rglob('*[yamljson]')]
 
     if not patches:
@@ -68,7 +47,7 @@ async def load_patches(patches_root: anyio.Path, cache: bool, cache_root: anyio.
             op
             for p in patches
             if p.suffix in ('.yaml', '.yml', '.json')
-            for op in cast(Iterable, await load_parse(patches_root, p.relative_to(patches_root), cache, cache_root))
+            for op in cast(Iterable, await load_parse(patches_root, p.relative_to(patches_root)))
         ]
     )
 

@@ -62,11 +62,11 @@ async def init_project(
     )
 
 
-async def render_project(project_root: anyio.Path, cache: bool) -> None:
+async def render_project(project_root: anyio.Path) -> None:
     config = await load_config(project_root)
 
     logger.info('Parse OpenAPI document')
-    oa_doc = await load_document(project_root, config, cache)
+    oa_doc = await load_document(project_root, config)
     oa_model = openapi.OpenApiModel.model_validate(oa_doc)
 
     logger.info('Prepare python model')

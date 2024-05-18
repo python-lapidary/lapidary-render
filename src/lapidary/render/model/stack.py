@@ -1,4 +1,3 @@
-from functools import lru_cache
 from typing import Self
 
 
@@ -12,7 +11,6 @@ class Stack:
     def from_str(cls, pointer: str) -> Self:
         return cls(tuple(pointer.split('/')))
 
-    @lru_cache(1)
     def __repr__(self):
         return '/'.join(self.path)
 

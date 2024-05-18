@@ -23,12 +23,10 @@ def app() -> None:
 @click.argument('project_root')
 @click.argument('package_name')
 @click.option('--save/--no-save', help='Copy the document in the project', default=False)
-@click.option('--cache/--no-cache', help='Save parsed document as a pickle file.', default=False)
 async def init(
     document: str,
     project_root: str,
     package_name: str,
-    cache: bool = False,
     save: bool = False,
 ):
     """Initialize a new project.
@@ -45,7 +43,6 @@ async def init(
     config = Config(
         package=package_name,
         document_path=document,
-        cache=cache,
     )
 
     try:
@@ -58,12 +55,11 @@ async def init(
 @click.argument('project_root', type=click.Path(exists=True, file_okay=False, dir_okay=True), default='.')
 async def render(
     project_root: Path = Path(),
-    cache: bool = False,
 ) -> None:
     """Generate Python code"""
     from .main import render_project
 
-    await render_project(anyio.Path(project_root), cache)
+    await render_project(anyio.Path(project_root))
 
 
 @app.command(hidden=True)
