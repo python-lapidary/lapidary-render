@@ -19,7 +19,7 @@ The `lapidary` command offers inline help and shell command completion. See `lap
 
 ### `lapidary init`
 
-`lapidary init [--cache] [--save] SCHEMA_PATH PROJECT_ROOT PACKAGE_NAME`
+`lapidary init [--save] SCHEMA_PATH PROJECT_ROOT PACKAGE_NAME`
 
 Initializes a project directory with a `pyproject.toml` file and optionally stores the OpenAPI document.
 
