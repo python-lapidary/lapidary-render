@@ -2,19 +2,20 @@ import pathlib
 import unittest
 from unittest.mock import Mock
 
-from typer.testing import CliRunner
+import pytest
+from asyncclick.testing import CliRunner
 
 parent = pathlib.Path(__file__).relative_to(pathlib.Path.cwd()).parent
 
 
-@unittest.mock.patch('rybak.TreeTemplate')
-def test_init_save_copies_document(monkeypatch, tmp_path: pathlib.Path) -> None:
+@pytest.mark.asyncio
+async def test_init_save_copies_document(monkeypatch, tmp_path: pathlib.Path) -> None:
     runner = CliRunner()
     output = tmp_path / 'output'
     from lapidary.render.cli import app
 
     with unittest.mock.patch('rybak.TreeTemplate') as mock:
-        result = runner.invoke(app, ('init', '--save', str(parent / 'petstore.json'), str(output), 'petstore'))
+        result = await runner.invoke(app, ('init', '--save', str(parent / 'petstore.json'), str(output), 'petstore'))
     if result.exception:
         raise result.exception
     mock().render.assert_called()
@@ -22,13 +23,14 @@ def test_init_save_copies_document(monkeypatch, tmp_path: pathlib.Path) -> None:
     assert (output / 'src/openapi/petstore.json').is_file()
 
 
-def test_init_dosnt_copy_document(tmp_path: pathlib.Path) -> None:
+@pytest.mark.asyncio
+async def test_init_doesnt_copy_document(tmp_path: pathlib.Path) -> None:
     runner = CliRunner()
     output = tmp_path / 'output'
     from lapidary.render.cli import app
 
     with unittest.mock.patch('rybak.TreeTemplate') as mock:
-        result = runner.invoke(app, ('init', str(parent / 'petstore.json'), str(output), 'petstore'))
+        result = await runner.invoke(app, ('init', str(parent / 'petstore.json'), str(output), 'petstore'))
     if result.exception:
         raise result.exception
     assert result.exit_code == 0
