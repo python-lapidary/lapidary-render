@@ -143,7 +143,15 @@ class OpenApi30SchemaConverter:
         value: openapi.Schema,
         stack: Stack,
     ) -> python.TypeHint:
-        if value.type == openapi.Type.string:
+        if value.anyOf:
+            return self._get_composite_type_hint(stack.push('anyOf'), value.anyOf)
+        elif value.oneOf:
+            return self._get_one_of_type_hint(stack.push('oneOf'), value.oneOf)
+        elif value.allOf:
+            return self._get_composite_type_hint(stack.push('allOf'), value.allOf)
+        elif value.not_:
+            raise NotImplementedError(stack.push('not'))
+        elif value.type == openapi.Type.string:
             typ = STRING_FORMATS.get(value.format, str) if value.format else str
             return python.TypeHint.from_type(typ)
         elif value.type in PRIMITIVE_TYPES:
@@ -152,12 +160,6 @@ class OpenApi30SchemaConverter:
             return self._process_schema_object(value, stack)
         elif value.type == openapi.Type.array:
             return python.GenericTypeHint.list_of(self.process_schema(value.items, stack.push('items')))
-        elif value.anyOf:
-            return self._get_composite_type_hint(stack.push('anyOf'), value.anyOf)
-        elif value.oneOf:
-            return self._get_one_of_type_hint(stack.push('oneOf'), value.oneOf)
-        elif value.allOf:
-            return self._get_composite_type_hint(stack.push('allOf'), value.allOf)
         elif value.type is None:
             return python.TypeHint.from_str('typing:Any')
         else:
