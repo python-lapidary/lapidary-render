@@ -1,10 +1,9 @@
 import logging
 import sys
 from pathlib import Path
-from typing import Annotated
 
 import anyio
-import typer
+import asyncclick as click
 
 from .config import Config
 
@@ -12,28 +11,34 @@ logging.basicConfig()
 logging.getLogger('lapidary').setLevel(logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-app = typer.Typer()
+
+@click.group()
+@click.version_option(package_name='lapidary.render', prog_name='lapidary')
+def app() -> None:
+    pass
 
 
 @app.command()
-def version():
-    """Print version and exit."""
-
-    from importlib.metadata import version
-
-    package = 'lapidary'
-    print(f'{package}, {version(package)}')
-
-
-@app.command()
-def init(
-    document: Annotated[str, typer.Argument(help='Path of URL of the OpenAPI document.')],
-    project_root: Annotated[Path, typer.Argument(help='Root directory of the generated project')],
-    package_name: Annotated[str, typer.Argument(help='Root package for the generated code.')],
-    cache: Annotated[bool, typer.Option(help='Save parsed document as a pickle file.')] = False,
-    save: Annotated[bool, typer.Option(help='Copy the document in the project.')] = False,
+@click.argument('document')
+@click.argument('project_root')
+@click.argument('package_name')
+@click.option('--save/--no-save', help='Copy the document in the project', default=False)
+@click.option('--cache/--no-cache', help='Save parsed document as a pickle file.', default=False)
+async def init(
+    document: str,
+    project_root: str,
+    package_name: str,
+    cache: bool = False,
+    save: bool = False,
 ):
-    """Create a new project."""
+    """Initialize a new project.
+
+    DOCUMENT: Path or URL of the OpenAPI document
+
+    PROJECT_ROOT: Root directory of the generated project
+
+    PACKAGE_NAME: Root package for the generated code
+    """
 
     from .main import init_project
 
@@ -44,27 +49,30 @@ def init(
     )
 
     try:
-        anyio.run(init_project, anyio.Path(project_root), config, save)
+        await init_project(anyio.Path(project_root), config, save)
     except FileExistsError:
-        print('Target exists')
-        raise typer.Exit(-1)
+        raise click.ClickException('Target exists')
 
 
 @app.command()
-def render(
-    project_root: Annotated[Path, typer.Argument()] = Path(),
+@click.argument('project_root', type=click.Path(exists=True, file_okay=False, dir_okay=True), default='.')
+async def render(
+    project_root: Path = Path(),
     cache: bool = False,
 ) -> None:
+    """Generate Python code"""
     from .main import render_project
 
-    anyio.run(render_project, anyio.Path(project_root), cache)
+    await render_project(anyio.Path(project_root), cache)
 
 
-@app.command()
-def dump_model(
-    project_root: Annotated[Path, typer.Argument()] = Path(),
-    process: Annotated[bool, typer.Option(help='Output processed python model')] = False,
+@app.command(hidden=True)
+@click.argument('project_root', type=click.Path(exists=True, file_okay=False, dir_okay=True), default='.')
+@click.option('--process', is_flag=True, help='Output processed python model', default=False)
+async def dump_model(
+    project_root: Path = Path(),
+    process: bool = False,
 ) -> None:
     from .main import dump_model as dump_model_
 
-    anyio.run(dump_model_, anyio.Path(project_root), process, sys.stdout)
+    await dump_model_(anyio.Path(project_root), process, sys.stdout)
