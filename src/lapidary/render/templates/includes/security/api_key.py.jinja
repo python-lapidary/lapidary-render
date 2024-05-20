@@ -1,11 +1,12 @@
-{% if auth.location.key == 'cookie' %}
-    {%- set authClass = 'CookieApiKey' %}
-{%- else %}
-    {%- set authClass = 'httpx_auth.'+auth.location.value.capitalize()+'ApiKey' %}
+{%- set auth_class = 'lapidary.runtime.auth.'+auth.location.value.capitalize() + 'ApiKey' %}
+{%- if auth.location.value == 'query' %}
+    {%- set param_name = auth.location.value+'_parameter_name' %}
+{%- else  %}
+    {%- set param_name = auth.location.value+'_name' %}
 {%- endif -%}
 
 def {{ auth.type }}_{{ auth.python_name }}(api_key: str) -> NamedAuth:
-    return '{{ auth.name }}', {{ authClass }}(
+    return '{{ auth.name }}', {{ auth_class }}(
         api_key=api_key,
-        header_name='{{ auth.key }}',
+        {{ param_name }}='{{ auth.key }}',
     )

@@ -1,4 +1,5 @@
 def {{ auth.type }}_{{ auth.python_name }}(
+    scope: Union[Iterable[Literal{{ auth.scopes.keys() | list }}], None] = None,
     **kwargs,
 ) -> NamedAuth:
     if scope is not None:

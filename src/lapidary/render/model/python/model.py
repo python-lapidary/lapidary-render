@@ -112,7 +112,7 @@ class AuthorizationCodeOAuth2Flow(OAuth2AuthBase):
 @dc.dataclass(kw_only=True)
 class ClientCredentialsOAuth2Flow(OAuth2AuthBase):
     token_url: str
-    type: str = 'oauth2_authorization_code'
+    type: str = 'oauth2_client_credentials'
 
 
 @dc.dataclass

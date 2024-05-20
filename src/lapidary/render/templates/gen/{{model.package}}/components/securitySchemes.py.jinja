@@ -6,11 +6,10 @@ from typing import Union
 
 import httpx
 import httpx_auth
-from typing_extensions import Literal, TypeAlias
+import lapidary.runtime.auth
 from lapidary.runtime import NamedAuth
+from typing_extensions import Literal
+{% for auth_name, auth in model.security_schemes.items() %}
 
-
-{% for auth_name, auth in model.security_schemes.items() -%}
-{% include "includes/security/" + auth.type + ".py.jinja" %}
-
+{% include "includes/security/" + auth.type + ".py.jinja" -%}
 {% endfor -%}
