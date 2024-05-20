@@ -1,0 +1,5 @@
+def {{ auth.type }}_{{ auth.python_name }}(user_name: str, password: str) -> NamedAuth:
+    return '{{ auth.name }}', httpx.BasicAuth(
+        username=user_name,
+        password=password,
+    )

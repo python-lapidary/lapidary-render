@@ -43,6 +43,7 @@ class Attribute:
 @dc.dataclass
 class Auth:
     name: str
+    python_name: str
     type: str
 
 
@@ -58,13 +59,30 @@ class ApiKeyAuth(Auth):
 class HttpAuth(Auth):
     scheme: str
     bearer_format: str | None
-    type: str = 'http'
+
+
+@dc.dataclass(kw_only=True)
+class HttpBasicAuth(Auth):
+    scheme: str = 'basic'
+    type: str = 'http_basic'
+
+
+@dc.dataclass(kw_only=True)
+class HttpBearerAuth(Auth):
+    scheme: str = 'bearer'
+    type: str = 'http_bearer'
+
+
+@dc.dataclass(kw_only=True)
+class HttpDigestAuth(Auth):
+    scheme: str = 'digest'
+    type: str = 'http_digest'
 
 
 @dc.dataclass(kw_only=True)
 class OpenIdConnectAuth(Auth):
     url: str
-    type: str = 'openIdConnect'
+    type: str = 'openid_connect'
 
 
 @dc.dataclass(kw_only=True)
@@ -81,16 +99,20 @@ class ImplicitOAuth2Flow(OAuth2AuthBase):
 @dc.dataclass(kw_only=True)
 class PasswordOAuth2Flow(OAuth2AuthBase):
     token_url: str
-    refresh_url: str | None = None
     type: str = 'oauth2_password'
 
 
 @dc.dataclass(kw_only=True)
-class AuthorizationCodeOAuth2FLow(OAuth2AuthBase):
+class AuthorizationCodeOAuth2Flow(OAuth2AuthBase):
     authorization_url: str
-    tokenUrl: str
-    refresh_url: str | None = None
+    token_url: str
     type: str = 'oauth2_authorization_code'
+
+
+@dc.dataclass(kw_only=True)
+class ClientCredentialsOAuth2Flow(OAuth2AuthBase):
+    token_url: str
+    type: str = 'oauth2_client_credentials'
 
 
 @dc.dataclass

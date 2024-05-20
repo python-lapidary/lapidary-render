@@ -1,11 +1,16 @@
-__all__ = [
+__all__ = (
     'ApiKeyAuth',
+    'AuthorizationCodeOAuth2Flow',
     'Attribute',
     'AttributeAnnotation',
     'Auth',
     'ClientClass',
     'ClientInit',
-    'HttpAuth',
+    'ClientCredentialsOAuth2Flow',
+    'HttpBasicAuth',
+    'HttpBearerAuth',
+    'HttpDigestAuth',
+    'ImplicitOAuth2Flow',
     'MimeMap',
     'ModelType',
     'OperationFunction',
@@ -14,6 +19,7 @@ __all__ = [
     'SchemaClass',
     'AuthModule',
     'ClientModule',
+    'PasswordOAuth2Flow',
     'SchemaModule',
     'ModulePath',
     'BuiltinTypeHint',
@@ -22,7 +28,7 @@ __all__ = [
     'type_hint_or_union',
     'ParamLocation',
     'NONE',
-]
+)
 
 import dataclasses as dc
 from collections.abc import Iterable, MutableMapping, MutableSequence
@@ -34,14 +40,19 @@ from .model import (
     Attribute,
     AttributeAnnotation,
     Auth,
+    AuthorizationCodeOAuth2Flow,
     ClientClass,
+    ClientCredentialsOAuth2Flow,
     ClientInit,
-    HttpAuth,
+    HttpBasicAuth,
+    HttpBearerAuth,
+    HttpDigestAuth,
     ImplicitOAuth2Flow,
     MimeMap,
     ModelType,
     OperationFunction,
     Parameter,
+    PasswordOAuth2Flow,
     ResponseMap,
     SchemaClass,
 )

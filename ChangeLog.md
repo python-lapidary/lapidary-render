@@ -2,11 +2,16 @@
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Next]
+### Added
+- HTTP security schemas supported by httpx;
+- OAuth2 flows supported by httpx_auth;
+- api-key authorization in cookie and query parameter;
+
 ### Removed
 - broken --cache option;
 
 
-## [0.8.0](https://github.com/python-lapidary/lapidary/releases/tag/v0.9.0) - 2024-05-17
+## [0.9.0](https://github.com/python-lapidary/lapidary/releases/tag/v0.9.0) - 2024-05-17
 ### Added
 - Support for OAuth2 password flow.
 
