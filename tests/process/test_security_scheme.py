@@ -22,8 +22,16 @@ def test_process_security_schemes(yaml: ruamel.yaml.YAML, path: Path):
         converter.process_security_scheme(security_scheme, Stack(('#', 'components', 'securitySchemes', name)))
 
     assert converter.target.security_schemes['api_key_headerApiKey'] == python.ApiKeyAuth(
-        name='headerApiKey', key='Authorization', location=python.ParamLocation.header, format='{}'
+        name='headerApiKey',
+        python_name='headerApiKey',
+        key='Authorization',
+        location=python.ParamLocation.header,
+        format='{}',
     )
     assert converter.target.security_schemes['api_key_cookieApiKey'] == python.ApiKeyAuth(
-        name='cookieApiKey', key='Authorization', location=python.ParamLocation.cookie, format='{}'
+        name='cookieApiKey',
+        python_name='cookieApiKey',
+        key='Authorization',
+        location=python.ParamLocation.cookie,
+        format='{}',
     )
