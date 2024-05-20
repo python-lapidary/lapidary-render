@@ -163,7 +163,7 @@ class OpenApi30SchemaConverter:
         elif value.type is None:
             return python.TypeHint.from_str('typing:Any')
         else:
-            raise NotImplementedError
+            raise NotImplementedError(str(stack))
 
     @property
     def schema_modules(self) -> Iterable[python.SchemaModule]:
