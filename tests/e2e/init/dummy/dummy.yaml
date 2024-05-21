@@ -1,0 +1,141 @@
+openapi: 3.0.2
+info:
+  title: subschemas
+  description: 'test generating /components/schemas with sub-schemas'
+  version: 1.0.0
+paths:
+  /test/:
+    get:
+      operationId: test_op
+      responses:
+        default:
+          content: { }
+          description: ''
+
+      parameters:
+      - name: param1
+        in: query
+        schema:
+          $ref: '#/components/schemas/schema1'
+        required: true
+      - name: param2
+        in: query
+        schema:
+          type: object
+          properties:
+            prop1:
+              type: string
+          additionalProperties: false
+          required:
+          - prop1
+        required: true
+
+components:
+  schemas:
+    schema1:
+      type: object
+      properties:
+        prop1:
+          type: object
+          properties:
+            prop2:
+              type: object
+              properties:
+                key:
+                  type: string
+              required:
+              - key
+              additionalProperties: false
+          additionalProperties: false
+          required:
+          - prop2
+      additionalProperties: false
+      required:
+      - prop1
+  securitySchemes:
+    oauth-refresh:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://example.com/authorization_url
+          tokenUrl: https://example.com/token_url
+          refreshUrl: https://example.com/refresh_url
+          scopes:
+            read: read
+            write: write
+        clientCredentials:
+          refreshUrl: https://example.com/refresh_url
+          tokenUrl: https://example.com/token_url
+          scopes:
+            read: read
+            write: write
+        implicit:
+          authorizationUrl: https://example.com/authorization_url
+          refreshUrl: https://example.com/refresh_url
+          scopes:
+            read: read
+            write: write
+        password:
+          tokenUrl: https://example.com/token_url
+          refreshUrl: https://example.com/refresh_url
+          scopes:
+            read: read
+            write: write
+    oauth:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://example.com/authorization_url
+          tokenUrl: https://example.com/token_url
+          scopes:
+            read: read
+            write: write
+        clientCredentials:
+          tokenUrl: https://example.com/token_url
+          scopes:
+            read: read
+            write: write
+        implicit:
+          authorizationUrl: https://example.com/authorization_url
+          scopes:
+            read: read
+            write: write
+        password:
+          tokenUrl: https://example.com/token_url
+          scopes:
+            read: read
+            write: write
+    api-key:
+      type: apiKey
+      name: x-api-key
+      in: header
+    api-key-cookie:
+      type: apiKey
+      name: x-api-key
+      in: cookie
+    api-key-query:
+      type: apiKey
+      name: x-api-key
+      in: query
+    http_basic:
+      type: http
+      scheme: Basic
+    http_bearer:
+      type: http
+      scheme: bearer
+    http_digest:
+      type: http
+      scheme: digest
+
+security:
+  - oauth-refresh:
+    - read
+    - write
+  - oauth:
+    - read
+    - write
+  - api-key: []
+  - api-key-cookie: []
+  - api-key-query: []
+  - http_basic: []
+  - http_digest: []

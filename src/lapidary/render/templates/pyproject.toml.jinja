@@ -14,24 +14,12 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-pydantic = { extras = ["email"], version = "^{{ get_version('pydantic') }}" }
 lapidary = "{{ get_version('lapidary') }}"
 
 [tool.poetry.group.dev.dependencies]
-mypy = "0.990"
 lapidary-render = "{{ get_version('lapidary_render') }}"
-taskipy = "^1.10.3"
-
-[tool.taskipy.tasks]
-update = 'lapidary update'
-mypy = 'mypy'
-check = 'task mypy'
 
 [tool.lapidary]
 {%- for key, value in config.items() %}
 {{ key }} = "{{ value }}"
 {%- endfor %}
-
-[tool.mypy]
-mypy_path = ['gen']
-packages = ['{{ config.package }}']
