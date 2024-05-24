@@ -199,7 +199,7 @@ class Schema(ExtendableModel):
     # type == object
     maxProperties: typing.Annotated[int | None, pydantic.Field(ge=0)] = None
     minProperties: typing.Annotated[int | None, pydantic.Field(ge=0)] = 0
-    required: typing.Annotated[list[str], pydantic.Field(min_items=1, default_factory=list), UniqueListValidator]
+    required: typing.Annotated[list[str], pydantic.Field(min_length=1, default_factory=list), UniqueListValidator]
     properties: 'typing.Annotated[dict[str, Reference[Schema] | Schema], pydantic.Field(default_factory=dict)]'
     additionalProperties: 'bool | Reference[Schema] | Schema' = True
 
@@ -208,7 +208,7 @@ class Schema(ExtendableModel):
 
     enum: typing.Annotated[
         list | None,
-        pydantic.Field(min_items=1),
+        pydantic.Field(min_length=1),
     ] = None
 
     not_: 'typing.Annotated[None | Reference[Schema] | Schema, pydantic.Field(alias="not")]' = None
@@ -277,7 +277,7 @@ class ParameterBase(ExtendableModel):
     deprecated: bool = False
     allowEmptyValue: bool = False
 
-    content: 'typing.Annotated[dict[str, MediaType] | None, pydantic.Field(maxProperties=1, minProperties=1)]' = None
+    content: 'typing.Annotated[dict[str, MediaType] | None, pydantic.Field(max_length=1, min_length=1)]' = None
 
     style: Style | None = None
     explode: bool | None = None
@@ -335,7 +335,7 @@ class Response(ExtendableModel):
 class Responses(ExtendableModel, ModelWithPatternProperties):
     responses: typing.Annotated[
         dict[str, Reference[Response] | Response],
-        pydantic.Field(default_factory=dict, min_items=1),
+        pydantic.Field(default_factory=dict, min_length=1),
         PropertyPattern(r'^[1-5](?:\d{2}|XX)|default$'),
     ]
 

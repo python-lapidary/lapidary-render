@@ -201,11 +201,11 @@ FIELD_PROPS = {
     'exclusiveMinimum': 'gt',
     'maxLength': 'max_length',
     'minLength': 'min_length',
-    'maxItems': 'max_items',
-    'minItems': 'min_items',
+    'maxItems': 'max_length',
+    'minItems': 'min_length',
     'uniqueItems': 'unique_items',
-    'maxProperties': 'max_properties',
-    'minProperties': 'min_properties',
+    'maxProperties': 'min_length',
+    'minProperties': 'min_length',
 }
 
 
