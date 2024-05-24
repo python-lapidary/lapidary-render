@@ -13,4 +13,4 @@ import {{ imp }}
 {% set path = item.path %}
 {%- for model in item.body %}
 {% include 'includes/schema/schema_class_' + model.model_type.name + '.py.jinja' %}
-{%- endfor %}
+{%- endfor -%}

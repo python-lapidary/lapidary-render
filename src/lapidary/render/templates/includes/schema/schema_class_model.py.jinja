@@ -21,4 +21,4 @@ class {{ model.class_name }}({{ type_hint(model.base_type, path) }}):
     model_config = pydantic.ConfigDict(
         extra='allow'
     )
-{%- endif %}
+{% endif -%}
