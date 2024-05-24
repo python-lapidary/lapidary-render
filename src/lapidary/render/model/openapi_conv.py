@@ -362,6 +362,5 @@ def map_process(
 
 HTTP_SCHEMES = {
     'basic': python.HttpBasicAuth,
-    'bearer': python.HttpBearerAuth,
     'digest': python.HttpDigestAuth,
 }

@@ -68,12 +68,6 @@ class HttpBasicAuth(Auth):
 
 
 @dc.dataclass(kw_only=True)
-class HttpBearerAuth(Auth):
-    scheme: str = 'bearer'
-    type: str = 'http_bearer'
-
-
-@dc.dataclass(kw_only=True)
 class HttpDigestAuth(Auth):
     scheme: str = 'digest'
     type: str = 'http_digest'

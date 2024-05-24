@@ -120,9 +120,6 @@ components:
     http_basic:
       type: http
       scheme: Basic
-    http_bearer:
-      type: http
-      scheme: bearer
     http_digest:
       type: http
       scheme: digest
