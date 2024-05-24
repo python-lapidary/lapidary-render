@@ -33,7 +33,7 @@ async def init_project(
         target_dir = project_root / document_root
         await target_dir.mkdir(parents=True)
         file_name = await document_handler.save_to(target_dir)
-        config.document_path = document_root / file_name
+        config.document_path = str(document_root / file_name)
 
     yaml = ruamel.yaml.YAML(typ='safe')
     document = yaml.load(await document_handler.load())
