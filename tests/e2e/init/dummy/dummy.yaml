@@ -52,8 +52,9 @@ components:
               type: string
           required:
           - prop1
-        u_000000for:
+        u_0for:
           type: string
+          description: property named after escaped python keyword
       required:
       - for
     schema1:

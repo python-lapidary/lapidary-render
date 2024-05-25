@@ -229,7 +229,7 @@ def resolve_type_hint(root_package: str, pointer: str | Stack) -> python.TypeHin
         parts = pointer.split('/')[1:]
     module_name = '.'.join(
         itertools.chain(
-            (root_package,), [names.maybe_mangle_name(json_pointer.encode_json_pointer(part)) for part in parts[:-1]]
+            (root_package,), [names.maybe_mangle_name(json_pointer.decode_json_pointer(part)) for part in parts[:-1]]
         )
     )
     top: str | int = parts[-1]

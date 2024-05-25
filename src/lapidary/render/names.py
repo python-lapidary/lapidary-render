@@ -4,6 +4,8 @@ import logging
 import re
 from typing import cast
 
+import base62
+
 logger = logging.getLogger(__name__)
 
 VALID_IDENTIFIER_RE = re.compile(r'^[a-zA-Z]\w*$', re.ASCII)
@@ -20,7 +22,7 @@ def check_name(name: str, check_builtins=True) -> None:
 
 
 def _escape_char(s: str) -> str:
-    return f'u_{ord(s):06x}'
+    return f'u_{base62.encode(ord(s))}'
 
 
 def escape_name(name: str) -> str:

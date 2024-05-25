@@ -54,21 +54,21 @@ def oauth2_authorization_code_oauth(
     )
 
 
-def api_key_apiu_00002dkey(api_key: str) -> NamedAuth:
+def api_key_apiu_jkey(api_key: str) -> NamedAuth:
     return 'api-key', lapidary.runtime.auth.HeaderApiKey(
         api_key=api_key,
         header_name='x-api-key',
     )
 
 
-def api_key_apiu_00002dkeyu_00002dcookie(api_key: str) -> NamedAuth:
+def api_key_apiu_jkeyu_jcookie(api_key: str) -> NamedAuth:
     return 'api-key-cookie', lapidary.runtime.auth.CookieApiKey(
         api_key=api_key,
         cookie_name='x-api-key',
     )
 
 
-def api_key_apiu_00002dkeyu_00002dquery(api_key: str) -> NamedAuth:
+def api_key_apiu_jkeyu_jquery(api_key: str) -> NamedAuth:
     return 'api-key-query', lapidary.runtime.auth.QueryApiKey(
         api_key=api_key,
         query_parameter_name='x-api-key',

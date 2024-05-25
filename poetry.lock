@@ -392,6 +392,16 @@ dev = ["pre-commit", "tox"]
 testing = ["pytest", "pytest-benchmark"]
 
 [[package]]
+name = "pybase62"
+version = "1.0.0"
+description = "Python module for base62 encoding"
+optional = false
+python-versions = "*"
+files = [
+    {file = "pybase62-1.0.0-py3-none-any.whl", hash = "sha256:60539ad956ec9e9de091bc7ae88c9550bc2fa17f503050cf34d021b75e73cb27"},
+]
+
+[[package]]
 name = "pydantic"
 version = "2.7.1"
 description = "Data validation using Python type hints"
@@ -706,4 +716,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "1da7808be97e70e9764a56a63f313df02bb8f89c8a487174e2579ee2c8f25935"
+content-hash = "f55de09a96d78b08c1c029936aed19e2c01f163231d45e05fc0d6491f9d93c43"

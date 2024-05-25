@@ -16,7 +16,7 @@ import test_petstore.components.schemas.ApiResponse.schema
 import test_petstore.components.schemas.Order.schema
 import test_petstore.components.schemas.Pet.schema
 import test_petstore.components.schemas.User.schema
-import test_petstore.paths.u_00007e01storeu_00007e01inventory.get.responses.u_00003200.content.applicationu_00007e1json.schema.schema
+import test_petstore.paths.u_lstoreu_linventory.get.responses.u_o00.content.applicationu_ljson.schema.schema
 
 
 class ApiClient(ClientBase):
@@ -188,10 +188,10 @@ class ApiClient(ClientBase):
     async def getInventory(
         self: Self,
     ) -> Annotated[
-        test_petstore.paths.u_00007e01storeu_00007e01inventory.get.responses.u_00003200.content.applicationu_00007e1json.schema.schema.schema,
+        test_petstore.paths.u_lstoreu_linventory.get.responses.u_o00.content.applicationu_ljson.schema.schema.schema,
         Responses({
             '200': {
-                'application/json': test_petstore.paths.u_00007e01storeu_00007e01inventory.get.responses.u_00003200.content.applicationu_00007e1json.schema.schema.schema,
+                'application/json': test_petstore.paths.u_lstoreu_linventory.get.responses.u_o00.content.applicationu_ljson.schema.schema.schema,
             },
         })
     ]:

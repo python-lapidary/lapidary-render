@@ -10,7 +10,7 @@ import typing_extensions
 import lapidary.runtime
 
 
-class u_000000for(lapidary.runtime.ModelBase):
+class u_0for(lapidary.runtime.ModelBase):
     prop1: typing.Annotated[
         str,
         pydantic.Field(

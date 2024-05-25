@@ -61,6 +61,4 @@ def test_property_schema(doc_dummy: openapi.OpenApiModel) -> None:
         stack.Stack(('#', 'paths', json_pointer.encode_json_pointer('/test/'), 'get', 'parameters', '1', 'schema')),
     )
 
-    assert schema == python.TypeHint.from_str(
-        'dummy.paths.u_00007e01testu_00007e01.get.parameters.u_000031.schema.schema:schema'
-    )
+    assert schema == python.TypeHint.from_str('dummy.paths.u_ltestu_l.get.parameters.u_n.schema.schema:schema')

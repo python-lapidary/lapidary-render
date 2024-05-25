@@ -9,12 +9,12 @@ import pydantic
 import typing_extensions
 import lapidary.runtime
 import test_dummy.components.schemas.all.properties.any.schema
-import test_dummy.components.schemas.all.properties.u_000000for.schema
+import test_dummy.components.schemas.all.properties.u_0for.schema
 
 
 class all(lapidary.runtime.ModelBase):
-    u_000000for: typing.Annotated[
-        test_dummy.components.schemas.all.properties.u_000000for.schema.u_000000for,
+    u_0for: typing.Annotated[
+        test_dummy.components.schemas.all.properties.u_0for.schema.u_0for,
         pydantic.Field(
             alias='for',
         )
@@ -27,9 +27,9 @@ class all(lapidary.runtime.ModelBase):
         )
     ] = None
 
-    uu_00005f000000for: typing.Annotated[
+    uu_1X0for: typing.Annotated[
         typing.Union[None, str],
         pydantic.Field(
-            alias='u_000000for',
+            alias='u_0for',
         )
     ] = None

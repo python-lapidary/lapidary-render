@@ -14,7 +14,7 @@ from lapidary.runtime import *
 
 import test_dummy.components.schemas.all.schema
 import test_dummy.components.schemas.schema1.schema
-import test_dummy.paths.u_00007e01testu_00007e01.get.parameters.u_000031.schema.schema
+import test_dummy.paths.u_ltestu_l.get.parameters.u_n.schema.schema
 
 
 class ApiClient(ClientBase):
@@ -42,7 +42,7 @@ class ApiClient(ClientBase):
         self: Self,
         *,
         param1_q: Annotated[test_dummy.components.schemas.schema1.schema.schema1, Query('param1', )],
-        param2_q: Annotated[test_dummy.paths.u_00007e01testu_00007e01.get.parameters.u_000031.schema.schema.schema, Query('param2', )],
+        param2_q: Annotated[test_dummy.paths.u_ltestu_l.get.parameters.u_n.schema.schema.schema, Query('param2', )],
     ) -> Annotated[
         test_dummy.components.schemas.all.schema.all,
         Responses({
