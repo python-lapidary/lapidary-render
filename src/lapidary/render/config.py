@@ -7,7 +7,8 @@ PYPROJ_TOML = 'pyproject.toml'
 
 
 class Config(pydantic.BaseModel):
-    document_path: str
+    document_path: str | None = None
+    origin: pydantic.AnyHttpUrl | None = None
     package: str
     patches: str = 'src/patches'
 

@@ -23,7 +23,7 @@ class ApiClient(ClientBase):
     def __init__(
         self,
         *,
-        base_url: str = '/api/v3',
+        base_url: str = 'https://petstore3.swagger.io/api/v3',
         **kwargs,
     ):
         super().__init__(

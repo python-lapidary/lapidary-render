@@ -40,13 +40,8 @@ async def init(
 
     from .main import init_project
 
-    config = Config(
-        package=package_name,
-        document_path=document,
-    )
-
     try:
-        await init_project(anyio.Path(project_root), config, save)
+        await init_project(document, anyio.Path(project_root), package_name, save)
     except FileExistsError:
         raise click.ClickException('Target exists')
 

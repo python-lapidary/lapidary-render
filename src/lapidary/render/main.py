@@ -17,8 +17,9 @@ logging.getLogger('rybak').setLevel(logging.DEBUG)
 
 
 async def init_project(
+    document_path: str,
     project_root: anyio.Path,
-    config: Config,
+    package_name: str,
     save_document: bool,
 ) -> None:
     """Create project directory and pyproject file, download or copy the OpenAPI document"""
@@ -26,14 +27,23 @@ async def init_project(
     if await project_root.exists():
         raise FileExistsError
 
-    document_handler = document_handler_for(anyio.Path(), config.document_path)
+    document_handler = document_handler_for(anyio.Path(), document_path)
 
     if save_document:
         document_root = anyio.Path('src/openapi')
         target_dir = project_root / document_root
         await target_dir.mkdir(parents=True)
         file_name = await document_handler.save_to(target_dir)
-        config.document_path = str(document_root / file_name)
+        config_document_path = str(document_root / file_name)
+    else:
+        config_document_path = None
+
+    config = Config(
+        # if path is not URL and not saving the file
+        document_path=config_document_path,
+        origin=document_handler.path if document_handler.is_url else None,
+        package=package_name,
+    )
 
     yaml = ruamel.yaml.YAML(typ='safe')
     document = yaml.load(await document_handler.load())
@@ -55,7 +65,7 @@ async def init_project(
     ).render(
         dict(
             get_version=importlib.metadata.version,
-            config=config.model_dump(exclude_unset=True, exclude_defaults=True),
+            config=config.model_dump(exclude_unset=True, exclude_defaults=True, exclude_none=True),
             document=document,
         ),
         pathlib.Path(project_root),
@@ -70,7 +80,11 @@ async def render_project(project_root: anyio.Path) -> None:
     oa_model = openapi.OpenApiModel.model_validate(oa_doc)
 
     logger.info('Prepare python model')
-    model = OpenApi30Converter(python.ModulePath(config.package), oa_model).process()
+    model = OpenApi30Converter(
+        python.ModulePath(config.package),
+        oa_model,
+        str(config.origin) if config.origin else None,
+    ).process()
 
     logger.info('Render project')
 
@@ -102,7 +116,7 @@ async def dump_model(project_root: anyio.Path, process: bool, output: TextIO):
     from pprint import pprint
 
     config = await load_config(project_root)
-    oa_doc = await load_document(project_root, config, False)
+    oa_doc = await load_document(project_root, config)
 
     if not process:
         yaml = ruamel.yaml.YAML(typ='safe')
@@ -110,5 +124,5 @@ async def dump_model(project_root: anyio.Path, process: bool, output: TextIO):
 
     else:
         oa_model = openapi.OpenApiModel.model_validate(oa_doc)
-        py_model = OpenApi30Converter(python.ModulePath(config.package), oa_model).process()
+        py_model = OpenApi30Converter(python.ModulePath(config.package), oa_model, str(config.origin)).process()
         pprint(py_model, output)

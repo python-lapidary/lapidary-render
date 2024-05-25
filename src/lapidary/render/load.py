@@ -56,7 +56,16 @@ class DocumentHandler[P: str | anyio.Path](abc.ABC):
 
     @abc.abstractmethod
     async def load(self) -> str:
-        """Return document text and its path, which could be URL path or local file path."""
+        """Return document text and, which could be URL path or local file path."""
+
+    @property
+    @abc.abstractmethod
+    def is_url(self) -> bool:
+        pass
+
+    @property
+    def path(self) -> str:
+        return str(self._path)
 
     @abc.abstractmethod
     async def save_to(self, target: anyio.Path) -> str:
@@ -80,6 +89,10 @@ class FileDocumentHandler(DocumentHandler[anyio.Path]):
 
         shutil.copyfile(self._path, target / self._path.name)
         return self._path.name
+
+    @property
+    def is_url(self) -> bool:
+        return False
 
 
 class HttpDocumentHandler(DocumentHandler[str]):
@@ -108,6 +121,10 @@ class HttpDocumentHandler(DocumentHandler[str]):
         file_name = self._file_name()
         await (target / file_name).write_text(text)
         return file_name
+
+    @property
+    def is_url(self) -> bool:
+        return True
 
 
 def document_handler_for(document_root: anyio.Path, path: str | anyio.Path) -> DocumentHandler:

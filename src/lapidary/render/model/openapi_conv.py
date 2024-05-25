@@ -21,11 +21,13 @@ class OpenApi30Converter:
         self,
         root_package: python.ModulePath,
         source: openapi.OpenApiModel,
+        origin: str | None,
         schema_converter: OpenApi30SchemaConverter | None = None,
     ):
         self.root_package = root_package
         self.global_headers: dict[str, python.Parameter] = {}
         self.src = source
+        self._origin = origin
 
         self.schema_converter = schema_converter or OpenApi30SchemaConverter(self.root_package, self.resolve_ref)
 
@@ -61,6 +63,11 @@ class OpenApi30Converter:
         server_url = server.url
         if server.variables:
             server_url = server_url.format(**{name: var.default for name, var in server.variables.items()})
+
+        if self._origin:
+            from urllib.parse import urljoin
+
+            server_url = urljoin(self._origin, server_url)
 
         self.target.client.body.init_method.base_url = server_url
 

@@ -17,7 +17,7 @@ def yaml():
 def test_process_security_schemes(yaml: ruamel.yaml.YAML, path: Path):
     document = openapi.OpenApiModel.model_validate(yaml.load(path.read_text()))
 
-    converter = model.OpenApi30Converter(python.ModulePath('package'), document)
+    converter = model.OpenApi30Converter(python.ModulePath('package'), document, None)
     for name, security_scheme in document.components.securitySchemes.items():
         converter.process_security_scheme(security_scheme, Stack(('#', 'components', 'securitySchemes', name)))
 
