@@ -113,7 +113,7 @@ class HttpDocumentHandler(DocumentHandler[str]):
         from urllib.parse import urlparse
 
         parsed = urlparse(self._path)
-        name, _ = split(parsed.path)
+        _, name = split(parsed.path)
         return name
 
     async def save_to(self, target: anyio.Path) -> str:
