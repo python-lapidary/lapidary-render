@@ -36,7 +36,20 @@ async def init_project(
         file_name = await document_handler.save_to(target_dir)
         config_document_path = str(document_root / file_name)
     else:
-        config_document_path = None
+        logger.warning('Saving OpenAPI document is recommended for portable and repeatable builds')
+        if not document_handler.is_url:
+            document_path_path = pathlib.PurePath(document_path)
+            if not document_path_path.is_absolute():
+                # document path is a file outside of the project root.
+                # If it's relative, make it relative to the project root.
+                try:
+                    config_document_path = document_path_path.relative_to(project_root, walk_up=True)
+                except ValueError:
+                    config_document_path = str(await anyio.Path.cwd() / document_path_path)
+            else:
+                config_document_path = document_path
+        else:
+            config_document_path = None
 
     config = Config(
         # if path is not URL and not saving the file

@@ -1,6 +1,4 @@
 import pathlib
-import unittest
-from unittest.mock import Mock
 
 import anyio
 import pytest
@@ -34,13 +32,14 @@ async def test_init_doesnt_copy_document(tmp_path: pathlib.Path) -> None:
     output = tmp_path / 'output'
     from lapidary.render.cli import app
 
-    with unittest.mock.patch('rybak.TreeTemplate') as mock:
-        result = await runner.invoke(app, ('init', str(source), str(output), 'petstore'))
+    result = await runner.invoke(app, ('init', str(source), str(output), 'petstore'))
     if result.exception:
         raise result.exception
     assert result.exit_code == 0
-    mock().render.assert_called()
     assert not (output / 'src/openapi/petstore.json').is_file()
+
+    config = await load_config(anyio.Path(output))
+    assert config.document_path == str(await anyio.Path.cwd() / source)
 
 
 @pytest.mark.asyncio
