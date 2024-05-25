@@ -4,8 +4,6 @@ import logging
 import re
 from typing import cast
 
-from .model import python
-
 logger = logging.getLogger(__name__)
 
 VALID_IDENTIFIER_RE = re.compile(r'^[a-zA-Z]\w*$', re.ASCII)
@@ -32,7 +30,7 @@ def escape_name(name: str) -> str:
     )
 
 
-def maybe_mangle_name(name: str, check_builtins=True) -> str:
+def maybe_mangle_name(name: str) -> str:
     """
     Names that are Python keywords or in builtins get suffixed with an underscore (_).
     Names that are not valid Python identifiers or start with underscore are mangled by replacing invalid characters
@@ -42,13 +40,9 @@ def maybe_mangle_name(name: str, check_builtins=True) -> str:
     if name is None or name == '':
         raise ValueError()
 
-    if check_builtins and (name in builtins.__dict__) or keyword.iskeyword(name):
-        return name + '_'
-    elif not VALID_IDENTIFIER_RE.match(name) or 'u_' in name:
+    if keyword.iskeyword(name):
+        name = '\0' + name
+    if not VALID_IDENTIFIER_RE.match(name) or 'u_' in name:
         return escape_name(name)
     else:
         return name
-
-
-def get_param_python_name(param: python.Parameter) -> str:
-    return maybe_mangle_name(param.name, False) + '_' + param.in_.name[0]

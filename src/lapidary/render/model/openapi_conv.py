@@ -348,7 +348,7 @@ class OpenApi30Converter:
 
 
 def parameter_name(value: openapi.Parameter) -> str:
-    return value.lapidary_name or names.get_param_python_name(value)
+    return value.lapidary_name or names.maybe_mangle_name(value.name) + '_' + value.in_.name[0]
 
 
 def map_process(

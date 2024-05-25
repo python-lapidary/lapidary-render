@@ -26,7 +26,7 @@ class OpenApi30SchemaConverter:
         if stack in self.schema_types:
             return self.schema_types[stack][1]
 
-        name = value.lapidary_name or stack.top()
+        name = value.lapidary_name or names.maybe_mangle_name(stack.top())
         base_type = (
             python.TypeHint.from_type(Exception)
             if value.lapidary_model_type is openapi.LapidaryModelType.exception

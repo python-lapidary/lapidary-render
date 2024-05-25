@@ -9,7 +9,10 @@ paths:
       operationId: test_op
       responses:
         default:
-          content: { }
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/all'
           description: ''
 
       parameters:
@@ -32,6 +35,27 @@ paths:
 
 components:
   schemas:
+    all:
+      type: object
+      description: schema named after a builtin python function
+      additionalProperties: false
+      properties:
+        any:
+          type: object
+          description: property named after a python builtin function
+        for:
+          type: object
+          description: schema and property named after a python keyword
+          additionalProperties: false
+          properties:
+            prop1:
+              type: string
+          required:
+          - prop1
+        u_000000for:
+          type: string
+      required:
+      - for
     schema1:
       type: object
       properties:
@@ -125,14 +149,14 @@ components:
       scheme: digest
 
 security:
-  - oauth-refresh:
-    - read
-    - write
-  - oauth:
-    - read
-    - write
-  - api-key: []
-  - api-key-cookie: []
-  - api-key-query: []
-  - http_basic: []
-  - http_digest: []
+- oauth-refresh:
+  - read
+  - write
+- oauth:
+  - read
+  - write
+- api-key: [ ]
+- api-key-cookie: [ ]
+- api-key-query: [ ]
+- http_basic: [ ]
+- http_digest: [ ]

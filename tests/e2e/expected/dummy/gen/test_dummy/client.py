@@ -12,6 +12,7 @@ from typing import Annotated, Union
 from lapidary.runtime import *
 
 
+import test_dummy.components.schemas.all.schema
 import test_dummy.components.schemas.schema1.schema
 import test_dummy.paths.u_00007e01testu_00007e01.get.parameters.u_000031.schema.schema
 
@@ -43,9 +44,10 @@ class ApiClient(ClientBase):
         param1_q: Annotated[test_dummy.components.schemas.schema1.schema.schema1, Query('param1', )],
         param2_q: Annotated[test_dummy.paths.u_00007e01testu_00007e01.get.parameters.u_000031.schema.schema.schema, Query('param2', )],
     ) -> Annotated[
-        None,
+        test_dummy.components.schemas.all.schema.all,
         Responses({
             'default': {
+                'application/json': test_dummy.components.schemas.all.schema.all,
             },
         })
     ]:
