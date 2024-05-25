@@ -15,7 +15,7 @@ logging.getLogger('lapidary').setLevel(logging.DEBUG)
 
 @pytest.fixture
 def document() -> openapi.OpenApiModel:
-    doc_text = (Path(__file__).parent.parent / 'e2e/init/petstore/petstore.json').read_text()
+    doc_text = (Path(__file__).parent.parent / 'e2e/init/petstore/src/openapi/openapi.json').read_text()
     return openapi.OpenApiModel.model_validate_json(doc_text)
 
 

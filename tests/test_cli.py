@@ -17,13 +17,15 @@ async def test_init_save_copies_document(monkeypatch, tmp_path: pathlib.Path) ->
     output = tmp_path / 'output'
     from lapidary.render.cli import app
 
-    with unittest.mock.patch('rybak.TreeTemplate') as mock:
-        result = await runner.invoke(app, ('init', '--save', str(source), str(output), 'petstore'))
+    result = await runner.invoke(app, ('init', '--save', str(source), str(output), 'petstore'))
     if result.exception:
         raise result.exception
-    mock().render.assert_called()
     assert result.exit_code == 0
-    assert (output / 'src/openapi/petstore.json').is_file()
+    assert (output / 'src/openapi/openapi.json').is_file()
+
+    config = await load_config(anyio.Path(output))
+    assert config.origin is None
+    assert config.document_path == 'src/openapi/openapi.json'
 
 
 @pytest.mark.asyncio

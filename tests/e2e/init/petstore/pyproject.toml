@@ -20,6 +20,6 @@ lapidary = {path="../../../.."}
 lapidary-render = "^0.9.0"
 
 [tool.lapidary]
+document_path = "src/openapi/openapi.json"
 origin = "https://petstore3.swagger.io/api/v3/openapi.json"
 package = "test_petstore"
-document_path = "petstore.json"
