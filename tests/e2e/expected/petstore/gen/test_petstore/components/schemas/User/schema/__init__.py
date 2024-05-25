@@ -11,7 +11,7 @@ import lapidary.runtime
 
 
 class User(lapidary.runtime.ModelBase):
-    id_: typing.Annotated[
+    id: typing.Annotated[
         typing.Union[None, int],
         pydantic.Field(
             alias='id',

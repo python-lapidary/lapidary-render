@@ -18,7 +18,7 @@ class ApiResponse(lapidary.runtime.ModelBase):
         )
     ] = None
 
-    type_: typing.Annotated[
+    type: typing.Annotated[
         typing.Union[None, str],
         pydantic.Field(
             alias='type',

@@ -27,7 +27,7 @@ class Pet(lapidary.runtime.ModelBase):
         )
     ]
 
-    id_: typing.Annotated[
+    id: typing.Annotated[
         typing.Union[None, int],
         pydantic.Field(
             alias='id',
