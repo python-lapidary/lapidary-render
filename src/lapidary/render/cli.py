@@ -5,10 +5,6 @@ from pathlib import Path
 import anyio
 import asyncclick as click
 
-from .config import Config
-
-logging.basicConfig()
-logging.getLogger('lapidary').setLevel(logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 

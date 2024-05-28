@@ -23,11 +23,13 @@ class OpenApi30Converter:
         source: openapi.OpenApiModel,
         origin: str | None,
         schema_converter: OpenApi30SchemaConverter | None = None,
+        path_progress: Callable[[Any], None] | None = None,
     ):
         self.root_package = root_package
         self.global_headers: dict[str, python.Parameter] = {}
         self.src = source
         self._origin = origin
+        self._path_progress = path_progress
 
         self.schema_converter = schema_converter or OpenApi30SchemaConverter(self.root_package, self.resolve_ref)
 
@@ -138,6 +140,7 @@ class OpenApi30Converter:
 
         for method, operation in value.model_extra.items():
             self.process_operation(operation, stack.push(method), common_params)
+        self._path_progress(json_pointer.decode_json_pointer(stack.top()))
 
     def process_request_body(self, value: openapi.RequestBody, stack: Stack) -> python.MimeMap:
         # TODO handle required

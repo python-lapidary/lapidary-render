@@ -4,16 +4,17 @@ import pathlib
 from typing import TextIO
 
 import anyio
+import asyncclick as click
 import jinja2
 import jinja2.loaders
 import ruamel.yaml
+import rybak
 
 from .config import Config, load_config
 from .load import document_handler_for, load_document
 from .model import OpenApi30Converter, openapi, python
 
 logger = logging.getLogger(__name__)
-logging.getLogger('rybak').setLevel(logging.DEBUG)
 
 
 async def init_project(
@@ -92,19 +93,21 @@ async def render_project(project_root: anyio.Path) -> None:
     oa_doc = await load_document(project_root, config)
     oa_model = openapi.OpenApiModel.model_validate(oa_doc)
 
-    logger.info('Prepare python model')
-    model = OpenApi30Converter(
-        python.ModulePath(config.package),
-        oa_model,
-        str(config.origin) if config.origin else None,
-    ).process()
+    with click.progressbar(length=len(oa_model.paths.paths), label='Processing operations', item_show_func=str) as pbar:
+        logger.info('Prepare python model')
+        model = OpenApi30Converter(
+            python.ModulePath(config.package),
+            oa_model,
+            str(config.origin) if config.origin else None,
+            path_progress=lambda item: pbar.update(1, item),
+        ).process()
 
     logger.info('Render project')
 
     from rybak import TreeTemplate
     from rybak.jinja import JinjaAdapter
 
-    TreeTemplate(
+    template = TreeTemplate(
         JinjaAdapter(
             jinja2.Environment(
                 loader=jinja2.loaders.PackageLoader('lapidary.render'),
@@ -116,13 +119,31 @@ async def render_project(project_root: anyio.Path) -> None:
             'gen/{{model.package}}/auth.py.jinja',  # TODO auth
         ],
         remove_suffixes=['.jinja'],
-    ).render(
-        dict(
-            model=model,
-            get_version=importlib.metadata.version,
-        ),
-        pathlib.Path(project_root),
     )
+
+    with click.progressbar(
+        length=len(model.schemas),
+        label='Rendering schemas',
+        item_show_func=lambda item: item or '',
+    ) as pbar:
+        template.render(
+            dict(
+                model=model,
+                get_version=importlib.metadata.version,
+            ),
+            pathlib.Path(project_root),
+            event_sink=EventSink(pbar),
+            # remove_stale=True,
+        )
+
+
+class EventSink(rybak.EventSink):
+    def __init__(self, progress_bar) -> None:
+        self._progress_bar = progress_bar
+
+    def writing_file(self, template: pathlib.PurePath, target: pathlib.Path) -> None:
+        if str(template) == 'gen/{{loop_over(model.schemas).path.to_path()}}.jinja':
+            self._progress_bar.update(1, str(target).split('/')[-3])
 
 
 async def dump_model(project_root: anyio.Path, process: bool, output: TextIO):

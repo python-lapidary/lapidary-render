@@ -6,6 +6,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - HTTP security schemas supported by httpx;
 - OAuth2 flows supported by httpx_auth;
 - api-key authorization in cookie and query parameter;
+- Progress bar for processing paths and rendering schema files;
 
 ### Removed
 - broken --cache option;

@@ -1,6 +1,6 @@
 import abc
 import logging
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import AsyncIterator, Mapping, Sequence
 from typing import cast
 
 import anyio
@@ -17,8 +17,13 @@ async def load_document(root: anyio.Path, config: Config) -> Mapping:
     logger.info('Load OpenAPI document')
     spec_dict: dict = cast(dict, await load_parse(root, config.document_path))
 
-    if (patch := await load_patches(root / config.patches)) is not None:
-        spec_dict = patch.apply(spec_dict)
+    from jsonpointer import JsonPointerException
+
+    async for path, patch in load_patches(root / config.patches):
+        try:
+            spec_dict = patch.apply(spec_dict)
+        except JsonPointerException as error:
+            raise JsonPointerException(f'Error while applying patch {str(path)}', error.args[0][:100] + '...') from None
 
     return spec_dict
 
@@ -33,21 +38,18 @@ def parse(text: str) -> Mapping:
     return yaml.load(text)
 
 
-async def load_patches(patches_root: anyio.Path) -> JsonPatch | None:
-    patches = [p async for p in patches_root.rglob('*[yamljson]')]
+async def load_patches(patches_root: anyio.Path) -> AsyncIterator[tuple[anyio.Path, JsonPatch]]:
+    patches = sorted([p async for p in patches_root.rglob('*[yamljson]')])
 
     if not patches:
-        return None
+        return
 
     logger.info('Load patches')
-    return JsonPatch(
-        [
-            op
-            for p in patches
-            if p.suffix in ('.yaml', '.yml', '.json')
-            for op in cast(Iterable, await load_parse(patches_root, p.relative_to(patches_root)))
-        ]
-    )
+
+    for patch in patches:
+        if patch.suffix in ('.yaml', '.yml', '.json'):
+            path = patch.relative_to(patches_root)
+            yield path, JsonPatch(await load_parse(patches_root, path))
 
 
 class DocumentHandler[P: str | anyio.Path](abc.ABC):
