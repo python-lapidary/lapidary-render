@@ -11,7 +11,8 @@ yaml = ruamel.yaml.YAML(typ='safe')
 
 yaml_home = Path(__file__).parent / 'servers'
 test_files = [
-    (yaml_home / 'none.yaml', None),
+    (yaml_home / 'none.yaml', '/'),
+    (yaml_home / 'empty.yaml', None),
     (yaml_home / 'single.yaml', 'https://petstore3.swagger.io/api/v3'),
     (yaml_home / 'single-vars.yaml', 'https://petstore3.production.swagger.io/api/v3'),
 ]

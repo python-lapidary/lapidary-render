@@ -21,7 +21,7 @@ class ApiClient(ClientBase):
     def __init__(
         self,
         *,
-        base_url: str,
+        base_url: str = '/',
         **kwargs,
     ):
         super().__init__(
