@@ -5,7 +5,6 @@ from collections.abc import Mapping, Sequence
 from enum import Enum
 from typing import Annotated, Literal, Self, cast
 
-import pydantic
 import pydantic.alias_generators
 
 from ...json_pointer import decode_json_pointer
@@ -420,7 +419,7 @@ class OpenApiModel(ExtendableModel):
     openapi: typing.Annotated[str, pydantic.Field(pattern='^3\\.0\\.\\d(-.+)?$')]
     info: Info
     externalDocs: ExternalDocumentation | None = None
-    servers: list[Server] | None = None
+    servers: list[Server] = (Server(url='/'),)
     security: list[SecurityRequirement] | None = None
     tags: typing.Annotated[list[Tag] | None, UniqueListValidator] = None
     paths: Paths
