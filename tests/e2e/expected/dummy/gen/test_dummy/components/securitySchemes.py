@@ -23,19 +23,19 @@ def oauth2_implicit_oauth(
     )
 
 
-def oauth2_client_credentials_oauth(
-    client_id: str,
-    client_secret: str,
+def oauth2_password_oauth(
+    username: str,
+    password: str,
     scope: Union[Iterable[Literal['read', 'write']], None] = None,
     **kwargs,
 ) -> NamedAuth:
     if scope is not None:
         kwargs['scope'] = ' '.join(scope)
 
-    return 'oauth', httpx_auth.OAuth2ClientCredentials(
+    return 'oauth', httpx_auth.OAuth2ResourceOwnerPasswordCredentials(
         token_url='https://example.com/token_url',
-        client_id=client_id,
-        client_secret=client_secret,
+        username=username,
+        password=password,
         **kwargs,
     )
 
@@ -50,6 +50,23 @@ def oauth2_authorization_code_oauth(
     return 'oauth', httpx_auth.OAuth2AuthorizationCode(
         authorizaiton_url='https://example.com/authorization_url',
         token_url='https://example.com/token_url',
+        **kwargs,
+    )
+
+
+def oauth2_client_credentials_oauth(
+    client_id: str,
+    client_secret: str,
+    scope: Union[Iterable[Literal['read', 'write']], None] = None,
+    **kwargs,
+) -> NamedAuth:
+    if scope is not None:
+        kwargs['scope'] = ' '.join(scope)
+
+    return 'oauth', httpx_auth.OAuth2ClientCredentials(
+        token_url='https://example.com/token_url',
+        client_id=client_id,
+        client_secret=client_secret,
         **kwargs,
     )
 

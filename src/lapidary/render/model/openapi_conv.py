@@ -320,7 +320,7 @@ class OpenApi30Converter:
             raise NotImplementedError(stack.push('refreshUrl'))
 
         auth_name = stack[-3]
-        self.target.security_schemes[f'oauth2_password_{auth_name}'] = python.ClientCredentialsOAuth2Flow(
+        self.target.security_schemes[f'oauth2_client_credentials_{auth_name}'] = python.ClientCredentialsOAuth2Flow(
             name=auth_name,
             python_name=names.maybe_mangle_name(auth_name),
             token_url=value.tokenUrl,
