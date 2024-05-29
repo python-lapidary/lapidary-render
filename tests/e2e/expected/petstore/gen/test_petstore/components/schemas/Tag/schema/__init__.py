@@ -11,17 +11,9 @@ import lapidary.runtime
 
 
 class Tag(lapidary.runtime.ModelBase):
-    id: typing.Annotated[
-        typing.Union[None, int],
-        pydantic.Field(
-        )
-    ] = None
+    id: typing.Union[None, int] = None
 
-    name: typing.Annotated[
-        typing.Union[None, str],
-        pydantic.Field(
-        )
-    ] = None
+    name: typing.Union[None, str] = None
 
     model_config = pydantic.ConfigDict(
         extra='allow'

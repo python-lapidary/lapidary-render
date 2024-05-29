@@ -1,13 +1,18 @@
 {%- from 'includes/type_hint.py.jinja' import type_hint %}
 {%- macro attribute(attr) %}
+    {%- if attr.annotation.field_props %}
     {{ attr.name }}: typing.Annotated[
         {{ type_hint(attr.annotation.type, path) }},
         pydantic.Field(
-    {%- for key, value in attr.annotation.field_props.items() | sort %}
+            {%- for key, value in attr.annotation.field_props.items() | sort %}
             {{ key }}={{ value }},
-    {%- endfor %}
+            {%- endfor %}
         )
-    ]{% if attr.required is false %} = None{% endif %}
+    ]
+    {%- else %}
+    {{ attr.name }}: {{ type_hint(attr.annotation.type, path) }}
+    {%- endif -%}
+    {%- if attr.required is false %} = None{% endif %}
 {%- endmacro %}
 class {{ model.class_name }}({{ type_hint(model.base_type, path) }}):
 {%- for attr in model.attributes if attr.required %}

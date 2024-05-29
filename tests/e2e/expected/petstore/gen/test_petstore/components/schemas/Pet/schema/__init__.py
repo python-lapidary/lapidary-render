@@ -13,41 +13,17 @@ import test_petstore.components.schemas.Tag.schema
 
 
 class Pet(lapidary.runtime.ModelBase):
-    name: typing.Annotated[
-        str,
-        pydantic.Field(
-        )
-    ]
+    name: str
 
-    photoUrls: typing.Annotated[
-        list[str],
-        pydantic.Field(
-        )
-    ]
+    photoUrls: list[str]
 
-    id: typing.Annotated[
-        typing.Union[None, int],
-        pydantic.Field(
-        )
-    ] = None
+    id: typing.Union[None, int] = None
 
-    Category: typing.Annotated[
-        typing.Union[None, test_petstore.components.schemas.Category.schema.Category],
-        pydantic.Field(
-        )
-    ] = None
+    Category: typing.Union[None, test_petstore.components.schemas.Category.schema.Category] = None
 
-    tags: typing.Annotated[
-        typing.Union[None, list[test_petstore.components.schemas.Tag.schema.Tag]],
-        pydantic.Field(
-        )
-    ] = None
+    tags: typing.Union[None, list[test_petstore.components.schemas.Tag.schema.Tag]] = None
 
-    status: typing.Annotated[
-        typing.Union[None, str],
-        pydantic.Field(
-        )
-    ] = None
+    status: typing.Union[None, str] = None
 
     model_config = pydantic.ConfigDict(
         extra='allow'

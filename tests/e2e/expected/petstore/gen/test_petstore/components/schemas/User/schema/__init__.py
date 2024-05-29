@@ -11,53 +11,21 @@ import lapidary.runtime
 
 
 class User(lapidary.runtime.ModelBase):
-    id: typing.Annotated[
-        typing.Union[None, int],
-        pydantic.Field(
-        )
-    ] = None
+    id: typing.Union[None, int] = None
 
-    username: typing.Annotated[
-        typing.Union[None, str],
-        pydantic.Field(
-        )
-    ] = None
+    username: typing.Union[None, str] = None
 
-    firstName: typing.Annotated[
-        typing.Union[None, str],
-        pydantic.Field(
-        )
-    ] = None
+    firstName: typing.Union[None, str] = None
 
-    lastName: typing.Annotated[
-        typing.Union[None, str],
-        pydantic.Field(
-        )
-    ] = None
+    lastName: typing.Union[None, str] = None
 
-    email: typing.Annotated[
-        typing.Union[None, str],
-        pydantic.Field(
-        )
-    ] = None
+    email: typing.Union[None, str] = None
 
-    password: typing.Annotated[
-        typing.Union[None, str],
-        pydantic.Field(
-        )
-    ] = None
+    password: typing.Union[None, str] = None
 
-    phone: typing.Annotated[
-        typing.Union[None, str],
-        pydantic.Field(
-        )
-    ] = None
+    phone: typing.Union[None, str] = None
 
-    userStatus: typing.Annotated[
-        typing.Union[None, int],
-        pydantic.Field(
-        )
-    ] = None
+    userStatus: typing.Union[None, int] = None
 
     model_config = pydantic.ConfigDict(
         extra='allow'

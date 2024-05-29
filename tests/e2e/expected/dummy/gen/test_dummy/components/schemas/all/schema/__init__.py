@@ -20,11 +20,7 @@ class all(lapidary.runtime.ModelBase):
         )
     ]
 
-    any: typing.Annotated[
-        typing.Union[None, test_dummy.components.schemas.all.properties.any.schema.any],
-        pydantic.Field(
-        )
-    ] = None
+    any: typing.Union[None, test_dummy.components.schemas.all.properties.any.schema.any] = None
 
     uu_1X0for: typing.Annotated[
         typing.Union[None, str],

@@ -11,23 +11,11 @@ import lapidary.runtime
 
 
 class ApiResponse(lapidary.runtime.ModelBase):
-    code: typing.Annotated[
-        typing.Union[None, int],
-        pydantic.Field(
-        )
-    ] = None
+    code: typing.Union[None, int] = None
 
-    type: typing.Annotated[
-        typing.Union[None, str],
-        pydantic.Field(
-        )
-    ] = None
+    type: typing.Union[None, str] = None
 
-    message: typing.Annotated[
-        typing.Union[None, str],
-        pydantic.Field(
-        )
-    ] = None
+    message: typing.Union[None, str] = None
 
     model_config = pydantic.ConfigDict(
         extra='allow'

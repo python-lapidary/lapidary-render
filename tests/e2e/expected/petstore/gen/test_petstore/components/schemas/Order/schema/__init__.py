@@ -12,41 +12,17 @@ import lapidary.runtime
 
 
 class Order(lapidary.runtime.ModelBase):
-    id: typing.Annotated[
-        typing.Union[None, int],
-        pydantic.Field(
-        )
-    ] = None
+    id: typing.Union[None, int] = None
 
-    petId: typing.Annotated[
-        typing.Union[None, int],
-        pydantic.Field(
-        )
-    ] = None
+    petId: typing.Union[None, int] = None
 
-    quantity: typing.Annotated[
-        typing.Union[None, int],
-        pydantic.Field(
-        )
-    ] = None
+    quantity: typing.Union[None, int] = None
 
-    shipDate: typing.Annotated[
-        typing.Union[None, datetime.datetime],
-        pydantic.Field(
-        )
-    ] = None
+    shipDate: typing.Union[None, datetime.datetime] = None
 
-    status: typing.Annotated[
-        typing.Union[None, str],
-        pydantic.Field(
-        )
-    ] = None
+    status: typing.Union[None, str] = None
 
-    complete: typing.Annotated[
-        typing.Union[None, bool],
-        pydantic.Field(
-        )
-    ] = None
+    complete: typing.Union[None, bool] = None
 
     model_config = pydantic.ConfigDict(
         extra='allow'

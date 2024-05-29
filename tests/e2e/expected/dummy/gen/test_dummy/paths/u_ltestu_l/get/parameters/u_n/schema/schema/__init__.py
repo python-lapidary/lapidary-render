@@ -11,8 +11,4 @@ import lapidary.runtime
 
 
 class schema(lapidary.runtime.ModelBase):
-    prop1: typing.Annotated[
-        str,
-        pydantic.Field(
-        )
-    ]
+    prop1: str
