@@ -54,7 +54,7 @@ class Type(Enum):
 
 
 class Discriminator(BaseModel):
-    propertyName: str
+    property_name: Annotated[str, pydantic.Field(alias='propertyName')]
     mapping: dict[str, str] | None = None
 
 
@@ -70,7 +70,7 @@ class Example(ExtendableModel):
     summary: str | None = None
     description: str | None = None
     value: typing.Any | None = None
-    externalValue: str | None = None
+    external_value: Annotated[str | None, pydantic.Field(alias='externalValue')] = None
 
 
 class Style(Enum):
@@ -127,14 +127,14 @@ class OpenIdConnectSecurityScheme(SecuritySchemeBase):
 
 
 class ImplicitOAuthFlow(BaseModel):
-    authorizationUrl: str
-    refreshUrl: str | None = None
+    authorization_url: Annotated[str, pydantic.Field(alias='authorizationUrl')]
+    refresh_url: Annotated[str | None, pydantic.Field(alias='refreshUrl')] = None
     scopes: dict[str, str]
 
 
 class PasswordOAuthFlow(BaseModel):
-    tokenUrl: str
-    refreshUrl: str | None = None
+    token_url: Annotated[str, pydantic.Field(alias='tokenUrl')]
+    refresh_url: Annotated[str | None, pydantic.Field(alias='refreshUrl')] = None
     scopes: dict[str, str] | None = None
 
 
@@ -143,16 +143,16 @@ class ClientCredentialsFlow(PasswordOAuthFlow):
 
 
 class AuthorizationCodeOAuthFlow(BaseModel):
-    authorizationUrl: str
-    tokenUrl: str
-    refreshUrl: str | None = None
+    authorization_url: Annotated[str, pydantic.Field(alias='authorizationUrl')]
+    token_url: Annotated[str, pydantic.Field(alias='tokenUrl')]
+    refresh_url: Annotated[str | None, pydantic.Field(alias='refreshUrl')] = None
     scopes: dict[str, str] | None = None
 
 
 class Info(ExtendableModel):
     title: str
     description: str | None = None
-    termsOfService: str | None = None
+    terms_of_service: Annotated[str | None, pydantic.Field(alias='termsOfService')] = None
     contact: Contact | None = None
     license: License | None = None
     version: str
@@ -178,29 +178,29 @@ class Schema(ExtendableModel):
     type: Type | None = None
 
     # type == number or type == integer
-    multipleOf: typing.Annotated[float | None, pydantic.Field(gt=0.0)] = None
+    multiple_of: typing.Annotated[float | None, pydantic.Field(alias='multipleOf', gt=0.0)] = None
     maximum: float | None = None
-    exclusiveMaximum: bool | None = False
+    exclusive_maximum: Annotated[bool | None, pydantic.Field(alias='exclusiveMaximum')] = False
     minimum: float | None = None
-    exclusiveMinimum: bool | None = False
+    exclusive_minimum: Annotated[bool | None, pydantic.Field(alias='exclusiveMinimum')] = False
 
     # type == string
-    maxLength: typing.Annotated[int | None, pydantic.Field(ge=0)] = None
-    minLength: typing.Annotated[int, pydantic.Field(ge=0)] = 0
+    max_length: typing.Annotated[int | None, pydantic.Field(alias='maxLength', ge=0)] = None
+    min_length: typing.Annotated[int, pydantic.Field(alias='minLength', ge=0)] = 0
     pattern: str | None = None
 
     # type == array
     items: 'None | Reference[Schema] | Schema' = None
-    maxItems: typing.Annotated[int | None, pydantic.Field(ge=0)] = None
-    minItems: typing.Annotated[int | None, pydantic.Field(ge=0)] = 0
-    uniqueItems: bool | None = False
+    max_items: typing.Annotated[int | None, pydantic.Field(alias='maxItems', ge=0)] = None
+    min_Items: typing.Annotated[int | None, pydantic.Field(alias='minItems', ge=0)] = 0
+    unique_items: Annotated[bool | None, pydantic.Field(alias='uniqueItems')] = False
 
     # type == object
-    maxProperties: typing.Annotated[int | None, pydantic.Field(ge=0)] = None
-    minProperties: typing.Annotated[int | None, pydantic.Field(ge=0)] = 0
+    max_properties: typing.Annotated[int | None, pydantic.Field(alias='maxProperties', ge=0)] = None
+    min_properties: typing.Annotated[int | None, pydantic.Field(alias='minProperties', ge=0)] = 0
     required: typing.Annotated[list[str], pydantic.Field(min_length=1, default_factory=list), UniqueListValidator]
     properties: 'typing.Annotated[dict[str, Reference[Schema] | Schema], pydantic.Field(default_factory=dict)]'
-    additionalProperties: 'bool | Reference[Schema] | Schema' = True
+    additional_properties: 'Annotated[bool | Reference[Schema] | Schema, pydantic.Field(alias="additionalProperties")]' = True
 
     # type == string or type = number or type == integer
     format: str | None = None
@@ -210,19 +210,19 @@ class Schema(ExtendableModel):
         pydantic.Field(min_length=1),
     ] = None
 
-    not_: 'typing.Annotated[None | Reference[Schema] | Schema, pydantic.Field(alias="not")]' = None
-    allOf: 'None | list[Reference[Schema] | Schema]' = None
-    oneOf: 'None | list[Reference[Schema] | Schema]' = None
-    anyOf: 'None | list[Reference[Schema] | Schema]' = None
+    not_: 'Annotated[None | Reference[Schema] | Schema, pydantic.Field(alias="not")]' = None
+    all_of: 'Annotated[None | list[Reference[Schema] | Schema], pydantic.Field(alias="allOf")]' = None
+    one_of: 'Annotated[None | list[Reference[Schema] | Schema], pydantic.Field(alias="oneOf")]' = None
+    any_of: 'Annotated[None | list[Reference[Schema] | Schema], pydantic.Field(alias="anyOf")]' = None
 
     description: str | None = None
     default: typing.Any = None
     nullable: bool = False
     discriminator: Discriminator | None = None
-    readOnly: bool = False
-    writeOnly: bool = False
+    read_only: Annotated[bool, pydantic.Field(alias='readOnly')] = False
+    write_only: Annotated[bool, pydantic.Field(alias='writeOnly')] = False
     example: typing.Any = None
-    externalDocs: ExternalDocumentation | None = None
+    external_docs: Annotated[ExternalDocumentation | None, pydantic.Field(alias='externalDocs')] = None
     deprecated: bool = False
     xml: XML | None = None
 
@@ -234,7 +234,7 @@ class Schema(ExtendableModel):
             description='Mapping of keys used in the JSON document and variable names in the generated Python code. '
             'Applicable to enum values or object properties.',
         ),
-    ] = None
+    ]
     lapidary_name: typing.Annotated[str | None, pydantic.Field(alias='x-lapidary-type-name')] = None
     lapidary_model_type: typing.Annotated[LapidaryModelType | None, pydantic.Field(alias='x-lapidary-modelType')] = None
 
@@ -242,14 +242,14 @@ class Schema(ExtendableModel):
 class Tag(ExtendableModel):
     name: str
     description: str | None = None
-    externalDocs: ExternalDocumentation | None = None
+    external_docs: Annotated[ExternalDocumentation | None, pydantic.Field(alias='externalDocs')] = None
 
 
 class Link(ExtendableModel):
-    operationId: str | None = None
-    operationRef: str | None = None
+    operation_id: Annotated[str | None, pydantic.Field(alias='operationId')] = None
+    operation_ref: Annotated[str | None, pydantic.Field(alias='operationRef')] = None
     parameters: dict[str, typing.Any] | None = None
-    requestBody: typing.Any | None = None
+    request_body: Annotated[typing.Any | None, pydantic.Field(alias='requestBody')] = None
     description: str | None = None
     server: Server | None = None
 
@@ -257,8 +257,8 @@ class Link(ExtendableModel):
 class OAuthFlows(ExtendableModel):
     implicit: ImplicitOAuthFlow | None = None
     password: PasswordOAuthFlow | None = None
-    clientCredentials: ClientCredentialsFlow | None = None
-    authorizationCode: AuthorizationCodeOAuthFlow | None = None
+    client_credentials: Annotated[ClientCredentialsFlow | None, pydantic.Field(alias='clientCredentials')] = None
+    authorization_code: Annotated[AuthorizationCodeOAuthFlow | None, pydantic.Field(alias='authorizationCode')] = None
 
 
 class OAuth2SecurityScheme(SecuritySchemeBase):
@@ -266,7 +266,9 @@ class OAuth2SecurityScheme(SecuritySchemeBase):
     flows: OAuthFlows
 
 
-type SecurityScheme = APIKeySecurityScheme | HTTPSecurityScheme | OAuth2SecurityScheme | OpenIdConnectSecurityScheme
+SecurityScheme: typing.TypeAlias = (
+    APIKeySecurityScheme | HTTPSecurityScheme | OAuth2SecurityScheme | OpenIdConnectSecurityScheme
+)
 
 
 class ParameterBase(ExtendableModel):
@@ -274,13 +276,13 @@ class ParameterBase(ExtendableModel):
     description: str | None = None
     required: bool = False
     deprecated: bool = False
-    allowEmptyValue: bool = False
+    allow_empty_value: Annotated[bool, pydantic.Field(alias='allowEmptyValue')] = False
 
     content: 'typing.Annotated[dict[str, MediaType] | None, pydantic.Field(max_length=1, min_length=1)]' = None
 
     style: Style | None = None
     explode: bool | None = None
-    allowReserved: bool | None = False
+    allow_reserved: Annotated[bool | None, pydantic.Field(alias='allowReserved')] = False
     schema_: typing.Annotated[None | Reference[Schema] | Schema, pydantic.Field(alias='schema')] = None
     example: typing.Any = None
     examples: dict[str, Reference[Example] | Example] | None = None
@@ -302,11 +304,11 @@ class Header(ParameterBase):
 
 
 class Encoding(ExtendableModel):
-    contentType: str | None = None
+    content_type: Annotated[str | None, pydantic.Field(alias='contentType')] = None
     headers: dict[str, Header] | None = None
     style: Style | None = None
     explode: bool | None = None
-    allowReserved: bool | None = False
+    allow_reserved: Annotated[bool | None, pydantic.Field(alias='allowReserved')] = False
 
 
 class MediaType(ExtendableModel):
@@ -362,12 +364,12 @@ class Operation(ExtendableModel):
     tags: list[str] | None = None
     summary: str | None = None
     description: str | None = None
-    externalDocs: ExternalDocumentation | None = None
-    operationId: str | None = None
+    external_docs: Annotated[ExternalDocumentation | None, pydantic.Field(alias='externalDocs')] = None
+    operation_id: Annotated[str | None, pydantic.Field(alias='operationId')] = None
     parameters: typing.Annotated[
         list[Reference[Parameter] | Parameter], UniqueListValidator, pydantic.Field(default_factory=list)
     ]
-    requestBody: None | Reference[RequestBody] | RequestBody = None
+    request_body: Annotated[None | Reference[RequestBody] | RequestBody, pydantic.Field(alias='requestBody')] = None
     responses: Responses
     callbacks: 'dict[str, Reference[Callback] | Callback] | None' = None
     deprecated: bool | None = False
@@ -399,9 +401,13 @@ class Components(ExtendableModel):
     responses: dict[str, Reference[Response] | Response] | None = None
     parameters: dict[str, Reference[Parameter] | Parameter] | None = None
     examples: dict[str, Reference[Example] | Example] | None = None
-    requestBodies: dict[str, Reference[RequestBody] | RequestBody] | None = None
+    request_bodies: Annotated[
+        dict[str, Reference[RequestBody] | RequestBody] | None, pydantic.Field(alias='requestBodies')
+    ] = None
     headers: dict[str, Reference[Header] | Header] | None = None
-    securitySchemes: dict[str, Reference[SecurityScheme] | SecurityScheme] | None = None
+    security_schemes: Annotated[
+        dict[str, Reference[SecurityScheme] | SecurityScheme] | None, pydantic.Field(alias='securitySchemes')
+    ] = None
     links: dict[str, Reference[Link] | Link] | None = None
     callbacks: dict[str, Reference[Callback] | Callback] | None = None
 
@@ -418,7 +424,7 @@ class OpenApiModel(ExtendableModel):
 
     openapi: typing.Annotated[str, pydantic.Field(pattern='^3\\.0\\.\\d(-.+)?$')]
     info: Info
-    externalDocs: ExternalDocumentation | None = None
+    external_docs: Annotated[ExternalDocumentation | None, pydantic.Field(alias='externalDocs')] = None
     servers: list[Server] = (Server(url='/'),)
     security: list[SecurityRequirement] | None = None
     tags: typing.Annotated[list[Tag] | None, UniqueListValidator] = None
@@ -479,4 +485,10 @@ def _resolve_name(src: typing.Any, name: str) -> typing.Any:
     elif isinstance(src, Mapping):
         return src[name]
     else:
-        return getattr(src, name)
+        if hasattr(src, name):
+            return getattr(src, name)
+        for field_name, field_info in cast(pydantic.BaseModel, src).model_fields.items():
+            if name == field_info.alias:
+                return getattr(src, field_name)
+        else:
+            raise AttributeError(name)

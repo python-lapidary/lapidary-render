@@ -15,5 +15,7 @@ class prop2(lapidary.runtime.ModelBase):
         str,
         pydantic.Field(
             alias='key',
+            max_length=10,
+            min_length=5,
         )
     ]

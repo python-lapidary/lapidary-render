@@ -175,19 +175,19 @@ class OpenApi30Converter:
     ) -> None:
         logger.debug('Process operation %s', stack)
 
-        if not value.operationId:
+        if not value.operation_id:
             raise ValueError(f'{stack}: operationId is required')
 
         params = self._mk_params(value.parameters, stack.push('parameters'), common_params)
 
         request_body = (
-            self.process_request_body(value.requestBody, stack.push('requestBody')) if value.requestBody else {}
+            self.process_request_body(value.request_body, stack.push('requestBody')) if value.request_body else {}
         )
         responses = self.process_responses(value.responses, stack.push('responses'))
         security = self.process_security(value.security, stack.push('security'))
 
         model = python.OperationFunction(
-            name=value.operationId,
+            name=value.operation_id,
             method=stack.top(),
             path=json_pointer.decode_json_pointer(stack[-2]),
             request_body=request_body,
@@ -272,58 +272,58 @@ class OpenApi30Converter:
             {
                 'implicit': self.process_oauth2_implicit,
                 'password': self.process_oauth2_password,
-                'authorizationCode': self.process_oauth2_auth_code,
-                'clientCredentials': self.process_oauth2_client_credentials,
+                'authorization_code': self.process_oauth2_auth_code,
+                'client_credentials': self.process_oauth2_client_credentials,
             },
             True,
         )
 
     def process_oauth2_implicit(self, value: openapi.ImplicitOAuthFlow, stack: Stack) -> None:
-        if value.refreshUrl:
+        if value.refresh_url:
             raise NotImplementedError(stack.push('refreshUrl'))
 
         auth_name = stack[-3]
         self.target.security_schemes[f'oauth2_implicit_{auth_name}'] = python.ImplicitOAuth2Flow(
             name=auth_name,
             python_name=names.maybe_mangle_name(auth_name),
-            authorization_url=value.authorizationUrl,
+            authorization_url=value.authorization_url,
             scopes=value.scopes,
         )
 
     def process_oauth2_password(self, value: openapi.PasswordOAuthFlow, stack: Stack) -> None:
-        if value.refreshUrl:
+        if value.refresh_url:
             raise NotImplementedError(stack.push('refreshUrl'))
 
         auth_name = stack[-3]
         self.target.security_schemes[f'oauth2_password_{auth_name}'] = python.PasswordOAuth2Flow(
             name=auth_name,
             python_name=names.maybe_mangle_name(auth_name),
-            token_url=value.tokenUrl,
+            token_url=value.token_url,
             scopes=value.scopes,
         )
 
     def process_oauth2_auth_code(self, value: openapi.AuthorizationCodeOAuthFlow, stack: Stack) -> None:
-        if value.refreshUrl:
+        if value.refresh_url:
             raise NotImplementedError(stack.push('refreshUrl'))
 
         auth_name = stack[-3]
         self.target.security_schemes[f'oauth2_auth_code_{auth_name}'] = python.AuthorizationCodeOAuth2Flow(
             name=auth_name,
             python_name=names.maybe_mangle_name(auth_name),
-            authorization_url=value.authorizationUrl,
-            token_url=value.tokenUrl,
+            authorization_url=value.authorization_url,
+            token_url=value.token_url,
             scopes=value.scopes,
         )
 
     def process_oauth2_client_credentials(self, value: openapi.ClientCredentialsFlow, stack: Stack) -> None:
-        if value.refreshUrl:
+        if value.refresh_url:
             raise NotImplementedError(stack.push('refreshUrl'))
 
         auth_name = stack[-3]
         self.target.security_schemes[f'oauth2_client_credentials_{auth_name}'] = python.ClientCredentialsOAuth2Flow(
             name=auth_name,
             python_name=names.maybe_mangle_name(auth_name),
-            token_url=value.tokenUrl,
+            token_url=value.token_url,
             scopes=value.scopes,
         )
 

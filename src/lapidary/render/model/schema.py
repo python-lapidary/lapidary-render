@@ -47,7 +47,7 @@ class OpenApi30SchemaConverter:
         schema_class = python.SchemaClass(
             class_name=name,
             base_type=base_type,
-            allow_extra=value.additionalProperties is not False,
+            allow_extra=value.additional_properties is not False,
             has_aliases=any(['alias' in attr.annotation.field_props for attr in attributes]),
             attributes=attributes,
             docstr=value.description or None,
@@ -96,7 +96,7 @@ class OpenApi30SchemaConverter:
         if 'pattern' in value.model_fields_set:
             field_props['regex'] = f"r'{value.pattern}'"
 
-        direction = get_direction(value.readOnly, value.writeOnly)
+        direction = get_direction(value.read_only, value.write_only)
         if direction:
             field_props['direction'] = direction
             # TODO better handle direction
@@ -143,12 +143,12 @@ class OpenApi30SchemaConverter:
         value: openapi.Schema,
         stack: Stack,
     ) -> python.TypeHint:
-        if value.anyOf:
-            return self._get_composite_type_hint(stack.push('anyOf'), value.anyOf)
-        elif value.oneOf:
-            return self._get_one_of_type_hint(stack.push('oneOf'), value.oneOf)
-        elif value.allOf:
-            return self._get_composite_type_hint(stack.push('allOf'), value.allOf)
+        if value.any_of:
+            return self._get_composite_type_hint(stack.push('anyOf'), value.any_of)
+        elif value.one_of:
+            return self._get_one_of_type_hint(stack.push('oneOf'), value.one_of)
+        elif value.all_of:
+            return self._get_composite_type_hint(stack.push('allOf'), value.all_of)
         elif value.not_:
             raise NotImplementedError(stack.push('not'))
         elif value.type == openapi.Type.string:
@@ -194,18 +194,18 @@ PRIMITIVE_TYPES = {
 }
 
 FIELD_PROPS = {
-    'multipleOf': 'multiple_of',
+    'multiple_of': 'multiple_of',
     'maximum': 'le',
-    'exclusiveMaximum': 'lt',
+    'exclusive_maximum': 'lt',
     'minimum': 'ge',
-    'exclusiveMinimum': 'gt',
-    'maxLength': 'max_length',
-    'minLength': 'min_length',
-    'maxItems': 'max_length',
-    'minItems': 'min_length',
-    'uniqueItems': 'unique_items',
-    'maxProperties': 'min_length',
-    'minProperties': 'min_length',
+    'exclusive_minimum': 'gt',
+    'max_length': 'max_length',
+    'min_length': 'min_length',
+    'max_items': 'max_length',
+    'min_items': 'min_length',
+    'unique_items': 'unique_items',
+    'max_properties': 'min_length',
+    'min_properties': 'min_length',
 }
 
 

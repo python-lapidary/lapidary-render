@@ -43,7 +43,7 @@ def test_schema_array(document: openapi.OpenApiModel) -> None:
     operations: Mapping[str, openapi.Operation] = document.paths.paths['/user/createWithList'].model_extra
 
     request = converter.process_request_body(
-        operations['post'].requestBody, stack.Stack(('#', 'paths', '/user/createWithList', 'post', 'requestBody'))
+        operations['post'].request_body, stack.Stack(('#', 'paths', '/user/createWithList', 'post', 'requestBody'))
     )
 
     assert request[MIME_JSON] == python.GenericTypeHint(
