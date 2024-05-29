@@ -19,3 +19,10 @@ class prop2(lapidary.runtime.ModelBase):
             min_length=5,
         )
     ]
+
+    nonu_lalpha: typing.Annotated[
+        typing.Union[None, str],
+        pydantic.Field(
+            alias='non/alpha',
+        )
+    ]

@@ -96,13 +96,8 @@ class OpenApi30SchemaConverter:
         if 'pattern' in value.model_fields_set:
             field_props['regex'] = f"r'{value.pattern}'"
 
-        direction = get_direction(value.read_only, value.write_only)
-        if direction:
-            field_props['direction'] = direction
-            # TODO better handle direction
-
         typ = self.process_schema(value, stack)
-        if value.nullable or not required or bool(direction):
+        if value.nullable or not required or value.read_only or value.write_only:
             typ = python.GenericTypeHint.union_of(typ, python.NONE)
 
         return python.AttributeAnnotation(type=typ, field_props=field_props)
@@ -207,19 +202,6 @@ FIELD_PROPS = {
     'max_properties': 'min_length',
     'min_properties': 'min_length',
 }
-
-
-def get_direction(read_only: bool | None, write_only: bool | None) -> str | None:
-    if read_only:
-        if write_only:
-            raise ValueError()
-        else:
-            return 'lapidary.runtime.ParamDirection.read'
-    else:
-        if write_only:
-            return 'lapidary.runtime.ParamDirection.write'
-        else:
-            return None
 
 
 def resolve_type_hint(root_package: str, pointer: str | Stack) -> python.TypeHint:

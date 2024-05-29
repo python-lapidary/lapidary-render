@@ -70,8 +70,12 @@ components:
                   type: string
                   maxLength: 10
                   minLength: 5
+                non/alpha:
+                  type: string
+                  readOnly: true
               required:
               - key
+              - non/alpha
               additionalProperties: false
           additionalProperties: false
           required:
