@@ -15,42 +15,36 @@ class Order(lapidary.runtime.ModelBase):
     id: typing.Annotated[
         typing.Union[None, int],
         pydantic.Field(
-            alias='id',
         )
     ] = None
 
     petId: typing.Annotated[
         typing.Union[None, int],
         pydantic.Field(
-            alias='petId',
         )
     ] = None
 
     quantity: typing.Annotated[
         typing.Union[None, int],
         pydantic.Field(
-            alias='quantity',
         )
     ] = None
 
     shipDate: typing.Annotated[
         typing.Union[None, datetime.datetime],
         pydantic.Field(
-            alias='shipDate',
         )
     ] = None
 
     status: typing.Annotated[
         typing.Union[None, str],
         pydantic.Field(
-            alias='status',
         )
     ] = None
 
     complete: typing.Annotated[
         typing.Union[None, bool],
         pydantic.Field(
-            alias='complete',
         )
     ] = None
 

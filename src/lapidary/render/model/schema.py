@@ -58,49 +58,29 @@ class OpenApi30SchemaConverter:
 
     @resolve_ref
     def process_property(self, value: openapi.Schema, stack: Stack, required: bool) -> python.Attribute:
-        alias = value.lapidary_name or names.maybe_mangle_name(stack.top())
-        names.check_name(alias, False)
-
-        return python.Attribute(
-            name=alias,
-            annotation=self.get_attr_annotation(value, stack, required),
-            required=required,
-        )
-
-    @resolve_ref
-    def get_attr_annotation(
-        self,
-        value: openapi.Schema,
-        stack: Stack,
-        required: bool,
-    ) -> python.AttributeAnnotation:
-        """
-        if type is a schema, then it's a nested schema. Name should be parent_class_name+prop_name, and module is the same.
-        Otherwise, it's a reference; schema, module and name should be resolved from it and used to generate type_ref
-        """
-
-        name = stack.top()
+        alias = stack.top()
+        name = value.lapidary_name or names.maybe_mangle_name(alias)
 
         field_props = {FIELD_PROPS[k]: getattr(value, k) for k in value.model_fields_set if k in FIELD_PROPS}
         for k, v in field_props.items():
             if isinstance(v, str):
                 field_props[k] = f"'{v}'"
 
-        # if schema.in_ is not None:
-        #     field_props['in_'] = 'lapidary.runtime.ParamPlacement.' + schema.in_
-        #     field_props['alias'] = f"'{schema.lapidary_name or name}'"
-
-        if name is not None:
-            field_props['alias'] = "'" + name + "'"
-
-        if 'pattern' in value.model_fields_set:
-            field_props['regex'] = f"r'{value.pattern}'"
+        if name != alias:
+            field_props['alias'] = f"'{alias}'"
 
         typ = self.process_schema(value, stack)
         if value.nullable or not required or value.read_only or value.write_only:
             typ = python.GenericTypeHint.union_of(typ, python.NONE)
 
-        return python.AttributeAnnotation(type=typ, field_props=field_props)
+        return python.Attribute(
+            name=name,
+            annotation=python.AttributeAnnotation(
+                type=typ,
+                field_props=field_props,
+            ),
+            required=required,
+        )
 
     @resolve_ref
     def process_schema(self, value: openapi.Schema, stack: Stack, required: bool = True) -> python.TypeHint:
@@ -189,18 +169,19 @@ PRIMITIVE_TYPES = {
 }
 
 FIELD_PROPS = {
-    'multiple_of': 'multiple_of',
-    'maximum': 'le',
     'exclusive_maximum': 'lt',
-    'minimum': 'ge',
     'exclusive_minimum': 'gt',
-    'max_length': 'max_length',
-    'min_length': 'min_length',
+    'maximum': 'le',
     'max_items': 'max_length',
-    'min_items': 'min_length',
-    'unique_items': 'unique_items',
+    'max_length': 'max_length',
     'max_properties': 'min_length',
+    'minimum': 'ge',
+    'min_items': 'min_length',
+    'min_length': 'min_length',
     'min_properties': 'min_length',
+    'multiple_of': 'multiple_of',
+    'pattern': 'regex',
+    'unique_items': 'unique_items',
 }
 
 

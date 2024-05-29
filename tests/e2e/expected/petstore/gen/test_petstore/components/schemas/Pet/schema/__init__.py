@@ -16,42 +16,36 @@ class Pet(lapidary.runtime.ModelBase):
     name: typing.Annotated[
         str,
         pydantic.Field(
-            alias='name',
         )
     ]
 
     photoUrls: typing.Annotated[
         list[str],
         pydantic.Field(
-            alias='photoUrls',
         )
     ]
 
     id: typing.Annotated[
         typing.Union[None, int],
         pydantic.Field(
-            alias='id',
         )
     ] = None
 
     Category: typing.Annotated[
         typing.Union[None, test_petstore.components.schemas.Category.schema.Category],
         pydantic.Field(
-            alias='Category',
         )
     ] = None
 
     tags: typing.Annotated[
         typing.Union[None, list[test_petstore.components.schemas.Tag.schema.Tag]],
         pydantic.Field(
-            alias='tags',
         )
     ] = None
 
     status: typing.Annotated[
         typing.Union[None, str],
         pydantic.Field(
-            alias='status',
         )
     ] = None
 

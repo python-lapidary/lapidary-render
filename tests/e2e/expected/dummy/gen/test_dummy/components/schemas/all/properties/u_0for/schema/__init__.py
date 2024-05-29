@@ -14,6 +14,5 @@ class u_0for(lapidary.runtime.ModelBase):
     prop1: typing.Annotated[
         str,
         pydantic.Field(
-            alias='prop1',
         )
     ]

@@ -23,7 +23,6 @@ class all(lapidary.runtime.ModelBase):
     any: typing.Annotated[
         typing.Union[None, test_dummy.components.schemas.all.properties.any.schema.any],
         pydantic.Field(
-            alias='any',
         )
     ] = None
 

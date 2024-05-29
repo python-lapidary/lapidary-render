@@ -14,56 +14,48 @@ class User(lapidary.runtime.ModelBase):
     id: typing.Annotated[
         typing.Union[None, int],
         pydantic.Field(
-            alias='id',
         )
     ] = None
 
     username: typing.Annotated[
         typing.Union[None, str],
         pydantic.Field(
-            alias='username',
         )
     ] = None
 
     firstName: typing.Annotated[
         typing.Union[None, str],
         pydantic.Field(
-            alias='firstName',
         )
     ] = None
 
     lastName: typing.Annotated[
         typing.Union[None, str],
         pydantic.Field(
-            alias='lastName',
         )
     ] = None
 
     email: typing.Annotated[
         typing.Union[None, str],
         pydantic.Field(
-            alias='email',
         )
     ] = None
 
     password: typing.Annotated[
         typing.Union[None, str],
         pydantic.Field(
-            alias='password',
         )
     ] = None
 
     phone: typing.Annotated[
         typing.Union[None, str],
         pydantic.Field(
-            alias='phone',
         )
     ] = None
 
     userStatus: typing.Annotated[
         typing.Union[None, int],
         pydantic.Field(
-            alias='userStatus',
         )
     ] = None
 

@@ -15,6 +15,5 @@ class schema1(lapidary.runtime.ModelBase):
     prop1: typing.Annotated[
         test_dummy.components.schemas.schema1.properties.prop1.schema.prop1,
         pydantic.Field(
-            alias='prop1',
         )
     ]

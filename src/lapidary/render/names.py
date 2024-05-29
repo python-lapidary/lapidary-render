@@ -1,4 +1,3 @@
-import builtins
 import keyword
 import logging
 import re
@@ -9,16 +8,6 @@ import base62
 logger = logging.getLogger(__name__)
 
 VALID_IDENTIFIER_RE = re.compile(r'^[a-zA-Z]\w*$', re.ASCII)
-
-
-def check_name(name: str, check_builtins=True) -> None:
-    if (
-        name is None
-        or keyword.iskeyword(name)
-        or (check_builtins and name in builtins.__dict__)
-        or not VALID_IDENTIFIER_RE.match(name)
-    ):
-        raise ValueError('Invalid identifier', name)
 
 
 def _escape_char(s: str) -> str:

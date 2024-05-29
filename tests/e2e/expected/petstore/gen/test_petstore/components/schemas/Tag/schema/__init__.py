@@ -14,14 +14,12 @@ class Tag(lapidary.runtime.ModelBase):
     id: typing.Annotated[
         typing.Union[None, int],
         pydantic.Field(
-            alias='id',
         )
     ] = None
 
     name: typing.Annotated[
         typing.Union[None, str],
         pydantic.Field(
-            alias='name',
         )
     ] = None
 

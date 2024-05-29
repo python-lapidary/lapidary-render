@@ -14,7 +14,6 @@ class prop2(lapidary.runtime.ModelBase):
     key: typing.Annotated[
         str,
         pydantic.Field(
-            alias='key',
             max_length=10,
             min_length=5,
         )
