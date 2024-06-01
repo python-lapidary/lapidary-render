@@ -1,7 +1,5 @@
-import datetime as dt
 import itertools
 import logging
-import uuid
 from collections import defaultdict
 from collections.abc import Callable, Iterable, MutableMapping, Sequence
 
@@ -126,9 +124,6 @@ class OpenApi30SchemaConverter:
             return self._get_composite_type_hint(stack.push('allOf'), value.all_of)
         elif value.not_:
             raise NotImplementedError(stack.push('not'))
-        elif value.type == openapi.Type.string:
-            typ = STRING_FORMATS.get(value.format, str) if value.format else str
-            return python.TypeHint.from_type(typ)
         elif value.type in PRIMITIVE_TYPES:
             return python.BuiltinTypeHint.from_str(PRIMITIVE_TYPES[value.type].__name__)
         elif value.type == openapi.Type.object:
@@ -154,12 +149,6 @@ class OpenApi30SchemaConverter:
             for module, classes in modules.items()
         ]
 
-
-STRING_FORMATS = {
-    'uuid': uuid.UUID,
-    'date': dt.date,
-    'date-time': dt.datetime,
-}
 
 PRIMITIVE_TYPES = {
     openapi.Type.string: str,
