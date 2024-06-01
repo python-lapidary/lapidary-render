@@ -1,4 +1,5 @@
 import abc
+import decimal as dec
 import enum
 import typing
 from collections.abc import Mapping, Sequence
@@ -178,10 +179,10 @@ class Schema(ExtendableModel):
     type: Type | None = None
 
     # type == number or type == integer
-    multiple_of: typing.Annotated[float | None, pydantic.Field(alias='multipleOf', gt=0.0)] = None
-    maximum: float | None = None
+    multiple_of: typing.Annotated[dec.Decimal | None, pydantic.Field(alias='multipleOf', gt=0.0)] = None
+    maximum: dec.Decimal | None = None
     exclusive_maximum: Annotated[bool | None, pydantic.Field(alias='exclusiveMaximum')] = False
-    minimum: float | None = None
+    minimum: dec.Decimal | None = None
     exclusive_minimum: Annotated[bool | None, pydantic.Field(alias='exclusiveMinimum')] = False
 
     # type == string
