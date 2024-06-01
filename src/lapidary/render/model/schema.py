@@ -62,7 +62,10 @@ class OpenApi30SchemaConverter:
         field_props = {FIELD_PROPS[k]: getattr(value, k) for k in value.model_fields_set if k in FIELD_PROPS}
         for k, v in field_props.items():
             if isinstance(v, str):
-                field_props[k] = f"'{v}'"
+                if k == 'pattern':
+                    field_props[k] = f"r'{v}'"
+                else:
+                    field_props[k] = f"'{v}'"
 
         if name != alias:
             field_props['alias'] = f"'{alias}'"
@@ -169,8 +172,7 @@ FIELD_PROPS = {
     'min_length': 'min_length',
     'min_properties': 'min_length',
     'multiple_of': 'multiple_of',
-    'pattern': 'regex',
-    'unique_items': 'unique_items',
+    'pattern': 'pattern',
 }
 
 
