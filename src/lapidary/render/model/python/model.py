@@ -15,7 +15,7 @@ ResponseMap: TypeAlias = Mapping[ResponseCode, MimeMap]
 
 
 @dc.dataclass
-class AttributeAnnotation:
+class Annotation:
     type: TypeHint
     field_props: dict[str, Any]
     style: str | None = None
@@ -24,9 +24,9 @@ class AttributeAnnotation:
 
 
 @dc.dataclass
-class Attribute:
+class Field:
     name: str
-    annotation: AttributeAnnotation
+    annotation: Annotation
     required: bool
     """
     Used for op method params. Required params are rendered before optional, and optional have default value None
@@ -182,13 +182,13 @@ class SchemaClass:
     allow_extra: bool = False
     has_aliases: bool = False
     docstr: str | None = None
-    attributes: list[Attribute] = dc.field(default_factory=list)
+    fields: list[Field] = dc.field(default_factory=list)
     model_type: ModelType = ModelType.model
 
     @property
     def dependencies(self) -> Iterable[TypeHint]:
         yield self.base_type
-        for prop in self.attributes:
+        for prop in self.fields:
             yield from prop.dependencies
 
 

@@ -31,9 +31,9 @@ class OpenApi30SchemaConverter:
             else python.TypeHint.from_str('lapidary.runtime:ModelBase')
         )
 
-        stack_attr = stack.push('properties')
-        attributes = [
-            self.process_property(prop_schema, stack_attr.push(prop_name), prop_name, prop_name in value.required)
+        stack_props = stack.push('properties')
+        fields = [
+            self.process_property(prop_schema, stack_props.push(prop_name), prop_name, prop_name in value.required)
             for prop_name, prop_schema in value.properties.items()
         ]
 
@@ -46,8 +46,7 @@ class OpenApi30SchemaConverter:
             class_name=name,
             base_type=base_type,
             allow_extra=value.additional_properties is not False,
-            has_aliases=any(['alias' in attr.annotation.field_props for attr in attributes]),
-            attributes=attributes,
+            fields=fields,
             docstr=value.description or None,
             model_type=model_type,
         )
@@ -55,7 +54,7 @@ class OpenApi30SchemaConverter:
         return type_hint
 
     @resolve_ref
-    def process_property(self, value: openapi.Schema, stack: Stack, prop_name: str, required: bool) -> python.Attribute:
+    def process_property(self, value: openapi.Schema, stack: Stack, prop_name: str, required: bool) -> python.Field:
         name = names.maybe_mangle_name(prop_name)
 
         field_props = {FIELD_PROPS[k]: getattr(value, k) for k in value.model_fields_set if k in FIELD_PROPS}
@@ -73,9 +72,9 @@ class OpenApi30SchemaConverter:
         if value.nullable or not required or value.read_only or value.write_only:
             typ = python.GenericTypeHint.union_of(typ, python.NONE)
 
-        return python.Attribute(
+        return python.Field(
             name=name,
-            annotation=python.AttributeAnnotation(
+            annotation=python.Annotation(
                 type=typ,
                 field_props=field_props,
             ),

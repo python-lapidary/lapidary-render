@@ -1,12 +1,12 @@
 __all__ = (
+    'Annotation',
     'ApiKeyAuth',
     'AuthorizationCodeOAuth2Flow',
-    'Attribute',
-    'AttributeAnnotation',
     'Auth',
     'ClientClass',
     'ClientInit',
     'ClientCredentialsOAuth2Flow',
+    'Field',
     'HttpBasicAuth',
     'HttpDigestAuth',
     'ImplicitOAuth2Flow',
@@ -35,14 +35,14 @@ from typing import Self
 
 from ..openapi import ParameterLocation as ParamLocation
 from .model import (
+    Annotation,
     ApiKeyAuth,
-    Attribute,
-    AttributeAnnotation,
     Auth,
     AuthorizationCodeOAuth2Flow,
     ClientClass,
     ClientCredentialsOAuth2Flow,
     ClientInit,
+    Field,
     HttpBasicAuth,
     HttpDigestAuth,
     ImplicitOAuth2Flow,

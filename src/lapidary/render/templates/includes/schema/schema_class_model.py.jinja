@@ -1,25 +1,25 @@
 {%- from 'includes/type_hint.py.jinja' import type_hint %}
-{%- macro attribute(attr) %}
-    {%- if attr.annotation.field_props %}
-    {{ attr.name }}: typing.Annotated[
-        {{ type_hint(attr.annotation.type, path) }},
+{%- macro render_field(field) %}
+    {%- if field.annotation.field_props %}
+    {{ field.name }}: typing.Annotated[
+        {{ type_hint(field.annotation.type, path) }},
         pydantic.Field(
-            {%- for key, value in attr.annotation.field_props.items() | sort %}
+            {%- for key, value in field.annotation.field_props.items() | sort %}
             {{ key }}={{ value }},
             {%- endfor %}
         )
     ]
     {%- else %}
-    {{ attr.name }}: {{ type_hint(attr.annotation.type, path) }}
+    {{ field.name }}: {{ type_hint(field.annotation.type, path) }}
     {%- endif -%}
-    {%- if attr.required is false %} = None{% endif %}
+    {%- if field.required is false %} = None{% endif %}
 {%- endmacro %}
 class {{ model.class_name }}({{ type_hint(model.base_type, path) }}):
-{%- for attr in model.attributes if attr.required %}
-{{- attribute(attr) }}
+{%- for field in model.fields if field.required %}
+{{- render_field(field) }}
 {% endfor %}
-{%- for attr in model.attributes if not attr.required %}
-{{- attribute(attr) }}
+{%- for field in model.fields if not field.required %}
+{{- render_field(field) }}
 {% endfor %}
 
 {%- if model.allow_extra %}
