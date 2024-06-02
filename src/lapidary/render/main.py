@@ -158,5 +158,14 @@ async def dump_model(project_root: anyio.Path, process: bool, output: TextIO):
 
     else:
         oa_model = openapi.OpenApiModel.model_validate(oa_doc)
-        py_model = OpenApi30Converter(python.ModulePath(config.package), oa_model, str(config.origin)).process()
+        with click.progressbar(
+            length=len(oa_model.paths.paths), label='Processing operations', item_show_func=str
+        ) as pbar:
+            logger.info('Prepare python model')
+            py_model = OpenApi30Converter(
+                python.ModulePath(config.package),
+                oa_model,
+                str(config.origin) if config.origin else None,
+                path_progress=lambda item: pbar.update(1, item),
+            ).process()
         pprint(py_model, output)
