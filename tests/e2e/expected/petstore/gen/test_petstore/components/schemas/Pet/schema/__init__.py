@@ -19,7 +19,7 @@ class Pet(lapidary.runtime.ModelBase):
 
     id: typing.Union[None, int] = None
 
-    Category: typing.Union[None, test_petstore.components.schemas.Category.schema.Category] = None
+    category: typing.Union[None, test_petstore.components.schemas.Category.schema.Category] = None
 
     tags: typing.Union[None, list[test_petstore.components.schemas.Tag.schema.Tag]] = None
 

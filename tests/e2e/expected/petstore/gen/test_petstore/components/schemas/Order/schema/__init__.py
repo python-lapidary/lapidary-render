@@ -7,7 +7,6 @@ import typing
 import lapidary.runtime
 import pydantic
 import typing_extensions
-import datetime
 import lapidary.runtime
 
 
@@ -18,7 +17,7 @@ class Order(lapidary.runtime.ModelBase):
 
     quantity: typing.Union[None, int] = None
 
-    shipDate: typing.Union[None, datetime.datetime] = None
+    shipDate: typing.Union[None, str] = None
 
     status: typing.Union[None, str] = None
 

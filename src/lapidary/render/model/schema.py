@@ -33,7 +33,7 @@ class OpenApi30SchemaConverter:
 
         stack_attr = stack.push('properties')
         attributes = [
-            self.process_property(prop_schema, stack_attr.push(prop_name), prop_name in value.required)
+            self.process_property(prop_schema, stack_attr.push(prop_name), prop_name, prop_name in value.required)
             for prop_name, prop_schema in value.properties.items()
         ]
 
@@ -55,9 +55,8 @@ class OpenApi30SchemaConverter:
         return type_hint
 
     @resolve_ref
-    def process_property(self, value: openapi.Schema, stack: Stack, required: bool) -> python.Attribute:
-        alias = stack.top()
-        name = value.lapidary_name or names.maybe_mangle_name(alias)
+    def process_property(self, value: openapi.Schema, stack: Stack, prop_name: str, required: bool) -> python.Attribute:
+        name = names.maybe_mangle_name(prop_name)
 
         field_props = {FIELD_PROPS[k]: getattr(value, k) for k in value.model_fields_set if k in FIELD_PROPS}
         for k, v in field_props.items():
@@ -67,8 +66,8 @@ class OpenApi30SchemaConverter:
                 else:
                     field_props[k] = f"'{v}'"
 
-        if name != alias:
-            field_props['alias'] = f"'{alias}'"
+        if name != prop_name:
+            field_props['alias'] = f"'{prop_name}'"
 
         typ = self.process_schema(value, stack)
         if value.nullable or not required or value.read_only or value.write_only:
