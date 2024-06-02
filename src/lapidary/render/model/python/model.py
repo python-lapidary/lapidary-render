@@ -180,7 +180,6 @@ class SchemaClass:
     base_type: TypeHint
 
     allow_extra: bool = False
-    has_aliases: bool = False
     docstr: str | None = None
     fields: list[Field] = dc.field(default_factory=list)
     model_type: ModelType = ModelType.model
