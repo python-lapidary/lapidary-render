@@ -2,7 +2,7 @@ import importlib.metadata
 import logging
 import pathlib
 from collections.abc import Mapping
-from typing import TextIO
+from typing import Any, TextIO
 
 import anyio
 import asyncclick as click
@@ -107,25 +107,33 @@ async def render_project(project_root: anyio.Path) -> None:
         remove_suffixes=['.jinja'],
     )
 
-    with click.progressbar(
-        length=len(model.schemas),
-        label='Rendering schemas',
-        item_show_func=lambda item: item or '',
-    ) as pbar:
+    with RenderProgressBar(model) as event_sink:
         template.render(
             dict(
                 model=model,
                 get_version=importlib.metadata.version,
             ),
             pathlib.Path(project_root),
-            event_sink=EventSink(pbar),
+            event_sink=event_sink,
             # remove_stale=True,
         )
 
 
-class EventSink(rybak.EventSink):
-    def __init__(self, progress_bar) -> None:
-        self._progress_bar = progress_bar
+class RenderProgressBar(rybak.EventSink):
+    def __init__(self, model: python.ClientModel) -> None:
+        self._progress_bar = click.progressbar(
+            model.schemas,
+            label='Rendering schemas',
+            item_show_func=lambda item: item or '',
+            show_pos=True,
+        )
+
+    def __enter__(self) -> Any:
+        self._progress_bar.__enter__()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb) -> bool | None:
+        return self._progress_bar.__exit__(exc_type, exc_val, exc_tb)
 
     def writing_file(self, template: pathlib.PurePath, target: pathlib.Path) -> None:
         if str(template) == 'gen/{{loop_over(model.schemas).path.to_path()}}.jinja':
@@ -149,7 +157,12 @@ async def dump_model(project_root: anyio.Path, process: bool, output: TextIO):
 
 def prepare_python_model(oa_doc: Mapping, config: Config) -> python.ClientModel:
     oa_model = openapi.OpenApiModel.model_validate(oa_doc)
-    with click.progressbar(length=len(oa_model.paths.paths), label='Processing operations', item_show_func=str) as pbar:
+    with click.progressbar(
+        length=len(oa_model.paths.paths),
+        label='Processing paths',
+        item_show_func=str,
+        show_pos=True,
+    ) as pbar:
         logger.info('Prepare python model')
         return OpenApi30Converter(
             python.ModulePath(config.package),
