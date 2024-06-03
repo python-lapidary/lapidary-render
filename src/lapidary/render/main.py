@@ -1,6 +1,7 @@
 import importlib.metadata
 import logging
 import pathlib
+from collections.abc import Mapping
 from typing import TextIO
 
 import anyio
@@ -87,16 +88,7 @@ async def render_project(project_root: anyio.Path) -> None:
 
     logger.info('Parse OpenAPI document')
     oa_doc = await load_document(project_root, config)
-    oa_model = openapi.OpenApiModel.model_validate(oa_doc)
-
-    with click.progressbar(length=len(oa_model.paths.paths), label='Processing operations', item_show_func=str) as pbar:
-        logger.info('Prepare python model')
-        model = OpenApi30Converter(
-            python.ModulePath(config.package),
-            oa_model,
-            str(config.origin) if config.origin else None,
-            path_progress=lambda item: pbar.update(1, item),
-        ).process()
+    model = prepare_python_model(oa_doc, config)
 
     logger.info('Render project')
 
@@ -151,15 +143,17 @@ async def dump_model(project_root: anyio.Path, process: bool, output: TextIO):
         yaml.dump(oa_doc, output)
 
     else:
-        oa_model = openapi.OpenApiModel.model_validate(oa_doc)
-        with click.progressbar(
-            length=len(oa_model.paths.paths), label='Processing operations', item_show_func=str
-        ) as pbar:
-            logger.info('Prepare python model')
-            py_model = OpenApi30Converter(
-                python.ModulePath(config.package),
-                oa_model,
-                str(config.origin) if config.origin else None,
-                path_progress=lambda item: pbar.update(1, item),
-            ).process()
+        py_model = prepare_python_model(oa_doc, config)
         pprint(py_model, output)
+
+
+def prepare_python_model(oa_doc: Mapping, config: Config) -> python.ClientModel:
+    oa_model = openapi.OpenApiModel.model_validate(oa_doc)
+    with click.progressbar(length=len(oa_model.paths.paths), label='Processing operations', item_show_func=str) as pbar:
+        logger.info('Prepare python model')
+        return OpenApi30Converter(
+            python.ModulePath(config.package),
+            oa_model,
+            str(config.origin) if config.origin else None,
+            path_progress=lambda item: pbar.update(1, item),
+        ).process()
