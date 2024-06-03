@@ -58,7 +58,7 @@ class OpenApi30Converter:
         if not value:
             logger.warning('No servers found')
             return
-        if len(value) > 0:
+        if len(value) > 1:
             logger.warning('Multiple servers found, using the first')
 
         server = value[0]
