@@ -68,13 +68,9 @@ async def init_project(
     TreeTemplate(
         JinjaAdapter(
             jinja2.Environment(
-                loader=jinja2.loaders.PackageLoader('lapidary.render'),
+                loader=jinja2.loaders.PackageLoader('lapidary.render', package_path='templates/init'),
             )
         ),
-        exclude_extend=[
-            'includes',
-            'gen',
-        ],
         remove_suffixes=['.jinja'],
     ).render(
         dict(
@@ -110,13 +106,11 @@ async def render_project(project_root: anyio.Path) -> None:
     template = TreeTemplate(
         JinjaAdapter(
             jinja2.Environment(
-                loader=jinja2.loaders.PackageLoader('lapidary.render'),
+                loader=jinja2.loaders.PackageLoader('lapidary.render', package_path='templates/render'),
             )
         ),
         exclude_extend=[
             'includes',
-            'pyproject.toml.jinja',
-            'gen/{{model.package}}/auth.py.jinja',  # TODO auth
         ],
         remove_suffixes=['.jinja'],
     )
