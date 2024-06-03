@@ -5,12 +5,10 @@ __all__ = [
     'ApiClient',
 ]
 
-import typing
+from collections.abc import Awaitable
 
-from typing_extensions import Self
-from typing import Annotated, Union
+import typing_extensions as typing
 from lapidary.runtime import *
-
 
 import test_dummy.components.schemas.all.schema
 import test_dummy.components.schemas.schema1.schema
@@ -34,17 +32,17 @@ class ApiClient(ClientBase):
         await super().__aenter__()
         return self
 
-    async def __aexit__(self, __exc_type=None, __exc_value=None, __traceback=None) -> None:
-        await super().__aexit__(__exc_type, __exc_value, __traceback)
+    async def __aexit__(self, __exc_type=None, __exc_value=None, __traceback=None) -> typing.Optional[bool]:
+        return await super().__aexit__(__exc_type, __exc_value, __traceback)
 
     @get('/test/')
     async def test_op(
-        self: Self,
+        self: typing.Self,
         *,
-        param1_q: Annotated[test_dummy.components.schemas.schema1.schema.schema1, Query('param1', )],
-        param2_q: Annotated[test_dummy.paths.u_ltestu_l.get.parameters.u_n.schema.schema.schema, Query('param2', )],
-    ) -> Annotated[
-        test_dummy.components.schemas.all.schema.all,
+        param1_q: typing.Annotated[test_dummy.components.schemas.schema1.schema.schema1, Query('param1', )],
+        param2_q: typing.Annotated[test_dummy.paths.u_ltestu_l.get.parameters.u_n.schema.schema.schema, Query('param2', )],
+    ) -> typing.Annotated[
+        Awaitable[test_dummy.components.schemas.all.schema.all],
         Responses({
             'default': {
                 'application/json': test_dummy.components.schemas.all.schema.all,

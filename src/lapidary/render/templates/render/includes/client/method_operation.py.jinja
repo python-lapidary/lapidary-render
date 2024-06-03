@@ -1,6 +1,6 @@
 {%- import 'includes/type_hint.py.jinja' as th %}
 {%- macro render_param(param) %}
-        {{ param.name }}: Annotated[{{ th.type_hint(param.type, path) }}, {{ param.in_.value | capitalize }}(
+        {{ param.name }}: typing.Annotated[{{ th.type_hint(param.type, path) }}, {{ param.in_.value | capitalize }}(
     {%- if param.alias  %}'{{ param.alias }}', {% endif %}
     {%- if param.style %}style='{{ param.style.value }}',{% endif %}
     {%- if param.explode %}explode={{ param.explode }},{% endif -%}
@@ -14,9 +14,9 @@
 }{% endmacro %}
     @{{ func.method }}('{{ func.path }}'{% if func.security is not none %}, security={{ func.security }}{% endif %})
     async def {{ func.name }}(
-        self: Self,
+        self: typing.Self,
 {%- if not func.request_body_type.is_none() %}
-        request_body: Annotated[
+        request_body: typing.Annotated[
             {{ th.type_hint(func.request_body_type, path) }},
             RequestBody({{ render_mime_map(func.request_body) | indent(12, False) }}),
         ],
@@ -29,8 +29,8 @@
 {%- for param in func.params if not param.required %}
         {{- render_param(param) }}
 {%- endfor %}
-    ) -> Annotated[
-        {{ th.type_hint(func.response_body_type, path) }},
+    ) -> typing.Annotated[
+        Awaitable[{{ th.type_hint(func.response_body_type, path) }}],
         Responses({
             {%- for code, mime_map in func.responses.items() %}
             '{{ code }}': {{ render_mime_map(mime_map) | indent(12, False) }},

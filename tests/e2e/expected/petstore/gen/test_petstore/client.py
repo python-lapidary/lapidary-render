@@ -5,12 +5,10 @@ __all__ = [
     'ApiClient',
 ]
 
-import typing
+from collections.abc import Awaitable
 
-from typing_extensions import Self
-from typing import Annotated, Union
+import typing_extensions as typing
 from lapidary.runtime import *
-
 
 import test_petstore.components.schemas.ApiResponse.schema
 import test_petstore.components.schemas.Order.schema
@@ -35,20 +33,20 @@ class ApiClient(ClientBase):
         await super().__aenter__()
         return self
 
-    async def __aexit__(self, __exc_type=None, __exc_value=None, __traceback=None) -> None:
-        await super().__aexit__(__exc_type, __exc_value, __traceback)
+    async def __aexit__(self, __exc_type=None, __exc_value=None, __traceback=None) -> typing.Optional[bool]:
+        return await super().__aexit__(__exc_type, __exc_value, __traceback)
 
     @put('/pet', security=[{'petstore_auth': ['write:pets', 'read:pets']}])
     async def updatePet(
-        self: Self,
-        request_body: Annotated[
+        self: typing.Self,
+        request_body: typing.Annotated[
             test_petstore.components.schemas.Pet.schema.Pet,
             RequestBody({
                 'application/json': test_petstore.components.schemas.Pet.schema.Pet,
             }),
         ],
-    ) -> Annotated[
-        test_petstore.components.schemas.Pet.schema.Pet,
+    ) -> typing.Annotated[
+        Awaitable[test_petstore.components.schemas.Pet.schema.Pet],
         Responses({
             '200': {
                 'application/json': test_petstore.components.schemas.Pet.schema.Pet,
@@ -65,15 +63,15 @@ class ApiClient(ClientBase):
 
     @post('/pet', security=[{'petstore_auth': ['write:pets', 'read:pets']}])
     async def addPet(
-        self: Self,
-        request_body: Annotated[
+        self: typing.Self,
+        request_body: typing.Annotated[
             test_petstore.components.schemas.Pet.schema.Pet,
             RequestBody({
                 'application/json': test_petstore.components.schemas.Pet.schema.Pet,
             }),
         ],
-    ) -> Annotated[
-        test_petstore.components.schemas.Pet.schema.Pet,
+    ) -> typing.Annotated[
+        Awaitable[test_petstore.components.schemas.Pet.schema.Pet],
         Responses({
             '200': {
                 'application/json': test_petstore.components.schemas.Pet.schema.Pet,
@@ -86,11 +84,11 @@ class ApiClient(ClientBase):
 
     @get('/pet/findByStatus', security=[{'petstore_auth': ['write:pets', 'read:pets']}])
     async def findPetsByStatus(
-        self: Self,
+        self: typing.Self,
         *,
-        status_q: Annotated[typing.Union[None, str], Query('status', explode=True,)] = None,
-    ) -> Annotated[
-        list[test_petstore.components.schemas.Pet.schema.Pet],
+        status_q: typing.Annotated[typing.Union[None, str], Query('status', explode=True,)] = None,
+    ) -> typing.Annotated[
+        Awaitable[list[test_petstore.components.schemas.Pet.schema.Pet]],
         Responses({
             '200': {
                 'application/json': list[test_petstore.components.schemas.Pet.schema.Pet],
@@ -103,11 +101,11 @@ class ApiClient(ClientBase):
 
     @get('/pet/findByTags', security=[{'petstore_auth': ['write:pets', 'read:pets']}])
     async def findPetsByTags(
-        self: Self,
+        self: typing.Self,
         *,
-        tags_q: Annotated[typing.Union[None, list[str]], Query('tags', explode=True,)] = None,
-    ) -> Annotated[
-        list[test_petstore.components.schemas.Pet.schema.Pet],
+        tags_q: typing.Annotated[typing.Union[None, list[str]], Query('tags', explode=True,)] = None,
+    ) -> typing.Annotated[
+        Awaitable[list[test_petstore.components.schemas.Pet.schema.Pet]],
         Responses({
             '200': {
                 'application/json': list[test_petstore.components.schemas.Pet.schema.Pet],
@@ -120,11 +118,11 @@ class ApiClient(ClientBase):
 
     @get('/pet/{petId}', security=[{'api_key': []}, {'petstore_auth': ['write:pets', 'read:pets']}])
     async def getPetById(
-        self: Self,
+        self: typing.Self,
         *,
-        petId_p: Annotated[int, Path('petId', )],
-    ) -> Annotated[
-        test_petstore.components.schemas.Pet.schema.Pet,
+        petId_p: typing.Annotated[int, Path('petId', )],
+    ) -> typing.Annotated[
+        Awaitable[test_petstore.components.schemas.Pet.schema.Pet],
         Responses({
             '200': {
                 'application/json': test_petstore.components.schemas.Pet.schema.Pet,
@@ -139,13 +137,13 @@ class ApiClient(ClientBase):
 
     @post('/pet/{petId}', security=[{'petstore_auth': ['write:pets', 'read:pets']}])
     async def updatePetWithForm(
-        self: Self,
+        self: typing.Self,
         *,
-        petId_p: Annotated[int, Path('petId', )],
-        name_q: Annotated[typing.Union[None, str], Query('name', )] = None,
-        status_q: Annotated[typing.Union[None, str], Query('status', )] = None,
-    ) -> Annotated[
-        None,
+        petId_p: typing.Annotated[int, Path('petId', )],
+        name_q: typing.Annotated[typing.Union[None, str], Query('name', )] = None,
+        status_q: typing.Annotated[typing.Union[None, str], Query('status', )] = None,
+    ) -> typing.Annotated[
+        Awaitable[None],
         Responses({
             '405': {
             },
@@ -155,12 +153,12 @@ class ApiClient(ClientBase):
 
     @delete('/pet/{petId}', security=[{'petstore_auth': ['write:pets', 'read:pets']}])
     async def deletePet(
-        self: Self,
+        self: typing.Self,
         *,
-        petId_p: Annotated[int, Path('petId', )],
-        api_key_h: Annotated[typing.Union[None, str], Header('api_key', )] = None,
-    ) -> Annotated[
-        None,
+        petId_p: typing.Annotated[int, Path('petId', )],
+        api_key_h: typing.Annotated[typing.Union[None, str], Header('api_key', )] = None,
+    ) -> typing.Annotated[
+        Awaitable[None],
         Responses({
             '400': {
             },
@@ -170,12 +168,12 @@ class ApiClient(ClientBase):
 
     @post('/pet/{petId}/uploadImage', security=[{'petstore_auth': ['write:pets', 'read:pets']}])
     async def uploadFile(
-        self: Self,
+        self: typing.Self,
         *,
-        petId_p: Annotated[int, Path('petId', )],
-        additionalMetadata_q: Annotated[typing.Union[None, str], Query('additionalMetadata', )] = None,
-    ) -> Annotated[
-        test_petstore.components.schemas.ApiResponse.schema.ApiResponse,
+        petId_p: typing.Annotated[int, Path('petId', )],
+        additionalMetadata_q: typing.Annotated[typing.Union[None, str], Query('additionalMetadata', )] = None,
+    ) -> typing.Annotated[
+        Awaitable[test_petstore.components.schemas.ApiResponse.schema.ApiResponse],
         Responses({
             '200': {
                 'application/json': test_petstore.components.schemas.ApiResponse.schema.ApiResponse,
@@ -186,9 +184,9 @@ class ApiClient(ClientBase):
 
     @get('/store/inventory', security=[{'api_key': []}])
     async def getInventory(
-        self: Self,
-    ) -> Annotated[
-        test_petstore.paths.u_lstoreu_linventory.get.responses.u_o00.content.applicationu_ljson.schema.schema.schema,
+        self: typing.Self,
+    ) -> typing.Annotated[
+        Awaitable[test_petstore.paths.u_lstoreu_linventory.get.responses.u_o00.content.applicationu_ljson.schema.schema.schema],
         Responses({
             '200': {
                 'application/json': test_petstore.paths.u_lstoreu_linventory.get.responses.u_o00.content.applicationu_ljson.schema.schema.schema,
@@ -199,15 +197,15 @@ class ApiClient(ClientBase):
 
     @post('/store/order')
     async def placeOrder(
-        self: Self,
-        request_body: Annotated[
+        self: typing.Self,
+        request_body: typing.Annotated[
             test_petstore.components.schemas.Order.schema.Order,
             RequestBody({
                 'application/json': test_petstore.components.schemas.Order.schema.Order,
             }),
         ],
-    ) -> Annotated[
-        test_petstore.components.schemas.Order.schema.Order,
+    ) -> typing.Annotated[
+        Awaitable[test_petstore.components.schemas.Order.schema.Order],
         Responses({
             '200': {
                 'application/json': test_petstore.components.schemas.Order.schema.Order,
@@ -220,11 +218,11 @@ class ApiClient(ClientBase):
 
     @get('/store/order/{orderId}')
     async def getOrderById(
-        self: Self,
+        self: typing.Self,
         *,
-        orderId_p: Annotated[int, Path('orderId', )],
-    ) -> Annotated[
-        test_petstore.components.schemas.Order.schema.Order,
+        orderId_p: typing.Annotated[int, Path('orderId', )],
+    ) -> typing.Annotated[
+        Awaitable[test_petstore.components.schemas.Order.schema.Order],
         Responses({
             '200': {
                 'application/json': test_petstore.components.schemas.Order.schema.Order,
@@ -239,11 +237,11 @@ class ApiClient(ClientBase):
 
     @delete('/store/order/{orderId}')
     async def deleteOrder(
-        self: Self,
+        self: typing.Self,
         *,
-        orderId_p: Annotated[int, Path('orderId', )],
-    ) -> Annotated[
-        None,
+        orderId_p: typing.Annotated[int, Path('orderId', )],
+    ) -> typing.Annotated[
+        Awaitable[None],
         Responses({
             '400': {
             },
@@ -255,15 +253,15 @@ class ApiClient(ClientBase):
 
     @post('/user')
     async def createUser(
-        self: Self,
-        request_body: Annotated[
+        self: typing.Self,
+        request_body: typing.Annotated[
             test_petstore.components.schemas.User.schema.User,
             RequestBody({
                 'application/json': test_petstore.components.schemas.User.schema.User,
             }),
         ],
-    ) -> Annotated[
-        test_petstore.components.schemas.User.schema.User,
+    ) -> typing.Annotated[
+        Awaitable[test_petstore.components.schemas.User.schema.User],
         Responses({
             'default': {
                 'application/json': test_petstore.components.schemas.User.schema.User,
@@ -274,15 +272,15 @@ class ApiClient(ClientBase):
 
     @post('/user/createWithList')
     async def createUsersWithListInput(
-        self: Self,
-        request_body: Annotated[
+        self: typing.Self,
+        request_body: typing.Annotated[
             list[test_petstore.components.schemas.User.schema.User],
             RequestBody({
                 'application/json': list[test_petstore.components.schemas.User.schema.User],
             }),
         ],
-    ) -> Annotated[
-        test_petstore.components.schemas.User.schema.User,
+    ) -> typing.Annotated[
+        Awaitable[test_petstore.components.schemas.User.schema.User],
         Responses({
             '200': {
                 'application/json': test_petstore.components.schemas.User.schema.User,
@@ -295,12 +293,12 @@ class ApiClient(ClientBase):
 
     @get('/user/login')
     async def loginUser(
-        self: Self,
+        self: typing.Self,
         *,
-        username_q: Annotated[typing.Union[None, str], Query('username', )] = None,
-        password_q: Annotated[typing.Union[None, str], Query('password', )] = None,
-    ) -> Annotated[
-        str,
+        username_q: typing.Annotated[typing.Union[None, str], Query('username', )] = None,
+        password_q: typing.Annotated[typing.Union[None, str], Query('password', )] = None,
+    ) -> typing.Annotated[
+        Awaitable[str],
         Responses({
             '200': {
                 'application/json': str,
@@ -313,9 +311,9 @@ class ApiClient(ClientBase):
 
     @get('/user/logout')
     async def logoutUser(
-        self: Self,
-    ) -> Annotated[
-        None,
+        self: typing.Self,
+    ) -> typing.Annotated[
+        Awaitable[None],
         Responses({
             'default': {
             },
@@ -325,11 +323,11 @@ class ApiClient(ClientBase):
 
     @get('/user/{username}')
     async def getUserByName(
-        self: Self,
+        self: typing.Self,
         *,
-        username_p: Annotated[str, Path('username', )],
-    ) -> Annotated[
-        test_petstore.components.schemas.User.schema.User,
+        username_p: typing.Annotated[str, Path('username', )],
+    ) -> typing.Annotated[
+        Awaitable[test_petstore.components.schemas.User.schema.User],
         Responses({
             '200': {
                 'application/json': test_petstore.components.schemas.User.schema.User,
@@ -344,17 +342,17 @@ class ApiClient(ClientBase):
 
     @put('/user/{username}')
     async def updateUser(
-        self: Self,
-        request_body: Annotated[
+        self: typing.Self,
+        request_body: typing.Annotated[
             test_petstore.components.schemas.User.schema.User,
             RequestBody({
                 'application/json': test_petstore.components.schemas.User.schema.User,
             }),
         ],
         *,
-        username_p: Annotated[str, Path('username', )],
-    ) -> Annotated[
-        None,
+        username_p: typing.Annotated[str, Path('username', )],
+    ) -> typing.Annotated[
+        Awaitable[None],
         Responses({
             'default': {
             },
@@ -364,11 +362,11 @@ class ApiClient(ClientBase):
 
     @delete('/user/{username}')
     async def deleteUser(
-        self: Self,
+        self: typing.Self,
         *,
-        username_p: Annotated[str, Path('username', )],
-    ) -> Annotated[
-        None,
+        username_p: typing.Annotated[str, Path('username', )],
+    ) -> typing.Annotated[
+        Awaitable[None],
         Responses({
             '400': {
             },

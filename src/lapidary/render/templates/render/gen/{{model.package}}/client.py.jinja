@@ -4,12 +4,10 @@ __all__ = [
     'ApiClient',
 ]
 
-import typing
+from collections.abc import Awaitable
 
-from typing_extensions import Self
-from typing import Annotated, Union
+import typing_extensions as typing
 from lapidary.runtime import *
-
 
 {% for imp in model.client.imports -%}
 import {{ imp }}
@@ -33,8 +31,8 @@ class ApiClient(ClientBase):
         await super().__aenter__()
         return self
 
-    async def __aexit__(self, __exc_type=None, __exc_value=None, __traceback=None) -> None:
-        await super().__aexit__(__exc_type, __exc_value, __traceback)
+    async def __aexit__(self, __exc_type=None, __exc_value=None, __traceback=None) -> typing.Optional[bool]:
+        return await super().__aexit__(__exc_type, __exc_value, __traceback)
 {% for func in model.client.body.methods %}
 {%- include 'includes/client/method_operation.py.jinja' %}
 {%- else %}
