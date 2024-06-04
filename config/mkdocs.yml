@@ -1,0 +1,7 @@
+site_name: Lapidary Render
+repo_url: https://github.com/python-lapidary/lapidary-render
+
+docs_dir: ../docs
+
+nav:
+- index.md
