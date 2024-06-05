@@ -31,7 +31,7 @@ class Reference[Target](BaseModel):
 class Contact(ExtendableModel):
     name: str | None = None
     url: str | None = None
-    email: pydantic.EmailStr | None = None
+    email: str | None = None
 
 
 class License(ExtendableModel):

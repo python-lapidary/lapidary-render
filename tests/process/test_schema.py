@@ -7,7 +7,6 @@ import ruamel.yaml
 
 from lapidary.render import json_pointer
 from lapidary.render.model import OpenApi30Converter, openapi, python, stack
-from lapidary.runtime.http_consts import MIME_JSON
 
 logging.basicConfig()
 logging.getLogger('lapidary').setLevel(logging.DEBUG)
@@ -34,7 +33,7 @@ def test_schema_str(document: openapi.OpenApiModel) -> None:
         operations['get'].responses, stack.Stack(('#', 'paths', '/user/login', 'get', 'responses'))
     )
 
-    assert responses['200'][MIME_JSON] == python.BuiltinTypeHint.from_str('str')
+    assert responses['200']['application/json'] == python.BuiltinTypeHint.from_str('str')
     assert converter.schema_converter.schema_modules == []
 
 
@@ -46,7 +45,7 @@ def test_schema_array(document: openapi.OpenApiModel) -> None:
         operations['post'].request_body, stack.Stack(('#', 'paths', '/user/createWithList', 'post', 'requestBody'))
     )
 
-    assert request[MIME_JSON] == python.GenericTypeHint(
+    assert request['application/json'] == python.GenericTypeHint(
         module='builtins', name='list', args=(python.TypeHint.from_str('petstore.components.schemas.User.schema:User'),)
     )
     assert converter.schema_converter.schema_modules[0].body[0].class_name == 'User'

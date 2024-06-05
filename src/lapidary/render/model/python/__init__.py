@@ -19,6 +19,7 @@ __all__ = (
     'AuthModule',
     'ClientModule',
     'PasswordOAuth2Flow',
+    'SecurityRequirements',
     'SchemaModule',
     'ModulePath',
     'BuiltinTypeHint',
@@ -53,6 +54,7 @@ from .model import (
     PasswordOAuth2Flow,
     ResponseMap,
     SchemaClass,
+    SecurityRequirements,
 )
 from .module import AuthModule, ClientModule, SchemaModule
 from .module_path import ModulePath

@@ -5,8 +5,6 @@ from typing import Any, cast
 
 from mimeparse import parse_media_range
 
-from lapidary.runtime import SecurityRequirements
-
 from .. import json_pointer, names
 from . import openapi, python
 from .refs import resolve_ref
@@ -214,7 +212,7 @@ class OpenApi30Converter:
 
     def process_security(
         self, value: Iterable[openapi.SecurityRequirement] | None, stack: Stack
-    ) -> Iterable[SecurityRequirements] | None:
+    ) -> python.SecurityRequirements | None:
         logger.debug('Process security %s', stack)
         if value is None:
             return None

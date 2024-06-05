@@ -4,7 +4,6 @@ from collections.abc import Iterable, Mapping
 from typing import Any, TypeAlias
 
 from ..openapi import ParameterLocation as ParamLocation
-from ..openapi import SecurityRequirement
 from ..openapi import Style as ParamStyle
 from .type_hint import NONE, TypeHint, type_hint_or_union
 
@@ -12,6 +11,7 @@ MimeType: TypeAlias = str
 ResponseCode: TypeAlias = str
 MimeMap: TypeAlias = Mapping[MimeType, TypeHint]
 ResponseMap: TypeAlias = Mapping[ResponseCode, MimeMap]
+SecurityRequirements: TypeAlias = Iterable[Mapping[str, Iterable[str]]]
 
 
 @dc.dataclass
@@ -117,7 +117,7 @@ class OperationFunction:
     request_body: MimeMap
     params: Iterable['Parameter']
     responses: ResponseMap
-    security: Iterable[SecurityRequirement] | None
+    security: SecurityRequirements | None
 
     @property
     def dependencies(self) -> Iterable[TypeHint]:
@@ -198,7 +198,7 @@ class ClientInit:
     base_url: str | None = None
     headers: Iterable[tuple[str, str]] = dc.field(default_factory=list)
     response_map: ResponseMap = dc.field(default_factory=dict)
-    security: Iterable[SecurityRequirement] | None = None
+    security: SecurityRequirements | None = None
 
     @property
     def dependencies(self) -> Iterable[TypeHint]:

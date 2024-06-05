@@ -25,7 +25,6 @@ classifiers = [
 python = "^3.12"
 asyncclick = "^8.1.7.2"
 jsonpatch = "^1.32"
-lapidary = "^0.9.0"
 pybase62 = "^1.0.0"
 pydantic = "^2.5.2"
 python-mimeparse = "^1.6.0"
