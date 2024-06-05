@@ -20,6 +20,15 @@ classifiers = [
     "Topic :: Software Development :: Code Generators",
     "Typing :: Typed",
 ]
+keywords = [
+    "OpenAPI",
+    "OpenAPI3",
+    "CodeGen",
+    "Code Generation",
+    "Code Generator",
+    "OpenAPI Tools",
+]
+homepage = "https://lapidary.dev/"
 
 [tool.poetry.dependencies]
 python = "^3.12"
