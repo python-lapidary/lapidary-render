@@ -1,6 +1,6 @@
 openapi: 3.0.2
 info:
-  title: subschemas
+  title: dummy
   description: 'test generating /components/schemas with sub-schemas'
   version: 1.0.0
 paths:
@@ -32,6 +32,33 @@ paths:
           required:
           - prop1
         required: true
+  /custom-security:
+    get:
+      description: Operation with its own security defined
+      operationId: customSecurity
+      responses:
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/all'
+          description: ''
+      security:
+      - oauth:
+        - read
+  /insecure:
+    get:
+      description: Operation with no security requirements
+      operationId: customSecurity
+      responses:
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/all'
+          description: ''
+      security: []
+
 
 components:
   schemas:

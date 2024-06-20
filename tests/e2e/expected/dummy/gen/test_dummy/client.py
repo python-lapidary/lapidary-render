@@ -50,3 +50,29 @@ class ApiClient(ClientBase):
         })
     ]:
         pass
+
+    @get('/custom-security', security=[{'oauth': ['read']}])
+    async def customSecurity(
+        self: typing.Self,
+    ) -> typing.Annotated[
+        Awaitable[test_dummy.components.schemas.all.schema.all],
+        Responses({
+            'default': {
+                'application/json': test_dummy.components.schemas.all.schema.all,
+            },
+        })
+    ]:
+        pass
+
+    @get('/insecure', security=[])
+    async def customSecurity(
+        self: typing.Self,
+    ) -> typing.Annotated[
+        Awaitable[test_dummy.components.schemas.all.schema.all],
+        Responses({
+            'default': {
+                'application/json': test_dummy.components.schemas.all.schema.all,
+            },
+        })
+    ]:
+        pass
