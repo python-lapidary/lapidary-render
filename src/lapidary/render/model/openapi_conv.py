@@ -42,11 +42,18 @@ class OpenApi30Converter:
     def process(self) -> python.ClientModel:
         stack = Stack()
 
-        self.process_servers(self.src.servers, stack.push('servers'))
-        self.process_global_responses(self.src.lapidary_responses_global, stack.push('x-lapidary-responses-global'))
-        self.process_global_headers(self.src.lapidary_headers_global, stack.push('x-lapidary-headers-global'))
-        self.target.client.body.init_method.security = self.process_security(self.src.security, stack.push('security'))
-        self.process_paths(self.src.paths, stack.push('paths'))
+        map_process(
+            self.src,
+            stack,
+            {
+                'servers': self.process_servers,
+                'lapidary_responses_global': self.process_global_responses,
+                'lapidary_headers_global': self.process_global_headers,
+                'security': self.process_global_security,
+                'paths': self.process_paths,
+            },
+        )
+
         self.target.schemas.extend(self.schema_converter.schema_modules)
         return self.target
 
@@ -210,6 +217,9 @@ class OpenApi30Converter:
             params[param.name] = param
         return list(params.values())
 
+    def process_global_security(self, value: Iterable[openapi.SecurityRequirement] | None, stack: Stack) -> None:
+        self.target.client.body.init_method.security = self.process_security(value, stack)
+
     def process_security(
         self, value: Iterable[openapi.SecurityRequirement] | None, stack: Stack
     ) -> python.SecurityRequirements | None:
@@ -217,8 +227,7 @@ class OpenApi30Converter:
         if value is None:
             return None
 
-        security = [self.process_security_requirement(item, stack.push(str(idx))) for idx, item in enumerate(value)]
-        return security or None
+        return [self.process_security_requirement(item, stack.push(str(idx))) for idx, item in enumerate(value)]
 
     def process_security_requirement(
         self, value: openapi.SecurityRequirement, stack: Stack
