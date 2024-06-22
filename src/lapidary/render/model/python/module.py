@@ -2,7 +2,7 @@ import abc
 import dataclasses as dc
 from collections.abc import Iterable, Mapping
 
-from .model import ClientClass, SchemaClass
+from .model import ClientClass, ResponseEnvelopeModel, SchemaClass
 from .module_path import ModulePath
 from .type_hint import GenericTypeHint, TypeHint
 
@@ -27,28 +27,6 @@ class AbstractModule[Body](abc.ABC):
     @property
     def rel_path(self) -> str:
         return self.path.to_path()
-
-
-@dc.dataclass(frozen=True, kw_only=True)
-class SchemaModule(AbstractModule[Iterable[SchemaClass]]):
-    """
-    One schema module per schema element directly under #/components/schemas, containing that schema and all non-reference schemas.
-    One schema module for inline request and for response body for each operation
-    """
-
-    module_type: str = 'schema'
-
-    @property
-    def imports(self) -> Iterable[str]:
-        dependencies = GenericTypeHint.union_of(
-            *[dep for cls in self.body for dep in cls.dependencies]
-        ).args  # flatten unions
-        imports = sorted({imp for dep in dependencies if dep for imp in dep.imports() if imp not in template_imports})
-        path_str = str(self.path)
-        if path_str in imports:
-            imports.remove(path_str)
-
-        return imports
 
 
 @dc.dataclass(frozen=True, kw_only=True)
@@ -82,3 +60,34 @@ class EmptyModule(AbstractModule[None]):
     @property
     def imports(self) -> Iterable[str]:
         yield from ()
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+class ResponseEnvelopeModule(AbstractModule[ResponseEnvelopeModel]):
+    module_type: str = dc.field(default='response')
+
+    @property
+    def imports(self) -> Iterable[str]:
+        yield from self.body.dependencies
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+class SchemaModule(AbstractModule[Iterable[SchemaClass]]):
+    """
+    One schema module per schema element directly under #/components/schemas, containing that schema and all non-reference schemas.
+    One schema module for inline request and for response body for each operation
+    """
+
+    module_type: str = 'schema'
+
+    @property
+    def imports(self) -> Iterable[str]:
+        dependencies = GenericTypeHint.union_of(
+            *[dep for cls in self.body for dep in cls.dependencies]
+        ).args  # flatten unions
+        imports = sorted({imp for dep in dependencies if dep for imp in dep.imports() if imp not in template_imports})
+        path_str = str(self.path)
+        if path_str in imports:
+            imports.remove(path_str)
+
+        return imports

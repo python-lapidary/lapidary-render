@@ -9,11 +9,15 @@ paths:
       operationId: test_op
       responses:
         default:
+          description: ''
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/all'
-          description: ''
+          headers:
+            x-count:
+              schema:
+                type: integer
 
       parameters:
       - name: param1

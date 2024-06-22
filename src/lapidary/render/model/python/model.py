@@ -1,7 +1,7 @@
 import dataclasses as dc
 import enum
 from collections.abc import Iterable, Mapping
-from typing import Any, TypeAlias
+from typing import Any, Literal, TypeAlias
 
 from ..openapi import ParameterLocation as ParamLocation
 from ..openapi import Style as ParamStyle
@@ -216,3 +216,27 @@ class ClientClass:
         yield from self.init_method.dependencies
         for fn in self.methods:
             yield from fn.dependencies
+
+
+@dc.dataclass(frozen=True)
+class ResponseHeader:
+    name: str
+    alias: str
+    type: TypeHint
+    annotation: Literal['Cookie', 'Header', 'Link']
+
+    @property
+    def dependencies(self) -> Iterable[TypeHint]:
+        yield self.type
+
+
+@dc.dataclass(frozen=True)
+class ResponseEnvelopeModel:
+    headers: Iterable[ResponseHeader]
+    body_type: TypeHint
+
+    @property
+    def dependencies(self) -> Iterable[TypeHint]:
+        yield self.body_type
+        for header in self.headers:
+            yield from header.dependencies

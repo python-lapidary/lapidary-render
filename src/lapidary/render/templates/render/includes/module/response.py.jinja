@@ -1,0 +1,16 @@
+{% import 'includes/type_hint.py.jinja' as th -%}
+
+from __future__ import annotations
+import typing_extensions as typing
+
+from lapidary.runtime import *
+
+class {{item.body.name}}Response(ResponseEnvelope):
+{%- if item.body.body_type %}
+    body: Annotated[{{th.type_hint(item.body.body_type)}}, ResponseBody()]
+{%- endif -%}
+
+{%- for header in item.body.headers %}
+    {{header.name}}: Annotated[{{ th.type_hint(header.type)}}, {{ header.annotation}}('{{header.alias}}')]
+{%- endfor -%}
+{{''}}
