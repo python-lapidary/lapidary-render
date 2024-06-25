@@ -548,13 +548,13 @@ files = [
 
 [[package]]
 name = "rybak"
-version = "0.3.0"
+version = "0.4.0"
 description = "Directory-tree generator library"
 optional = false
-python-versions = ">=3.8,<4.0"
+python-versions = "<4.0,>=3.8"
 files = [
-    {file = "rybak-0.3.0-py3-none-any.whl", hash = "sha256:c71ed1ac4b4c9e8d84aadd7f96dd2939c3e0b070eaab4aa6054fe0d3e22002a4"},
-    {file = "rybak-0.3.0.tar.gz", hash = "sha256:a9c1224a79c036a248e42b7e81078380fbdd6f5f1ddfb88323133e9b7e8aeff2"},
+    {file = "rybak-0.4.0-py3-none-any.whl", hash = "sha256:45fbc6bf850a7ea6ff37f05cfd7d706dfa8b39b10a9e7c134dc9e11ea147dea2"},
+    {file = "rybak-0.4.0.tar.gz", hash = "sha256:b40c8d8c8654d959b973fa5e9a150d3914d4209ff05aaff9103159c39845e387"},
 ]
 
 [package.dependencies]
@@ -589,4 +589,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "23bdbce82782d07b42f3169c9d6561538df8c547a2546231031d1924dc4c5c6f"
+content-hash = "500b7bbf2976be63902cf7dce4dca484bb856410928b2cc91469fe956f76c7c2"

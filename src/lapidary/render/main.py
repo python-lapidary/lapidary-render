@@ -115,7 +115,7 @@ async def render_project(project_root: anyio.Path) -> None:
             ),
             pathlib.Path(project_root),
             event_sink=event_sink,
-            # remove_stale=True,
+            remove_stale=True,
         )
 
 
