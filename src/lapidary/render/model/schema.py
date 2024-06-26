@@ -144,7 +144,7 @@ class OpenApi30SchemaConverter:
             modules[python.ModulePath(hint.module, True)].append(schema_class)
         return [
             python.SchemaModule(
-                path=module @ self.root_package,
+                path=module,
                 body=classes,
             )
             for module, classes in modules.items()

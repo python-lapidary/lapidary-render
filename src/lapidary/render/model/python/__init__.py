@@ -78,7 +78,7 @@ class ClientModel:
     def packages(self: Self) -> Iterable[ModulePath]:
         # Used to create __init__.py files in otherwise empty packages
 
-        known_packages: MutableSet[ModulePath] = {ModulePath.root()}
+        known_packages: MutableSet[ModulePath] = {ModulePath(self.package)}
 
         for mod in itertools.chain(self.schemas, self._response_envelopes):
             path: ModulePath | None = mod.path
@@ -93,9 +93,14 @@ class ClientModel:
         return list(self._modules())
 
     def _modules(self) -> Iterable[AbstractModule]:
-        yield from self.schemas
-        yield from self._response_envelopes
+        known_modules = set()
+        for mod in itertools.chain(self.schemas, self._response_envelopes):
+            assert mod.path not in known_modules
+            known_modules.add(mod.path)
+            yield mod
+
         for package in self.packages():
+            assert package not in known_modules
             yield EmptyModule(path=package, body=None)
 
     def add_response_envelope_module(self, mod: ResponseEnvelopeModule):

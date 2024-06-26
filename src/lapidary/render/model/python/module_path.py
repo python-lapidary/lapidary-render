@@ -36,10 +36,6 @@ class ModulePath:
             return None
         return ModulePath(self.parts[:-1], False)
 
-    @classmethod
-    def root(cls) -> Self:
-        return cls('', is_module=False)
-
     def __truediv__(self, other: str | Iterable[str]):
         if isinstance(other, str):
             other = [other]
