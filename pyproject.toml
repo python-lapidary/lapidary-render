@@ -46,6 +46,7 @@ lapidary = "lapidary.render:app"
 [tool.poetry.group.dev.dependencies]
 pyjwt = "^2.8.0"
 pytest = "^8.2.0"
+pytest-asyncio = "^0.23.7"
 pytest-httpx = "^0.30.0"
 
 [tool.ruff]
