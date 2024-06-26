@@ -4,7 +4,7 @@ default_language_version:
   python: '3.12'
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.5.0
+  rev: v4.6.0
   hooks:
   - id: trailing-whitespace
   - id: end-of-file-fixer
@@ -16,18 +16,10 @@ repos:
   - id: check-yaml
     exclude: src/lapidary/render/templates
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.1.14
+  rev: v0.4.10
   hooks:
   - id: ruff
     name: ruff check
     pass_filenames: false
   - id: ruff-format
     pass_filenames: false
-#- repo: local
-#  hooks:
-#  - id: mypy
-#    name: mypy
-#    language: system
-#    types: [ python ]
-#    entry: poetry run mypy --explicit-package-bases -p lapidary
-#    pass_filenames: false
