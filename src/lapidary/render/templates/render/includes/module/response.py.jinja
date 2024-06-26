@@ -5,7 +5,8 @@ import typing_extensions as typing
 
 from lapidary.runtime import *
 
-class {{item.body.name}}Response(ResponseEnvelope):
+
+class {{item.body.name}}(ResponseEnvelope):
 {%- if item.body.body_type %}
     body: Annotated[{{th.type_hint(item.body.body_type)}}, ResponseBody()]
 {%- endif -%}

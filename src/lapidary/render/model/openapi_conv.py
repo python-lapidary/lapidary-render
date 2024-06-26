@@ -199,7 +199,11 @@ class OpenApi30Converter:
         headers: Iterable[python.ResponseHeader],
         stack: Stack,
     ) -> python.TypeHint:
-        envelope = python.ResponseEnvelopeModel(headers=headers, body_type=body_type)
+        envelope = python.ResponseEnvelopeModel(
+            name=names.maybe_mangle_name(stack.top()),
+            headers=headers,
+            body_type=body_type,
+        )
         type_hint = resolve_type_hint(str(self.root_package), stack)
         self.target.add_response_envelope_module(
             python.ResponseEnvelopeModule(

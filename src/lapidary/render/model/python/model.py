@@ -232,6 +232,7 @@ class ResponseHeader:
 
 @dc.dataclass(frozen=True)
 class ResponseEnvelopeModel:
+    name: str
     headers: Iterable[ResponseHeader]
     body_type: TypeHint
 
