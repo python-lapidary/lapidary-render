@@ -14,24 +14,29 @@ template_imports = [
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class AbstractModule(abc.ABC):
-    path: ModulePath
+class AbstractModule[Body](abc.ABC):
+    path: ModulePath = dc.field()
+    module_type: str
+    body: Body = dc.field()
 
     @property
     @abc.abstractmethod
     def imports(self) -> Iterable[str]:
         pass
 
+    @property
+    def rel_path(self) -> str:
+        return self.path.to_path()
+
 
 @dc.dataclass(frozen=True, kw_only=True)
-class SchemaModule(AbstractModule):
+class SchemaModule(AbstractModule[Iterable[SchemaClass]]):
     """
     One schema module per schema element directly under #/components/schemas, containing that schema and all non-reference schemas.
     One schema module for inline request and for response body for each operation
     """
 
-    body: list[SchemaClass] = dc.field(default_factory=list)
-    model_type: str = 'schema'
+    module_type: str = 'schema'
 
     @property
     def imports(self) -> Iterable[str]:
@@ -47,15 +52,17 @@ class SchemaModule(AbstractModule):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class AuthModule(AbstractModule):
-    schemes: Mapping[str, TypeHint] = dc.field()
-    model_type = 'auth'
+class AuthModule(AbstractModule[Mapping[str, TypeHint]]):
+    module_type = 'auth'
+
+    @property
+    def imports(self) -> Iterable[str]:
+        yield from ()
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class ClientModule(AbstractModule):
-    body: ClientClass = dc.field()
-    model_type = 'client'
+class ClientModule(AbstractModule[ClientClass]):
+    module_type: str = dc.field(default='client')
 
     @property
     def imports(self) -> Iterable[str]:
@@ -63,3 +70,15 @@ class ClientModule(AbstractModule):
         imports = sorted({imp for dep in dependencies if dep for imp in dep.imports() if imp not in template_imports})
 
         return imports
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+class EmptyModule(AbstractModule[None]):
+    """Module used to generate empty __init__.py files"""
+
+    module_type: str = dc.field(default='empty')
+    body: None = None
+
+    @property
+    def imports(self) -> Iterable[str]:
+        yield from ()

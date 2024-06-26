@@ -26,7 +26,7 @@ def doc_dummy() -> openapi.OpenApiModel:
 
 
 def test_schema_str(document: openapi.OpenApiModel) -> None:
-    converter = OpenApi30Converter(python.ModulePath('petstore'), document, None)
+    converter = OpenApi30Converter(python.ModulePath('petstore', False), document, None)
     operations: Mapping[str, openapi.Operation] = document.paths.paths['/user/login'].model_extra
 
     responses = converter.process_responses(
@@ -38,7 +38,7 @@ def test_schema_str(document: openapi.OpenApiModel) -> None:
 
 
 def test_schema_array(document: openapi.OpenApiModel) -> None:
-    converter = OpenApi30Converter(python.ModulePath('petstore'), document, None)
+    converter = OpenApi30Converter(python.ModulePath('petstore', False), document, None)
     operations: Mapping[str, openapi.Operation] = document.paths.paths['/user/createWithList'].model_extra
 
     request = converter.process_request_body(
@@ -52,7 +52,7 @@ def test_schema_array(document: openapi.OpenApiModel) -> None:
 
 
 def test_property_schema(doc_dummy: openapi.OpenApiModel) -> None:
-    converter = OpenApi30Converter(python.ModulePath('dummy'), doc_dummy, None)
+    converter = OpenApi30Converter(python.ModulePath('dummy', False), doc_dummy, None)
     operations: Mapping[str, openapi.Operation] = doc_dummy.paths.paths['/test/'].model_extra
 
     schema = converter.schema_converter.process_schema(

@@ -31,7 +31,8 @@ __all__ = (
 )
 
 import dataclasses as dc
-from collections.abc import Iterable, MutableMapping, MutableSequence
+from collections.abc import Iterable, MutableMapping, MutableSequence, MutableSet, Sequence
+from functools import cached_property
 from typing import Self
 
 from ..openapi import ParameterLocation as ParamLocation
@@ -56,7 +57,7 @@ from .model import (
     SchemaClass,
     SecurityRequirements,
 )
-from .module import AuthModule, ClientModule, SchemaModule
+from .module import AbstractModule, AuthModule, ClientModule, EmptyModule, SchemaModule
 from .module_path import ModulePath
 from .type_hint import NONE, BuiltinTypeHint, GenericTypeHint, TypeHint, type_hint_or_union
 
@@ -71,13 +72,22 @@ class ClientModel:
     def packages(self: Self) -> Iterable[ModulePath]:
         # Used to create __init__.py files in otherwise empty packages
 
-        packages = {ModulePath(self.package)}
+        known_packages: MutableSet[ModulePath] = {ModulePath.root()}
 
         # for each schema module get its package
         for schema in self.schemas:
-            path = schema.path
-            while path_ := path.parent():
-                packages.add(path_)
-                path = path_
+            path: ModulePath | None = schema.path
+            while path := path.parent():
+                if path in known_packages:
+                    continue
+                yield path
+                known_packages.add(path)
 
-        return packages
+    @cached_property
+    def modules(self) -> Sequence[AbstractModule]:
+        return list(self._modules())
+
+    def _modules(self) -> Iterable[AbstractModule]:
+        yield from self.schemas
+        for package in self.packages():
+            yield EmptyModule(path=package, body=None)

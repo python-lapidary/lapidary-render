@@ -118,7 +118,7 @@ class GenericTypeHint(TypeHint):
 
 class NoneTypeHint(TypeHint):
     def __init__(self):
-        pass
+        super().__init__(module=None, name=None)
 
     def full_name(self):
         return 'None'

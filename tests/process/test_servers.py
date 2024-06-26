@@ -23,6 +23,6 @@ def test_servers(document_path: Path, expected: str | None):
     doc_text = document_path.read_text()
     document = openapi.OpenApiModel.model_validate(yaml.load(doc_text))
 
-    converter = model.OpenApi30Converter(python.ModulePath('package'), document, None)
+    converter = model.OpenApi30Converter(python.ModulePath('package', False), document, None)
     converter.process_servers(document.servers, Stack(('#', 'servers')))
     assert converter.target.client.body.init_method.base_url == expected

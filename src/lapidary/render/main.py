@@ -113,7 +113,7 @@ async def render_project(project_root: anyio.Path) -> None:
                 model=model,
                 get_version=importlib.metadata.version,
             ),
-            pathlib.Path(project_root),
+            pathlib.Path(project_root) / 'gen',
             event_sink=event_sink,
             remove_stale=True,
         )
@@ -122,8 +122,8 @@ async def render_project(project_root: anyio.Path) -> None:
 class RenderProgressBar(rybak.EventSink):
     def __init__(self, model: python.ClientModel) -> None:
         self._progress_bar = click.progressbar(
-            model.schemas,
-            label='Rendering schemas',
+            model.modules,
+            label='Rendering modules',
             item_show_func=lambda item: item or '',
             show_pos=True,
         )
@@ -136,8 +136,9 @@ class RenderProgressBar(rybak.EventSink):
         return self._progress_bar.__exit__(exc_type, exc_val, exc_tb)
 
     def writing_file(self, template: pathlib.PurePath, target: pathlib.Path) -> None:
-        if str(template) == 'gen/{{loop_over(model.schemas).path.to_path()}}.jinja':
-            self._progress_bar.update(1, str(target).split('/')[-3])
+        super().writing_file(template, target)
+        if str(template) == '{{model.package}}/{{loop_over(model.modules).rel_path}}.py.jinja':
+            self._progress_bar.update(1, str(target).split('/')[-2])
 
 
 async def dump_model(project_root: anyio.Path, process: bool, output: TextIO):

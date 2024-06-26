@@ -141,10 +141,10 @@ class OpenApi30SchemaConverter:
         modules: dict[python.ModulePath, list[python.SchemaClass]] = defaultdict(list)
         for pointer, schema_class_type in self.schema_types.items():
             schema_class, hint = schema_class_type
-            modules[python.ModulePath(hint.module) / '__init__'].append(schema_class)
+            modules[python.ModulePath(hint.module, True)].append(schema_class)
         return [
             python.SchemaModule(
-                path=module,
+                path=module @ self.root_package,
                 body=classes,
             )
             for module, classes in modules.items()
