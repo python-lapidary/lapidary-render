@@ -159,6 +159,7 @@ class OpenApi30Converter:
             self.process_operation(operation, stack.push(method), common_params)
         self._path_progress(json_pointer.decode_json_pointer(stack.top()))
 
+    @resolve_ref
     def process_request_body(self, value: openapi.RequestBody, stack: Stack) -> python.MimeMap:
         # TODO handle required
         return self.process_content(value.content, stack.push('content'))
