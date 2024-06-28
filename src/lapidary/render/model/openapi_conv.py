@@ -208,14 +208,14 @@ class OpenApi30Converter:
         stack: Stack,
     ) -> python.TypeHint:
         envelope = python.ResponseEnvelopeModel(
-            name=names.maybe_mangle_name(stack.top()),
+            name='Response',
             headers=headers,
             body_type=body_type,
         )
-        type_hint = resolve_type_hint(str(self.root_package), stack)
+        type_hint = resolve_type_hint(str(self.root_package), stack.push('Response'))
         self.target.add_response_envelope_module(
             python.ResponseEnvelopeModule(
-                path=python.ModulePath(type_hint.module),
+                path=python.ModulePath(type_hint.module, is_module=False),
                 body=envelope,
             )
         )
