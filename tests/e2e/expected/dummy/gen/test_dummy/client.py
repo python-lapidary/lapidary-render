@@ -10,6 +10,7 @@ from collections.abc import Awaitable
 import typing_extensions as typing
 from lapidary.runtime import *
 
+import test_dummy.components.requestBodies.dummy.content.applicationu_ljson.schema.schema
 import test_dummy.components.responses.default
 import test_dummy.components.schemas.schema1.schema
 import test_dummy.paths.u_lcustomu_jsecurity.get.responses.default
@@ -43,12 +44,15 @@ class ApiClient(ClientBase):
         self: typing.Self,
         *,
         param1_q: typing.Annotated[test_dummy.components.schemas.schema1.schema.schema1, Query('param1', )],
-        param2_q: typing.Annotated[test_dummy.paths.u_ltestu_l.get.parameters.u_n.schema.schema.schema, Query('param2', )],
+        param2_q: typing.Annotated[typing.Union[None, test_dummy.paths.u_ltestu_l.get.parameters.u_n.schema.schema.schema], Query('param2', )] = None,
     ) -> typing.Annotated[
-        Awaitable[test_dummy.paths.u_ltestu_l.get.responses.default.Response],
+        Awaitable[typing.Union[test_dummy.components.responses.default.Response, test_dummy.paths.u_ltestu_l.get.responses.default.Response]],
         Responses({
             'default': {
                 'application/json': test_dummy.paths.u_ltestu_l.get.responses.default.Response,
+            },
+            '300': {
+                'application/json': test_dummy.components.responses.default.Response,
             },
         })
     ]:
@@ -83,6 +87,12 @@ class ApiClient(ClientBase):
     @get('/insecure', security=[])
     async def insecure(
         self: typing.Self,
+        request_body: typing.Annotated[
+            test_dummy.components.requestBodies.dummy.content.applicationu_ljson.schema.schema.schema,
+            RequestBody({
+                'application/json': test_dummy.components.requestBodies.dummy.content.applicationu_ljson.schema.schema.schema,
+            }),
+        ],
     ) -> typing.Annotated[
         Awaitable[test_dummy.components.responses.default.Response],
         Responses({

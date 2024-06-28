@@ -5,3 +5,4 @@ docs_dir: ../docs
 
 nav:
 - index.md
+- openapi.md

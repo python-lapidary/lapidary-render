@@ -18,6 +18,8 @@ paths:
             x-count:
               schema:
                 type: integer
+        '300':
+          $ref: '#/components/responses/default'
       parameters:
       - name: param1
         in: query
@@ -34,7 +36,7 @@ paths:
           additionalProperties: false
           required:
           - prop1
-        required: true
+        required: false
   /inline_schema_properties/:
     get:
       operationId: inline_schema_properties
@@ -75,6 +77,8 @@ paths:
         - read
   /insecure:
     get:
+      requestBody:
+        $ref: '#/components/requestBodies/dummy'
       description: Operation with no security requirements
       operationId: insecure
       responses:
@@ -211,6 +215,20 @@ components:
           schema:
             $ref: '#/components/schemas/all'
       description: ''
+  requestBodies:
+    dummy:
+      required: false
+      description: ''
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              prop1:
+                type: string
+            additionalProperties: false
+            required:
+            - prop1
 
 security:
 - oauth-refresh:

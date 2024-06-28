@@ -1,0 +1,75 @@
+# OpenAPI compatibility
+
+- openapi: validated (3.0.* accepted)
+- info
+    - license: Not usable. It's up to the user to verify the accepted use.
+    - title and other fields: planned as part of project readme
+- externalDocs: planned as part of the project readme
+- servers: first server is used
+    - url: used as the base URL
+    - variables: default values are used to evaluate the server URL
+- security: implemented
+- tags: ignored, not planned
+- components
+    - schemas:
+        - title: planned as part of class docstr
+        - type
+            - [no value]: planned as primitive JSON-compatible object.
+            - object: implemented as pydantic models
+            - array: implemented as list
+            - string, integer, number, boolean: implemented as str, int, float and bool
+        - format: planned, including custom formats
+        - validation keyword: supported by pydantic
+        - allOf: needs improvement
+        - oneOf and anyOf: implemented as union
+        - not: planned for objects
+        - required: non-required properties are turned to `Union[None, $type]`
+        - additionalProperties:
+            - boolean: supported as pydantic `extra: 'allow'` or `'forbid'`
+            - schema: planned as a `Mapping` field
+        - patternProperties: planned as `Mapping` field
+        - enum: ignored; might be implemented for simple types as `Literal`
+        - description: planned as part of docstr
+        - default: if present, the property type turned to `Union[None, $type]` and has default value `None`
+            - caveat: default values are not to be sent between Web API client and server, instead they are implied be the receiving side. Lapidary could potentially fill such values in response models, but it might be expensive, so it's not planned.
+        - nullable: if true, the property type is turned to `Union[None, $type]`
+        - readOnly & writeOnly: if either is true, the property type is turned to `Union[None, $type]` and has default value `None`; planned as part of docstr
+            - caveat: readOnly properties are only to be sent to API server, and writeOnly only to be received by the client. A property might be both required one way, and invalid the other way, which could not be directly represented in Python.
+        - discriminator: ignored
+        - example: might be used as part of docstr
+        - externalDocs: planned as part of docstr
+        - deprecated: planned
+        - xml: ignored, currently not planned
+    - responses
+        - description: planned as part of docstr
+        - headers: if present, used as fields in the response envelope class
+        - content: implemented; used as operation method return type, and a way to resolve model type for a response
+        - links: ignored; might be used to generate methods in the response envelope
+    - parameters: used in-line in operations
+    - examples: ignored
+    - requestBodies
+        - description: planned as part of docstr
+        - content: implemented
+        - required: planned
+    - headers: implemented
+    - securitySchemes: implemented with httpx_auth
+        - refreshUrl: not supported
+    - links: planned
+    - callbacks: not planned
+- paths
+    - summary, description: planned as parts of docstr
+    - servers: ignored
+    - parameters
+        - name: OpenAPI parameter names are not unique and might contain characters invalid for python names, therefore they're escaped and suffix-hungarian notation is used to distinguish between cookie, header, path and query parameters
+        - in: implemented, suffix-hungarian notation is used to separate parameters
+        - required: non-required parameters are optional with default value `None`
+        - deprecated: planned
+        - allowEmtyValue: planned
+        - content: key: planned, value: processed as schema
+        - style: partially implemented
+        - allowReserved: planned
+        - schema: implemented
+        - example & examples: planned
+        - x-lapidary-name: name of a parameter in the python
+- x-lapidary-responses-global: responses that might come from any operation
+- x-lapidary-headers-global: headers accepted by any operation
