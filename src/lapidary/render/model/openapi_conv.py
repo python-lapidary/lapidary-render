@@ -1,6 +1,6 @@
 import functools
 import logging
-from collections.abc import Callable, Iterable, Mapping
+from collections.abc import Callable, Iterable, Mapping, MutableMapping
 from typing import Any, cast
 
 from mimeparse import parse_media_range
@@ -38,6 +38,8 @@ class OpenApi30Converter:
             ),
             package=str(root_package),
         )
+
+        self._response_mime_maps: MutableMapping[Stack, python.MimeMap] = {}
 
     def process(self) -> python.ClientModel:
         stack = Stack()
@@ -171,12 +173,16 @@ class OpenApi30Converter:
         stack: Stack,
     ) -> python.MimeMap:
         assert isinstance(value, openapi.Response)
+
+        if stack in self._response_mime_maps:
+            return self._response_mime_maps[stack]
+
         headers_stack = stack.push('headers')
 
         headers = [self.process_header(header, headers_stack.push(name)) for name, header in value.headers.items()]
 
         mime_map_body_only = self.process_content(value.content, stack.push('content'))
-        return {
+        mime_map = {
             mime_type: self._create_envelope_model(
                 body_type=body_type,
                 headers=headers,
@@ -184,6 +190,8 @@ class OpenApi30Converter:
             )
             for mime_type, body_type in mime_map_body_only.items()
         }
+        self._response_mime_maps[stack] = mime_map
+        return mime_map
 
     @resolve_ref
     def process_header(self, value: openapi.Header, stack: Stack) -> python.ResponseHeader:
