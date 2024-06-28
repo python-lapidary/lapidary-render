@@ -137,7 +137,7 @@ class RenderProgressBar(rybak.EventSink):
 
     def writing_file(self, template: pathlib.PurePath, target: pathlib.Path) -> None:
         super().writing_file(template, target)
-        if str(template) == '{{model.package}}/{{loop_over(model.modules).rel_path}}.py.jinja':
+        if str(template) == '{{loop_over(model.modules).file_path}}.py.jinja':
             self._progress_bar.update(1, str(target).split('/')[-2])
 
 

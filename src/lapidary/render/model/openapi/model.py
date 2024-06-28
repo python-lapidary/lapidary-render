@@ -329,7 +329,7 @@ class MediaType(ExtendableModel):
 
 class Response(ExtendableModel):
     description: str
-    headers: dict[str, Reference[Header] | Header] | None = None
+    headers: Annotated[dict[str, Reference[Header] | Header], pydantic.Field(default_factory=dict)]
     content: 'typing.Annotated[dict[str, MediaType], pydantic.Field(default_factory=dict)]'
     links: dict[str, Reference[Link] | Link] | None = None
 

@@ -1,7 +1,7 @@
 import dataclasses as dc
 import enum
 from collections.abc import Iterable, Mapping
-from typing import Any, TypeAlias
+from typing import Any, Literal, TypeAlias
 
 from ..openapi import ParameterLocation as ParamLocation
 from ..openapi import Style as ParamStyle
@@ -34,10 +34,6 @@ class Field:
 
     deprecated: bool = False
     """Currently not used"""
-
-    @property
-    def dependencies(self) -> Iterable[TypeHint]:
-        return [self.annotation.type]
 
 
 @dc.dataclass
@@ -119,11 +115,10 @@ class OperationFunction:
     responses: ResponseMap
     security: SecurityRequirements | None
 
-    @property
     def dependencies(self) -> Iterable[TypeHint]:
         yield self.request_body_type
         for param in self.params:
-            yield from param.dependencies
+            yield from param.dependencies()
         yield self.response_body_type
 
     @property
@@ -164,7 +159,6 @@ class Parameter:
     style: ParamStyle | None
     explode: bool | None
 
-    @property
     def dependencies(self) -> Iterable[TypeHint]:
         yield self.type
 
@@ -184,11 +178,10 @@ class SchemaClass:
     fields: list[Field] = dc.field(default_factory=list)
     model_type: ModelType = ModelType.model
 
-    @property
     def dependencies(self) -> Iterable[TypeHint]:
         yield self.base_type
         for prop in self.fields:
-            yield from prop.dependencies
+            yield prop.annotation.type
 
 
 @dc.dataclass
@@ -200,7 +193,6 @@ class ClientInit:
     response_map: ResponseMap = dc.field(default_factory=dict)
     security: SecurityRequirements | None = None
 
-    @property
     def dependencies(self) -> Iterable[TypeHint]:
         for mime_map in self.response_map.values():
             yield from mime_map.values()
@@ -211,8 +203,30 @@ class ClientClass:
     init_method: ClientInit
     methods: list[OperationFunction] = dc.field(default_factory=list)
 
-    @property
     def dependencies(self) -> Iterable[TypeHint]:
-        yield from self.init_method.dependencies
+        yield from self.init_method.dependencies()
         for fn in self.methods:
-            yield from fn.dependencies
+            yield from fn.dependencies()
+
+
+@dc.dataclass(frozen=True)
+class ResponseHeader:
+    name: str
+    alias: str
+    type: TypeHint
+    annotation: Literal['Cookie', 'Header', 'Link']
+
+    def dependencies(self) -> Iterable[TypeHint]:
+        yield self.type
+
+
+@dc.dataclass(frozen=True)
+class ResponseEnvelopeModel:
+    name: str
+    headers: Iterable[ResponseHeader]
+    body_type: TypeHint
+
+    def dependencies(self) -> Iterable[TypeHint]:
+        yield self.body_type
+        for header in self.headers:
+            yield from header.dependencies()

@@ -141,10 +141,10 @@ class OpenApi30SchemaConverter:
         modules: dict[python.ModulePath, list[python.SchemaClass]] = defaultdict(list)
         for pointer, schema_class_type in self.schema_types.items():
             schema_class, hint = schema_class_type
-            modules[python.ModulePath(hint.module, True)].append(schema_class)
+            modules[python.ModulePath(hint.module, is_module=True)].append(schema_class)
         return [
             python.SchemaModule(
-                path=module @ self.root_package,
+                path=module,
                 body=classes,
             )
             for module, classes in modules.items()
@@ -184,8 +184,5 @@ def resolve_type_hint(root_package: str, pointer: str | Stack) -> python.TypeHin
             (root_package,), [names.maybe_mangle_name(json_pointer.decode_json_pointer(part)) for part in parts[:-1]]
         )
     )
-    top: str | int = parts[-1]
-    if isinstance(top, int):
-        top = parts[-2] + str(top)
-    assert isinstance(top, str)
+    top = names.maybe_mangle_name(parts[-1])
     return python.TypeHint(module=module_name, name=top)

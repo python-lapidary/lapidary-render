@@ -1,6 +1,6 @@
 import functools
 import logging
-from collections.abc import Callable, Iterable, Mapping
+from collections.abc import Callable, Iterable, Mapping, MutableMapping
 from typing import Any, cast
 
 from mimeparse import parse_media_range
@@ -8,7 +8,7 @@ from mimeparse import parse_media_range
 from .. import json_pointer, names
 from . import openapi, python
 from .refs import resolve_ref
-from .schema import OpenApi30SchemaConverter
+from .schema import OpenApi30SchemaConverter, resolve_type_hint
 from .stack import Stack
 
 logger = logging.getLogger(__name__)
@@ -38,6 +38,8 @@ class OpenApi30Converter:
             ),
             package=str(root_package),
         )
+
+        self._response_mime_maps: MutableMapping[Stack, python.MimeMap] = {}
 
     def process(self) -> python.ClientModel:
         stack = Stack()
@@ -98,24 +100,34 @@ class OpenApi30Converter:
     # Not providing process_parameters (plural) as each caller calls it in a different context
     # (list, map or map with defaults)
 
+    def _process_schema_or_content(
+        self,
+        value: openapi.ParameterBase,
+        stack: Stack,
+    ) -> tuple[python.TypeHint, str]:
+        if value.schema_ and value.content:
+            raise ValueError()
+        if value.schema_:
+            media_type: str | None = None
+            # encoding: str | None = None
+            return self.schema_converter.process_schema(value.schema_, stack.push('schema'), value.required), media_type
+        elif value.content:
+            media_type, media_type_obj = next(iter(value.content.items()))
+            # encoding = media_type_obj.encoding
+            return self.schema_converter.process_schema(
+                media_type_obj.schema_, stack.push('content', media_type), value.required
+            ), media_type
+        else:
+            raise TypeError(f'{stack}: schema or content is required')
+
     @resolve_ref
     def process_parameter(self, value: openapi.Parameter, stack: Stack) -> python.Parameter:
         logger.debug('process_parameter %s', stack)
 
         if not isinstance(value, openapi.ParameterBase):
             raise TypeError(f'Expected Parameter object at {stack}, got {type(value).__name__}.')
-        if value.schema_:
-            media_type: str | None = None
-            # encoding: str | None = None
-            typ = self.schema_converter.process_schema(value.schema_, stack.push('schema'), value.required)
-        elif value.content:
-            media_type, media_type_obj = next(iter(value.content.items()))
-            # encoding = media_type_obj.encoding
-            typ = self.schema_converter.process_schema(
-                media_type_obj.schema_, stack.push('content', media_type), value.required
-            )
-        else:
-            raise TypeError(f'{stack}: schema or content is required')
+
+        typ, media_type = self._process_schema_or_content(value, stack)
 
         return python.Parameter(
             name=parameter_name(value),
@@ -161,9 +173,56 @@ class OpenApi30Converter:
         stack: Stack,
     ) -> python.MimeMap:
         assert isinstance(value, openapi.Response)
-        return self.process_content(value.content, stack.push('content'))
+
+        if stack in self._response_mime_maps:
+            return self._response_mime_maps[stack]
+
+        headers_stack = stack.push('headers')
+
+        headers = [self.process_header(header, headers_stack.push(name)) for name, header in value.headers.items()]
+
+        mime_map_body_only = self.process_content(value.content, stack.push('content'))
+        mime_map = {
+            mime_type: self._create_envelope_model(
+                body_type=body_type,
+                headers=headers,
+                stack=stack,
+            )
+            for mime_type, body_type in mime_map_body_only.items()
+        }
+        self._response_mime_maps[stack] = mime_map
+        return mime_map
+
+    @resolve_ref
+    def process_header(self, value: openapi.Header, stack: Stack) -> python.ResponseHeader:
+        alias = stack.top()
+
+        typ, _ = self._process_schema_or_content(value, stack)
+
+        return python.ResponseHeader(name=names.maybe_mangle_name(alias), alias=alias, type=typ, annotation='Header')
+
+    def _create_envelope_model(
+        self,
+        body_type: python.TypeHint,
+        headers: Iterable[python.ResponseHeader],
+        stack: Stack,
+    ) -> python.TypeHint:
+        envelope = python.ResponseEnvelopeModel(
+            name='Response',
+            headers=headers,
+            body_type=body_type,
+        )
+        type_hint = resolve_type_hint(str(self.root_package), stack.push('Response'))
+        self.target.add_response_envelope_module(
+            python.ResponseEnvelopeModule(
+                path=python.ModulePath(type_hint.module, is_module=False),
+                body=envelope,
+            )
+        )
+        return type_hint
 
     def process_content(self, value: Mapping[str, openapi.MediaType], stack: Stack) -> python.MimeMap:
+        """Returns: {mime_type: response body type hint}"""
         types = {}
         for mime, media_type in value.items():
             mime_parsed = parse_media_range(mime)

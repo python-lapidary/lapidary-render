@@ -1,5 +1,5 @@
 import dataclasses as dc
-from collections.abc import Collection, Iterable
+from collections.abc import Collection, Iterable, MutableSet
 from typing import cast
 
 
@@ -39,8 +39,8 @@ class TypeHint:
     def is_none(self) -> bool:
         return False
 
-    def _types(self) -> 'Iterable[TypeHint]':
-        return [self]
+    def dependencies(self) -> 'Iterable[TypeHint]':
+        return ()
 
     def __eq__(self, other) -> bool:
         return isinstance(other, TypeHint) and self.module == other.module and self.name == other.name
@@ -57,11 +57,8 @@ class BuiltinTypeHint(TypeHint):
         return self.full_name()
 
     @staticmethod
-    def from_str(name: str) -> 'BuiltinTypeHint':
+    def from_str(name: str) -> TypeHint:
         return BuiltinTypeHint(name=name)
-
-    def imports(self) -> list[str]:
-        return []
 
     def full_name(self):
         return self.name
@@ -84,11 +81,8 @@ class GenericTypeHint(TypeHint):
     def is_union(self) -> bool:
         return self.module == 'typing' and self.name == 'Union'
 
-    def imports(self) -> list[str]:
-        return [imp for typ in self._types() for imp in TypeHint.imports(typ) if imp != 'builtins']
-
-    def _types(self) -> Iterable[TypeHint]:
-        return [self, *[typ for arg in self.args for typ in arg._types()]]
+    def dependencies(self) -> Iterable[TypeHint]:
+        yield from self.args
 
     def __repr__(self) -> str:
         return self.full_name()
@@ -118,7 +112,7 @@ class GenericTypeHint(TypeHint):
 
 class NoneTypeHint(TypeHint):
     def __init__(self):
-        super().__init__(module=None, name=None)
+        super().__init__(module='types', name='NoneType')
 
     def full_name(self):
         return 'None'
@@ -146,3 +140,15 @@ def type_hint_or_union(types: Collection[TypeHint]) -> TypeHint:
         return next(iter(types))
     else:
         return GenericTypeHint.union_of(*types)
+
+
+def flatten(types: Iterable[TypeHint]) -> Iterable[TypeHint]:
+    all_types = set()
+    _flatten(types, all_types)
+    return GenericTypeHint.union_of(*all_types).args
+
+
+def _flatten(types: Iterable[TypeHint], target: MutableSet[TypeHint]) -> None:
+    for typ in types:
+        target.add(typ)
+        _flatten(typ.dependencies(), target)
