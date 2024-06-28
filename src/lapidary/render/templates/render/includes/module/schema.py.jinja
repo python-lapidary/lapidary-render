@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-import typing
-
 import lapidary.runtime
 import pydantic
-import typing_extensions
+import typing_extensions as typing
 
 {%- for imp in item.imports %}
 import {{ imp }}

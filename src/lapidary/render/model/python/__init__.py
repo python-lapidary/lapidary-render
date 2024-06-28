@@ -95,13 +95,13 @@ class ClientModel:
     def _modules(self) -> Iterable[AbstractModule]:
         known_modules = set()
         for mod in itertools.chain(self.schemas, self._response_envelopes):
-            assert mod.path not in known_modules
+            assert mod.path not in known_modules, mod.path
             known_modules.add(mod.path)
             yield mod
 
         for package in self.packages():
-            assert package not in known_modules
-            yield EmptyModule(path=package, body=None)
+            if package not in known_modules:
+                yield EmptyModule(path=package, body=None)
 
     def add_response_envelope_module(self, mod: ResponseEnvelopeModule):
         self._response_envelopes.append(mod)

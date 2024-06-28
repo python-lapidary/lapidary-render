@@ -4,12 +4,13 @@ from collections.abc import Iterable, Mapping
 
 from .model import ClientClass, ResponseEnvelopeModel, SchemaClass
 from .module_path import ModulePath
-from .type_hint import GenericTypeHint, TypeHint
+from .type_hint import NONE, TypeHint, flatten
 
 template_imports = [
     'builtins',
     'typing',
     'typing_extensions',
+    'lapidary.runtime',
 ]
 
 
@@ -19,13 +20,23 @@ class AbstractModule[Body](abc.ABC):
     module_type: str
     body: Body = dc.field()
 
-    @property
     @abc.abstractmethod
-    def imports(self) -> Iterable[str]:
+    def dependencies(self) -> Iterable[TypeHint]:
         pass
 
     @property
-    def rel_path(self) -> str:
+    def imports(self) -> Iterable[str]:
+        dependencies = flatten(self.dependencies())
+        return sorted(
+            {
+                dep.module
+                for dep in dependencies
+                if dep.module not in template_imports and dep != NONE and dep.module != str(self.path)
+            }
+        )
+
+    @property
+    def file_path(self) -> str:
         return self.path.to_path()
 
 
@@ -34,20 +45,16 @@ class AuthModule(AbstractModule[Mapping[str, TypeHint]]):
     module_type = 'auth'
 
     @property
-    def imports(self) -> Iterable[str]:
-        yield from ()
+    def dependencies(self) -> Iterable[TypeHint]:
+        return self.body.values()
 
 
 @dc.dataclass(frozen=True, kw_only=True)
 class ClientModule(AbstractModule[ClientClass]):
     module_type: str = dc.field(default='client')
 
-    @property
-    def imports(self) -> Iterable[str]:
-        dependencies = GenericTypeHint.union_of(*self.body.dependencies).args  # flatten unions
-        imports = sorted({imp for dep in dependencies if dep for imp in dep.imports() if imp not in template_imports})
-
-        return imports
+    def dependencies(self) -> Iterable[TypeHint]:
+        return self.body.dependencies()
 
 
 @dc.dataclass(frozen=True, kw_only=True)
@@ -57,18 +64,16 @@ class EmptyModule(AbstractModule[None]):
     module_type: str = dc.field(default='empty')
     body: None = None
 
-    @property
-    def imports(self) -> Iterable[str]:
-        yield from ()
+    def dependencies(self) -> Iterable[TypeHint]:
+        return ()
 
 
 @dc.dataclass(frozen=True, kw_only=True)
 class ResponseEnvelopeModule(AbstractModule[ResponseEnvelopeModel]):
     module_type: str = dc.field(default='response')
 
-    @property
-    def imports(self) -> Iterable[str]:
-        yield from self.body.dependencies
+    def dependencies(self) -> Iterable[TypeHint]:
+        return self.body.dependencies()
 
 
 @dc.dataclass(frozen=True, kw_only=True)
@@ -80,14 +85,6 @@ class SchemaModule(AbstractModule[Iterable[SchemaClass]]):
 
     module_type: str = 'schema'
 
-    @property
-    def imports(self) -> Iterable[str]:
-        dependencies = GenericTypeHint.union_of(
-            *[dep for cls in self.body for dep in cls.dependencies]
-        ).args  # flatten unions
-        imports = sorted({imp for dep in dependencies if dep for imp in dep.imports() if imp not in template_imports})
-        path_str = str(self.path)
-        if path_str in imports:
-            imports.remove(path_str)
-
-        return imports
+    def dependencies(self) -> Iterable[TypeHint]:
+        for schema in self.body:
+            yield from schema.dependencies()

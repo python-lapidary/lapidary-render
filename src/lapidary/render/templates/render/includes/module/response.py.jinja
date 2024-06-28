@@ -1,9 +1,12 @@
 {% import 'includes/type_hint.py.jinja' as th -%}
 
 from __future__ import annotations
-import typing_extensions as typing
 
+import typing_extensions as typing
 from lapidary.runtime import *
+{%- for imp in item.imports %}
+import {{ imp }}
+{%- endfor %}
 
 
 class {{item.body.name}}(ResponseEnvelope):
