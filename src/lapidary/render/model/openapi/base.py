@@ -48,6 +48,8 @@ class ModelWithPatternProperties(BaseModel):
 
             pattern_props = {}
             for key, item in value.items():
+                if not isinstance(key, str):
+                    raise ValueError(key)
                 if pattern.search(key):
                     pattern_props[key] = item
             for key in pattern_props:
