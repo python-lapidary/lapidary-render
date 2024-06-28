@@ -33,7 +33,9 @@ def test_schema_str(document: openapi.OpenApiModel) -> None:
         operations['get'].responses, stack.Stack(('#', 'paths', '/user/login', 'get', 'responses'))
     )
 
-    assert responses['200']['application/json'] == python.BuiltinTypeHint.from_str('str')
+    assert responses['200']['application/json'] == python.TypeHint(
+        module='petstore.paths.u_luseru_llogin.get.responses.u_o00', name='Response'
+    )
     assert converter.schema_converter.schema_modules == []
 
 

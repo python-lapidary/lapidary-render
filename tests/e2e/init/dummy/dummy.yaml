@@ -18,7 +18,6 @@ paths:
             x-count:
               schema:
                 type: integer
-
       parameters:
       - name: param1
         in: query
@@ -36,6 +35,28 @@ paths:
           required:
           - prop1
         required: true
+  /inline_schema_properties/:
+    get:
+      operationId: inline_schema_properties
+      responses:
+        default:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  prop1:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      prop2:
+                        type: string
+                    required:
+                    - prop2
+                additionalProperties: false
+                required:
+                - prop1
   /custom-security:
     get:
       description: Operation with its own security defined
@@ -45,7 +66,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/all'
+                type: array
+                items:
+                  $ref: '#/components/schemas/all'
           description: ''
       security:
       - oauth:
@@ -53,15 +76,11 @@ paths:
   /insecure:
     get:
       description: Operation with no security requirements
-      operationId: customSecurity
+      operationId: insecure
       responses:
         default:
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/all'
-          description: ''
-      security: []
+          $ref: '#/components/responses/default'
+      security: [ ]
 
 
 components:
@@ -185,6 +204,13 @@ components:
     http_digest:
       type: http
       scheme: digest
+  responses:
+    default:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/all'
+      description: ''
 
 security:
 - oauth-refresh:
