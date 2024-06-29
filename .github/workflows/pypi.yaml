@@ -20,7 +20,8 @@ jobs:
       with:
         python-version: 3.12
         poetry-version: 1.8.3
-    - name: Publish to PyPI using OIDC
-      run: |
-        poetry config pypi-token.pypi ${{ secrets.PYPI_PUBLISH_TOKEN }}
-        poetry publish --build
+    - name: Mint token
+      id: mint
+      uses: tschm/token-mint-action@v1.0.3
+    - name: Publish the package
+      run: poetry publish --build -u __token__ -p '${{ steps.mint.outputs.api-token }}'
