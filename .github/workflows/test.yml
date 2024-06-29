@@ -1,3 +1,5 @@
+name: Test
+
 on:
   push:
     branches:
@@ -9,25 +11,15 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.12'
-
     - name: Install Poetry
-      uses: abatilo/actions-poetry@v3
+      uses: packetcoders/action-setup-cache-python-poetry@main
       with:
-        poetry-version: '1.8.3'
-
-    - name: Install dependencies
-      run: |
-        poetry install
-
+        python-version: 3.12
+        poetry-version: 1.8.3
+    - name: Install project
+      run: poetry install
     - name: Run pytest
-      run: |
-        poetry run pytest
+      run: poetry run pytest
