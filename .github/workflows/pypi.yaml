@@ -1,0 +1,26 @@
+name: Publish Poetry Package to PyPI
+
+on:
+  push:
+    tags:
+    - 'v*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    - name: Install Poetry
+      uses: packetcoders/action-setup-cache-python-poetry@main
+      with:
+        python-version: 3.12
+        poetry-version: 1.8.3
+    - name: Publish to PyPI using OIDC
+      run: |
+        poetry config pypi-token.pypi ${{ secrets.PYPI_PUBLISH_TOKEN }}
+        poetry publish --build
