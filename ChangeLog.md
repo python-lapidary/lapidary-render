@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fix circular import error in generated response envelope module.
+- Use the up-to-date version of lapidary when initializing projects.
 
 
 ## [0.10.0] - 2034-06-29
@@ -22,6 +23,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Progress bar for processing paths and rendering schema files;
 - Support for response headers returned as response envelope model.
 - Old files in `gen` directory are now removed during `render`.
+
+### Changed
+
+- Generate code for Lapidary 0.10.0
 
 ### Removed
 
