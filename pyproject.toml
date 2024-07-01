@@ -72,7 +72,9 @@ quote-style = "single"
 [tool.mypy]
 mypy_path = "src"
 namespace_packages = true
+ignore_missing_imports = true
 python_version = "3.12"
+packages = ['lapidary.render']
 exclude = [
     "src/lapidary/render/templates/",
     "tests/e2e",
