@@ -13,19 +13,19 @@ from lapidary.runtime import *
 import test_petstore.components.schemas.Order.schema
 import test_petstore.components.schemas.Pet.schema
 import test_petstore.components.schemas.User.schema
-import test_petstore.paths.u_lpet.post.responses.u_o00
-import test_petstore.paths.u_lpet.put.responses.u_o00
-import test_petstore.paths.u_lpetu_lfindByStatus.get.responses.u_o00
-import test_petstore.paths.u_lpetu_lfindByTags.get.responses.u_o00
-import test_petstore.paths.u_lpetu_lu_1zpetIdu_21.get.responses.u_o00
-import test_petstore.paths.u_lpetu_lu_1zpetIdu_21u_luploadImage.post.responses.u_o00
-import test_petstore.paths.u_lstoreu_linventory.get.responses.u_o00
-import test_petstore.paths.u_lstoreu_lorder.post.responses.u_o00
-import test_petstore.paths.u_lstoreu_lorderu_lu_1zorderIdu_21.get.responses.u_o00
-import test_petstore.paths.u_luser.post.responses.default
-import test_petstore.paths.u_luseru_lcreateWithList.post.responses.u_o00
-import test_petstore.paths.u_luseru_llogin.get.responses.u_o00
-import test_petstore.paths.u_luseru_lu_1zusernameu_21.get.responses.u_o00
+import test_petstore.paths.u_lpet.post.responses.u_o00.response
+import test_petstore.paths.u_lpet.put.responses.u_o00.response
+import test_petstore.paths.u_lpetu_lfindByStatus.get.responses.u_o00.response
+import test_petstore.paths.u_lpetu_lfindByTags.get.responses.u_o00.response
+import test_petstore.paths.u_lpetu_lu_1zpetIdu_21.get.responses.u_o00.response
+import test_petstore.paths.u_lpetu_lu_1zpetIdu_21u_luploadImage.post.responses.u_o00.response
+import test_petstore.paths.u_lstoreu_linventory.get.responses.u_o00.response
+import test_petstore.paths.u_lstoreu_lorder.post.responses.u_o00.response
+import test_petstore.paths.u_lstoreu_lorderu_lu_1zorderIdu_21.get.responses.u_o00.response
+import test_petstore.paths.u_luser.post.responses.default.response
+import test_petstore.paths.u_luseru_lcreateWithList.post.responses.u_o00.response
+import test_petstore.paths.u_luseru_llogin.get.responses.u_o00.response
+import test_petstore.paths.u_luseru_lu_1zusernameu_21.get.responses.u_o00.response
 
 
 class ApiClient(ClientBase):
@@ -57,10 +57,10 @@ class ApiClient(ClientBase):
             }),
         ],
     ) -> typing.Annotated[
-        Awaitable[test_petstore.paths.u_lpet.put.responses.u_o00.Response],
+        Awaitable[test_petstore.paths.u_lpet.put.responses.u_o00.response.Response],
         Responses({
             '200': {
-                'application/json': test_petstore.paths.u_lpet.put.responses.u_o00.Response,
+                'application/json': test_petstore.paths.u_lpet.put.responses.u_o00.response.Response,
             },
             '400': {
             },
@@ -82,10 +82,10 @@ class ApiClient(ClientBase):
             }),
         ],
     ) -> typing.Annotated[
-        Awaitable[test_petstore.paths.u_lpet.post.responses.u_o00.Response],
+        Awaitable[test_petstore.paths.u_lpet.post.responses.u_o00.response.Response],
         Responses({
             '200': {
-                'application/json': test_petstore.paths.u_lpet.post.responses.u_o00.Response,
+                'application/json': test_petstore.paths.u_lpet.post.responses.u_o00.response.Response,
             },
             '405': {
             },
@@ -99,10 +99,10 @@ class ApiClient(ClientBase):
         *,
         status_q: typing.Annotated[typing.Union[None, str], Query('status', explode=True,)] = None,
     ) -> typing.Annotated[
-        Awaitable[test_petstore.paths.u_lpetu_lfindByStatus.get.responses.u_o00.Response],
+        Awaitable[test_petstore.paths.u_lpetu_lfindByStatus.get.responses.u_o00.response.Response],
         Responses({
             '200': {
-                'application/json': test_petstore.paths.u_lpetu_lfindByStatus.get.responses.u_o00.Response,
+                'application/json': test_petstore.paths.u_lpetu_lfindByStatus.get.responses.u_o00.response.Response,
             },
             '400': {
             },
@@ -116,10 +116,10 @@ class ApiClient(ClientBase):
         *,
         tags_q: typing.Annotated[typing.Union[None, list[str]], Query('tags', explode=True,)] = None,
     ) -> typing.Annotated[
-        Awaitable[test_petstore.paths.u_lpetu_lfindByTags.get.responses.u_o00.Response],
+        Awaitable[test_petstore.paths.u_lpetu_lfindByTags.get.responses.u_o00.response.Response],
         Responses({
             '200': {
-                'application/json': test_petstore.paths.u_lpetu_lfindByTags.get.responses.u_o00.Response,
+                'application/json': test_petstore.paths.u_lpetu_lfindByTags.get.responses.u_o00.response.Response,
             },
             '400': {
             },
@@ -133,10 +133,10 @@ class ApiClient(ClientBase):
         *,
         petId_p: typing.Annotated[int, Path('petId', )],
     ) -> typing.Annotated[
-        Awaitable[test_petstore.paths.u_lpetu_lu_1zpetIdu_21.get.responses.u_o00.Response],
+        Awaitable[test_petstore.paths.u_lpetu_lu_1zpetIdu_21.get.responses.u_o00.response.Response],
         Responses({
             '200': {
-                'application/json': test_petstore.paths.u_lpetu_lu_1zpetIdu_21.get.responses.u_o00.Response,
+                'application/json': test_petstore.paths.u_lpetu_lu_1zpetIdu_21.get.responses.u_o00.response.Response,
             },
             '400': {
             },
@@ -184,10 +184,10 @@ class ApiClient(ClientBase):
         petId_p: typing.Annotated[int, Path('petId', )],
         additionalMetadata_q: typing.Annotated[typing.Union[None, str], Query('additionalMetadata', )] = None,
     ) -> typing.Annotated[
-        Awaitable[test_petstore.paths.u_lpetu_lu_1zpetIdu_21u_luploadImage.post.responses.u_o00.Response],
+        Awaitable[test_petstore.paths.u_lpetu_lu_1zpetIdu_21u_luploadImage.post.responses.u_o00.response.Response],
         Responses({
             '200': {
-                'application/json': test_petstore.paths.u_lpetu_lu_1zpetIdu_21u_luploadImage.post.responses.u_o00.Response,
+                'application/json': test_petstore.paths.u_lpetu_lu_1zpetIdu_21u_luploadImage.post.responses.u_o00.response.Response,
             },
         })
     ]:
@@ -197,10 +197,10 @@ class ApiClient(ClientBase):
     async def getInventory(
         self: typing.Self,
     ) -> typing.Annotated[
-        Awaitable[test_petstore.paths.u_lstoreu_linventory.get.responses.u_o00.Response],
+        Awaitable[test_petstore.paths.u_lstoreu_linventory.get.responses.u_o00.response.Response],
         Responses({
             '200': {
-                'application/json': test_petstore.paths.u_lstoreu_linventory.get.responses.u_o00.Response,
+                'application/json': test_petstore.paths.u_lstoreu_linventory.get.responses.u_o00.response.Response,
             },
         })
     ]:
@@ -216,10 +216,10 @@ class ApiClient(ClientBase):
             }),
         ],
     ) -> typing.Annotated[
-        Awaitable[test_petstore.paths.u_lstoreu_lorder.post.responses.u_o00.Response],
+        Awaitable[test_petstore.paths.u_lstoreu_lorder.post.responses.u_o00.response.Response],
         Responses({
             '200': {
-                'application/json': test_petstore.paths.u_lstoreu_lorder.post.responses.u_o00.Response,
+                'application/json': test_petstore.paths.u_lstoreu_lorder.post.responses.u_o00.response.Response,
             },
             '405': {
             },
@@ -233,10 +233,10 @@ class ApiClient(ClientBase):
         *,
         orderId_p: typing.Annotated[int, Path('orderId', )],
     ) -> typing.Annotated[
-        Awaitable[test_petstore.paths.u_lstoreu_lorderu_lu_1zorderIdu_21.get.responses.u_o00.Response],
+        Awaitable[test_petstore.paths.u_lstoreu_lorderu_lu_1zorderIdu_21.get.responses.u_o00.response.Response],
         Responses({
             '200': {
-                'application/json': test_petstore.paths.u_lstoreu_lorderu_lu_1zorderIdu_21.get.responses.u_o00.Response,
+                'application/json': test_petstore.paths.u_lstoreu_lorderu_lu_1zorderIdu_21.get.responses.u_o00.response.Response,
             },
             '400': {
             },
@@ -272,10 +272,10 @@ class ApiClient(ClientBase):
             }),
         ],
     ) -> typing.Annotated[
-        Awaitable[test_petstore.paths.u_luser.post.responses.default.Response],
+        Awaitable[test_petstore.paths.u_luser.post.responses.default.response.Response],
         Responses({
             'default': {
-                'application/json': test_petstore.paths.u_luser.post.responses.default.Response,
+                'application/json': test_petstore.paths.u_luser.post.responses.default.response.Response,
             },
         })
     ]:
@@ -291,10 +291,10 @@ class ApiClient(ClientBase):
             }),
         ],
     ) -> typing.Annotated[
-        Awaitable[test_petstore.paths.u_luseru_lcreateWithList.post.responses.u_o00.Response],
+        Awaitable[test_petstore.paths.u_luseru_lcreateWithList.post.responses.u_o00.response.Response],
         Responses({
             '200': {
-                'application/json': test_petstore.paths.u_luseru_lcreateWithList.post.responses.u_o00.Response,
+                'application/json': test_petstore.paths.u_luseru_lcreateWithList.post.responses.u_o00.response.Response,
             },
             'default': {
             },
@@ -309,10 +309,10 @@ class ApiClient(ClientBase):
         username_q: typing.Annotated[typing.Union[None, str], Query('username', )] = None,
         password_q: typing.Annotated[typing.Union[None, str], Query('password', )] = None,
     ) -> typing.Annotated[
-        Awaitable[test_petstore.paths.u_luseru_llogin.get.responses.u_o00.Response],
+        Awaitable[test_petstore.paths.u_luseru_llogin.get.responses.u_o00.response.Response],
         Responses({
             '200': {
-                'application/json': test_petstore.paths.u_luseru_llogin.get.responses.u_o00.Response,
+                'application/json': test_petstore.paths.u_luseru_llogin.get.responses.u_o00.response.Response,
             },
             '400': {
             },
@@ -338,10 +338,10 @@ class ApiClient(ClientBase):
         *,
         username_p: typing.Annotated[str, Path('username', )],
     ) -> typing.Annotated[
-        Awaitable[test_petstore.paths.u_luseru_lu_1zusernameu_21.get.responses.u_o00.Response],
+        Awaitable[test_petstore.paths.u_luseru_lu_1zusernameu_21.get.responses.u_o00.response.Response],
         Responses({
             '200': {
-                'application/json': test_petstore.paths.u_luseru_lu_1zusernameu_21.get.responses.u_o00.Response,
+                'application/json': test_petstore.paths.u_luseru_lu_1zusernameu_21.get.responses.u_o00.response.Response,
             },
             '400': {
             },

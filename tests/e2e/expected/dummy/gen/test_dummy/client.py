@@ -11,12 +11,12 @@ import typing_extensions as typing
 from lapidary.runtime import *
 
 import test_dummy.components.requestBodies.dummy.content.applicationu_ljson.schema.schema
-import test_dummy.components.responses.default
+import test_dummy.components.responses.default.response
 import test_dummy.components.schemas.schema1.schema
-import test_dummy.paths.u_lcustomu_jsecurity.get.responses.default
-import test_dummy.paths.u_linline_schema_propertiesu_l.get.responses.default
+import test_dummy.paths.u_lcustomu_jsecurity.get.responses.default.response
+import test_dummy.paths.u_linline_schema_propertiesu_l.get.responses.default.response
 import test_dummy.paths.u_ltestu_l.get.parameters.u_n.schema.schema
-import test_dummy.paths.u_ltestu_l.get.responses.default
+import test_dummy.paths.u_ltestu_l.get.responses.default.response
 
 
 class ApiClient(ClientBase):
@@ -46,13 +46,13 @@ class ApiClient(ClientBase):
         param1_q: typing.Annotated[test_dummy.components.schemas.schema1.schema.schema1, Query('param1', )],
         param2_q: typing.Annotated[typing.Union[None, test_dummy.paths.u_ltestu_l.get.parameters.u_n.schema.schema.schema], Query('param2', )] = None,
     ) -> typing.Annotated[
-        Awaitable[typing.Union[test_dummy.components.responses.default.Response, test_dummy.paths.u_ltestu_l.get.responses.default.Response]],
+        Awaitable[typing.Union[test_dummy.components.responses.default.response.Response, test_dummy.paths.u_ltestu_l.get.responses.default.response.Response]],
         Responses({
             'default': {
-                'application/json': test_dummy.paths.u_ltestu_l.get.responses.default.Response,
+                'application/json': test_dummy.paths.u_ltestu_l.get.responses.default.response.Response,
             },
             '300': {
-                'application/json': test_dummy.components.responses.default.Response,
+                'application/json': test_dummy.components.responses.default.response.Response,
             },
         })
     ]:
@@ -62,10 +62,10 @@ class ApiClient(ClientBase):
     async def inline_schema_properties(
         self: typing.Self,
     ) -> typing.Annotated[
-        Awaitable[test_dummy.paths.u_linline_schema_propertiesu_l.get.responses.default.Response],
+        Awaitable[test_dummy.paths.u_linline_schema_propertiesu_l.get.responses.default.response.Response],
         Responses({
             'default': {
-                'application/json': test_dummy.paths.u_linline_schema_propertiesu_l.get.responses.default.Response,
+                'application/json': test_dummy.paths.u_linline_schema_propertiesu_l.get.responses.default.response.Response,
             },
         })
     ]:
@@ -75,10 +75,10 @@ class ApiClient(ClientBase):
     async def customSecurity(
         self: typing.Self,
     ) -> typing.Annotated[
-        Awaitable[test_dummy.paths.u_lcustomu_jsecurity.get.responses.default.Response],
+        Awaitable[test_dummy.paths.u_lcustomu_jsecurity.get.responses.default.response.Response],
         Responses({
             'default': {
-                'application/json': test_dummy.paths.u_lcustomu_jsecurity.get.responses.default.Response,
+                'application/json': test_dummy.paths.u_lcustomu_jsecurity.get.responses.default.response.Response,
             },
         })
     ]:
@@ -94,10 +94,10 @@ class ApiClient(ClientBase):
             }),
         ],
     ) -> typing.Annotated[
-        Awaitable[test_dummy.components.responses.default.Response],
+        Awaitable[test_dummy.components.responses.default.response.Response],
         Responses({
             'default': {
-                'application/json': test_dummy.components.responses.default.Response,
+                'application/json': test_dummy.components.responses.default.response.Response,
             },
         })
     ]:

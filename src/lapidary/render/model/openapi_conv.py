@@ -213,10 +213,10 @@ class OpenApi30Converter:
             headers=headers,
             body_type=body_type,
         )
-        type_hint = resolve_type_hint(str(self.root_package), stack.push('Response'))
+        type_hint = resolve_type_hint(str(self.root_package), stack.push('response', 'Response'))
         self.target.add_response_envelope_module(
             python.ResponseEnvelopeModule(
-                path=python.ModulePath(type_hint.module, is_module=False),
+                path=python.ModulePath(type_hint.module, is_module=True),
                 body=envelope,
             )
         )
