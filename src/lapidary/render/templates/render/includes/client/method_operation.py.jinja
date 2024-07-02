@@ -30,7 +30,7 @@
         {{- render_param(param) }}
 {%- endfor %}
     ) -> typing.Annotated[
-        Awaitable[{{ th.type_hint(func.response_body_type, path) }}],
+        {{ th.type_hint(func.response_body_type, path) }},
         Responses({
             {%- for code, mime_map in func.responses.items() %}
             '{{ code }}': {{ render_mime_map(mime_map) | indent(12, False) }},
