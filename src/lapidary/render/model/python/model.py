@@ -5,7 +5,7 @@ from typing import Any, Literal, TypeAlias
 
 from ..openapi import ParameterLocation as ParamLocation
 from ..openapi import Style as ParamStyle
-from .type_hint import NONE, TypeHint, type_hint_or_union
+from .type_hint import NONE, TypeHint, union_of
 
 MimeType: TypeAlias = str
 ResponseCode: TypeAlias = str
@@ -126,14 +126,14 @@ class OperationFunction:
         if not self.request_body:
             return NONE
         types = self.request_body.values()
-        return type_hint_or_union(types)
+        return union_of(*types)
 
     @property
     def response_body_type(self) -> TypeHint:
         types = set()
         for mime_map in self.responses.values():
             types.update(set(mime_map.values()))
-        return type_hint_or_union(types)
+        return union_of(*types)
 
 
 @dc.dataclass(kw_only=True)

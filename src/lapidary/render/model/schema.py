@@ -59,7 +59,7 @@ class OpenApi30SchemaConverter:
 
         typ = self.process_schema(value, stack)
         if not in_required:
-            typ = python.GenericTypeHint.union_of(typ, python.NONE)
+            typ = python.union_of(typ, python.NONE)
 
         field_props = {}
 
@@ -109,7 +109,7 @@ class OpenApi30SchemaConverter:
         typ = self._process_schema(value, stack)
 
         if value.nullable or not required or value.read_only or value.write_only:
-            typ = python.GenericTypeHint.union_of(typ, python.NONE)
+            typ = python.union_of(typ, python.NONE)
 
         return typ
 
@@ -118,7 +118,7 @@ class OpenApi30SchemaConverter:
         stack: Stack,
         one_of: Iterable[openapi.Reference[openapi.Schema] | openapi.Schema],
     ) -> python.TypeHint:
-        return python.GenericTypeHint.union_of(
+        return python.union_of(
             *tuple(self.process_schema(sub_schema, stack.push(str(idx))) for idx, sub_schema in enumerate(one_of))
         )
 
@@ -146,11 +146,11 @@ class OpenApi30SchemaConverter:
         elif value.not_:
             raise NotImplementedError(stack.push('not'))
         elif value.type in PRIMITIVE_TYPES:
-            return python.BuiltinTypeHint.from_str(PRIMITIVE_TYPES[value.type].__name__)
+            return python.TypeHint(module='builtins', name=PRIMITIVE_TYPES[value.type].__name__)
         elif value.type == openapi.Type.object:
             return self._process_schema_object(value, stack)
         elif value.type == openapi.Type.array:
-            return python.GenericTypeHint.list_of(self.process_schema(value.items, stack.push('items')))
+            return python.list_of(self.process_schema(value.items, stack.push('items')))
         elif value.type is None:
             return python.TypeHint.from_str('typing:Any')
         else:

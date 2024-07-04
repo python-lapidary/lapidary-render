@@ -4,16 +4,15 @@ __all__ = (
     'Auth',
     'AuthModule',
     'AuthorizationCodeOAuth2Flow',
-    'BuiltinTypeHint',
     'ClientClass',
     'ClientCredentialsOAuth2Flow',
     'ClientInit',
     'ClientModule',
     'Field',
-    'GenericTypeHint',
     'HttpBasicAuth',
     'HttpDigestAuth',
     'ImplicitOAuth2Flow',
+    'list_of',
     'MimeMap',
     'ModelType',
     'ModulePath',
@@ -29,7 +28,7 @@ __all__ = (
     'SchemaModule',
     'SecurityRequirements',
     'TypeHint',
-    'type_hint_or_union',
+    'union_of',
 )
 
 import dataclasses as dc
@@ -64,7 +63,7 @@ from .model import (
 )
 from .module import AbstractModule, AuthModule, ClientModule, EmptyModule, ResponseEnvelopeModule, SchemaModule
 from .module_path import ModulePath
-from .type_hint import NONE, BuiltinTypeHint, GenericTypeHint, TypeHint, type_hint_or_union
+from .type_hint import NONE, GenericTypeHint, TypeHint, list_of, union_of
 
 
 @dc.dataclass
