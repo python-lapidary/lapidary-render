@@ -21,4 +21,4 @@ class prop2(lapidary.runtime.ModelBase):
         pydantic.Field(
             alias='non/alpha',
         )
-    ]
+    ] = None

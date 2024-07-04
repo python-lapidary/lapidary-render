@@ -54,23 +54,43 @@ class OpenApi30SchemaConverter:
         return type_hint
 
     @resolve_ref
-    def process_property(self, value: openapi.Schema, stack: Stack, prop_name: str, required: bool) -> python.Field:
+    def process_property(self, value: openapi.Schema, stack: Stack, prop_name: str, in_required: bool) -> python.Field:
         name = names.maybe_mangle_name(prop_name)
 
-        field_props = {FIELD_PROPS[k]: getattr(value, k) for k in value.model_fields_set if k in FIELD_PROPS}
-        for k, v in field_props.items():
+        typ = self.process_schema(value, stack)
+        if not in_required:
+            typ = python.GenericTypeHint.union_of(typ, python.NONE)
+
+        field_props = {}
+
+        for k in value.model_fields_set:
+            v = getattr(value, k)
+
+            if k == 'maximum':
+                field_prop = 'lt' if value.exclusive_maximum else 'le'
+                field_props[field_prop] = v
+                continue
+            if k == 'minimum':
+                field_prop = 'gt' if value.exclusive_minimum else 'ge'
+                field_props[field_prop] = v
+                continue
+            if k not in FIELD_PROPS:
+                continue
+
+            field_prop = FIELD_PROPS[k]
+
             if isinstance(v, str):
-                if k == 'pattern':
-                    field_props[k] = f"r'{v}'"
+                if field_prop == 'pattern':
+                    field_props[field_prop] = f"r'{v}'"
                 else:
-                    field_props[k] = f"'{v}'"
+                    field_props[field_prop] = f"'{v}'"
+            else:
+                field_props[field_prop] = v
 
         if name != prop_name:
             field_props['alias'] = f"'{prop_name}'"
 
-        typ = self.process_schema(value, stack)
-        if value.nullable or not required or value.read_only or value.write_only:
-            typ = python.GenericTypeHint.union_of(typ, python.NONE)
+        required = in_required and not (value.read_only or value.write_only)
 
         return python.Field(
             name=name,
@@ -88,7 +108,7 @@ class OpenApi30SchemaConverter:
 
         typ = self._process_schema(value, stack)
 
-        if value.nullable or not required:
+        if value.nullable or not required or value.read_only or value.write_only:
             typ = python.GenericTypeHint.union_of(typ, python.NONE)
 
         return typ
