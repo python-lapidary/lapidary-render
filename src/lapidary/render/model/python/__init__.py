@@ -1,35 +1,4 @@
-__all__ = (
-    'Annotation',
-    'ApiKeyAuth',
-    'Auth',
-    'AuthModule',
-    'AuthorizationCodeOAuth2Flow',
-    'ClientClass',
-    'ClientCredentialsOAuth2Flow',
-    'ClientInit',
-    'ClientModule',
-    'Field',
-    'HttpBasicAuth',
-    'HttpDigestAuth',
-    'ImplicitOAuth2Flow',
-    'list_of',
-    'MimeMap',
-    'ModelType',
-    'ModulePath',
-    'NONE',
-    'OperationFunction',
-    'ParamLocation',
-    'Parameter',
-    'PasswordOAuth2Flow',
-    'ResponseEnvelopeModel',
-    'ResponseHeader',
-    'ResponseMap',
-    'SchemaClass',
-    'SchemaModule',
-    'SecurityRequirements',
-    'TypeHint',
-    'union_of',
-)
+# ignore: F401
 
 import dataclasses as dc
 import itertools
