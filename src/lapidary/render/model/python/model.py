@@ -120,18 +120,23 @@ ResponseMap: typing.TypeAlias = Mapping[ResponseCode, Response]
 
 @dc.dataclass
 class OperationFunction:
-    name: str
+    # decorator
     method: str
     path: str
-    request_body: MimeMap
-    params: Iterable['Parameter']
-    responses: ResponseMap
     security: SecurityRequirements | None
+
+    # python signature
+    name: str
+    params: Iterable['MetaField']
     return_type: TypeHint
+
+    # lapidary annotations
+    # request_body also makes a parameter
+    request_body: MimeMap
+    responses: ResponseMap
 
     def dependencies(self) -> Iterable[TypeHint]:
         yield self.request_body_type
-        yield self.return_type
         for param in self.params:
             yield from param.dependencies()
         for response in self.responses.values():
@@ -146,7 +151,11 @@ class OperationFunction:
 
 
 @dc.dataclass(kw_only=True)
-class Parameter:
+class MetaField:
+    """
+    HTTP metadata field - headers, query and path parameters
+    """
+
     name: str
     """Python name"""
 
@@ -160,7 +169,8 @@ class Parameter:
     Required params are rendered before optional, and optional have default value None
     """
 
-    in_: ParamLocation
+    annotation: Literal['Cookie', 'Header', 'Headers', 'Link', 'Path', 'Query']
+
     default: Any = None
     """Default value, used only for global headers."""
 
@@ -228,7 +238,6 @@ class ResponseHeader:
     name: str
     alias: str
     type: TypeHint
-    annotation: Literal['Cookie', 'Header', 'Link']
 
     def dependencies(self) -> Iterable[TypeHint]:
         yield self.type
@@ -237,8 +246,8 @@ class ResponseHeader:
 @dc.dataclass(frozen=True)
 class MetadataModel:
     name: str
-    headers: Iterable[ResponseHeader]
+    fields: Iterable[MetaField]
 
     def dependencies(self) -> Iterable[TypeHint]:
-        for header in self.headers:
+        for header in self.fields:
             yield from header.dependencies()

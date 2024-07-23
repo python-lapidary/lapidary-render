@@ -12,7 +12,7 @@ import {{ imp }}
 {%- for model in item.body %}
 
 class {{ model.name }}(pydantic.BaseModel):
-    {% for header in model.headers -%}
-    {{ header.name }}: typing.Annotated[{{ th.type_hint(header.type) }}, {{header.annotation}}('{{header.alias}}')]
+    {% for field in model.fields -%}
+    {{ field.name }}: typing.Annotated[{{ th.type_hint(field.type) }}, {{field.annotation}}('{{field.alias}}')]
     {% endfor %}
 {%- endfor -%}

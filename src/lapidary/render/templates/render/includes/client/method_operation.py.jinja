@@ -1,7 +1,7 @@
 {%- import 'includes/type_hint.py.jinja' as th %}
 
 {%- macro render_param(param) %}
-        {{ param.name }}: typing.Annotated[{{ th.type_hint(param.type, path) }}, {{ param.in_.value | capitalize }}(
+        {{ param.name }}: typing.Annotated[{{ th.type_hint(param.type, path) }}, {{ param.annotation }}(
     {%- if param.alias  %}'{{ param.alias }}', {% endif %}
     {%- if param.style %}style='{{ param.style.value }}',{% endif %}
     {%- if param.explode %}explode={{ param.explode }},{% endif -%}

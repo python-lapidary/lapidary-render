@@ -146,3 +146,7 @@ def tuple_of(*types: TypeHint) -> TypeHint:
         name='tuple',
         args=tuple(types),
     )
+
+
+def optional(typ: TypeHint) -> TypeHint:
+    return union_of(typ, NONE)
