@@ -7,5 +7,5 @@ import pydantic
 import typing_extensions as typing
 
 
-class ResponseMetadata(pydantic.BaseModel):
-    xu_jcount: typing.Annotated[typing.Union[None, int], Header('x-count', style=ParamStyle.simple,)] = None
+class RequestMetadata(pydantic.BaseModel):
+    api_key_h: typing.Annotated[typing.Union[None, str], Header('api_key', )] = None

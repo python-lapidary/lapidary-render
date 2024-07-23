@@ -8,4 +8,4 @@ import typing_extensions as typing
 
 
 class RequestMetadata(pydantic.BaseModel):
-    param1_h: typing.Annotated[typing.Union[None, str], Header('param1')]
+    param1_h: typing.Annotated[typing.Union[None, str], Header('param1', )] = None

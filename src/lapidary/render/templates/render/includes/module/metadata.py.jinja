@@ -1,4 +1,5 @@
 {%- import 'includes/type_hint.py.jinja' as th -%}
+{%- from 'includes/field.py.jinja' import render_field -%}
 from __future__ import annotations
 
 from lapidary.runtime import *
@@ -12,7 +13,7 @@ import {{ imp }}
 {%- for model in item.body %}
 
 class {{ model.name }}(pydantic.BaseModel):
-    {% for field in model.fields -%}
-    {{ field.name }}: typing.Annotated[{{ th.type_hint(field.type) }}, {{field.annotation}}('{{field.alias}}')]
-    {% endfor %}
-{%- endfor -%}
+    {%- for field in model.fields %}
+    {{- render_field(field) }}
+    {%- endfor %}
+{%- endfor %}

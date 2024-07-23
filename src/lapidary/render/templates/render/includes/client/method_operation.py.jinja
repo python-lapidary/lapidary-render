@@ -1,12 +1,5 @@
 {%- import 'includes/type_hint.py.jinja' as th %}
-
-{%- macro render_param(param) %}
-        {{ param.name }}: typing.Annotated[{{ th.type_hint(param.type, path) }}, {{ param.annotation }}(
-    {%- if param.alias  %}'{{ param.alias }}', {% endif %}
-    {%- if param.style %}style='{{ param.style.value }}',{% endif %}
-    {%- if param.explode %}explode={{ param.explode }},{% endif -%}
-)]{% if not param.required %} = None{% endif %},
-{%- endmacro %}
+{%- from 'includes/field.py.jinja' import render_field %}
 
 {%- macro render_mime_map(mime_map) -%}
 {
@@ -38,10 +31,10 @@
 {%- if func.params | length > 0 %}
         *,{% endif %}
 {%- for param in func.params if param.required %}
-        {{- render_param(param) }}
+        {{- render_field(param, 4) }},
 {%- endfor %}
 {%- for param in func.params if not param.required %}
-        {{- render_param(param) }}
+        {{- render_field(param, 4) }},
 {%- endfor %}
     ) -> typing.Annotated[
         {{ th.type_hint(func.return_type, path) }},

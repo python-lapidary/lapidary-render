@@ -12,6 +12,7 @@ import test_petstore.components.schemas.ApiResponse.schema
 import test_petstore.components.schemas.Order.schema
 import test_petstore.components.schemas.Pet.schema
 import test_petstore.components.schemas.User.schema
+import test_petstore.paths.u_lpetu_lu_1zpetIdu_21.delete.parameters.meta
 import test_petstore.paths.u_lstoreu_linventory.get.responses.u_o00.content.applicationu_ljson.schema.schema
 import test_petstore.paths.u_luseru_llogin.get.responses.u_o00.headers
 
@@ -183,7 +184,7 @@ class ApiClient(ClientBase):
         self: typing.Self,
         *,
         petId_p: typing.Annotated[int, Path('petId', )],
-        api_key_h: typing.Annotated[typing.Union[None, str], Header('api_key', )] = None,
+        meta: typing.Annotated[typing.Union[None, test_petstore.paths.u_lpetu_lu_1zpetIdu_21.delete.parameters.meta.RequestMetadata], Headers()] = None,
     ) -> typing.Annotated[
         tuple[None, None],
         Responses({

@@ -8,5 +8,5 @@ import typing_extensions as typing
 
 
 class ResponseMetadata(pydantic.BaseModel):
-    Xu_jRateu_jLimit: typing.Annotated[typing.Union[None, int], Header('X-Rate-Limit')]
-    Xu_jExpiresu_jAfter: typing.Annotated[typing.Union[None, str], Header('X-Expires-After')]
+    Xu_jRateu_jLimit: typing.Annotated[typing.Union[None, int], Header('X-Rate-Limit', style=ParamStyle.simple,)] = None
+    Xu_jExpiresu_jAfter: typing.Annotated[typing.Union[None, str], Header('X-Expires-After', style=ParamStyle.simple,)] = None

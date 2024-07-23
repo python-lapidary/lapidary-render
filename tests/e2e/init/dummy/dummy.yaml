@@ -37,6 +37,10 @@ paths:
           required:
           - prop1
         required: false
+      - name: param1
+        in: header
+        schema:
+          type: string
   /inline_schema_properties/:
     get:
       operationId: inline_schema_properties
