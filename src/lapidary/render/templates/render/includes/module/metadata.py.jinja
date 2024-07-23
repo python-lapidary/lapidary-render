@@ -1,0 +1,18 @@
+{%- import 'includes/type_hint.py.jinja' as th -%}
+from __future__ import annotations
+
+from lapidary.runtime import *
+import pydantic
+import typing_extensions as typing
+
+{%- for imp in item.imports %}
+import {{ imp }}
+{%- endfor %}
+{% set path = item.path %}
+{%- for model in item.body %}
+
+class {{ model.name }}(pydantic.BaseModel):
+    {% for header in model.headers -%}
+    {{ header.name }}: typing.Annotated[{{ th.type_hint(header.type) }}, {{header.annotation}}('{{header.alias}}')]
+    {% endfor %}
+{%- endfor -%}

@@ -6,7 +6,7 @@ from asyncclick.testing import CliRunner
 
 from lapidary.render.config import load_config
 
-source = pathlib.Path(__file__).relative_to(pathlib.Path.cwd()).parent / 'e2e/init/petstore/src/openapi/openapi.json'
+source = pathlib.Path(__file__).relative_to(pathlib.Path.cwd()).parent / 'e2e/init/petstore/src/openapi/openapi.yaml'
 
 
 @pytest.mark.asyncio
@@ -19,11 +19,11 @@ async def test_init_save_copies_document(monkeypatch, tmp_path: pathlib.Path) ->
     if result.exception:
         raise result.exception
     assert result.exit_code == 0
-    assert (output / 'src/openapi/openapi.json').is_file()
+    assert (output / 'src/openapi/openapi.yaml').is_file()
 
     config = await load_config(anyio.Path(output))
     assert config.origin is None
-    assert config.document_path == 'src/openapi/openapi.json'
+    assert config.document_path == 'src/openapi/openapi.yaml'
 
 
 @pytest.mark.asyncio

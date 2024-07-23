@@ -1,4 +1,5 @@
 {%- import 'includes/type_hint.py.jinja' as th %}
+
 {%- macro render_param(param) %}
         {{ param.name }}: typing.Annotated[{{ th.type_hint(param.type, path) }}, {{ param.in_.value | capitalize }}(
     {%- if param.alias  %}'{{ param.alias }}', {% endif %}
@@ -6,19 +7,32 @@
     {%- if param.explode %}explode={{ param.explode }},{% endif -%}
 )]{% if not param.required %} = None{% endif %},
 {%- endmacro %}
+
 {%- macro render_mime_map(mime_map) -%}
 {
 {%- for media_type, type_hint in mime_map.items() %}
     '{{ media_type }}': {{ th.type_hint(type_hint) }},
 {%- endfor %}
 }{% endmacro %}
+
+{%- macro render_response_map(response_map) -%}
+{
+            {%- for code, response in response_map.items() %}
+            '{{ code }}': Response(
+                Body({{ render_mime_map(response.content) | indent(16, False) }}),
+                {%- if not response.headers_type.is_none() %}
+                {{ th.type_hint(response.headers_type) }}{% endif %}
+            ),
+            {%- endfor %}
+        }
+{%- endmacro %}
     @{{ func.method }}('{{ func.path }}'{% if func.security is not none %}, security={{ func.security }}{% endif %})
     async def {{ func.name }}(
         self: typing.Self,
 {%- if not func.request_body_type.is_none() %}
-        request_body: typing.Annotated[
+        body: typing.Annotated[
             {{ th.type_hint(func.request_body_type, path) }},
-            RequestBody({{ render_mime_map(func.request_body) | indent(12, False) }}),
+            Body({{ render_mime_map(func.request_body) | indent(12, False) }}),
         ],
 {%- endif %}
 {%- if func.params | length > 0 %}
@@ -30,11 +44,7 @@
         {{- render_param(param) }}
 {%- endfor %}
     ) -> typing.Annotated[
-        {{ th.type_hint(func.response_body_type, path) }},
-        Responses({
-            {%- for code, mime_map in func.responses.items() %}
-            '{{ code }}': {{ render_mime_map(mime_map) | indent(12, False) }},
-            {%- endfor %}
-        })
+        {{ th.type_hint(func.return_type, path) }},
+        Responses({{ render_response_map(func.responses) }})
     ]:
         pass

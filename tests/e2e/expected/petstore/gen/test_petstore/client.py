@@ -8,29 +8,19 @@ __all__ = [
 import typing_extensions as typing
 from lapidary.runtime import *
 
+import test_petstore.components.schemas.ApiResponse.schema
 import test_petstore.components.schemas.Order.schema
 import test_petstore.components.schemas.Pet.schema
 import test_petstore.components.schemas.User.schema
-import test_petstore.paths.u_lpet.post.responses.u_o00.response
-import test_petstore.paths.u_lpet.put.responses.u_o00.response
-import test_petstore.paths.u_lpetu_lfindByStatus.get.responses.u_o00.response
-import test_petstore.paths.u_lpetu_lfindByTags.get.responses.u_o00.response
-import test_petstore.paths.u_lpetu_lu_1zpetIdu_21.get.responses.u_o00.response
-import test_petstore.paths.u_lpetu_lu_1zpetIdu_21u_luploadImage.post.responses.u_o00.response
-import test_petstore.paths.u_lstoreu_linventory.get.responses.u_o00.response
-import test_petstore.paths.u_lstoreu_lorder.post.responses.u_o00.response
-import test_petstore.paths.u_lstoreu_lorderu_lu_1zorderIdu_21.get.responses.u_o00.response
-import test_petstore.paths.u_luser.post.responses.default.response
-import test_petstore.paths.u_luseru_lcreateWithList.post.responses.u_o00.response
-import test_petstore.paths.u_luseru_llogin.get.responses.u_o00.response
-import test_petstore.paths.u_luseru_lu_1zusernameu_21.get.responses.u_o00.response
+import test_petstore.paths.u_lstoreu_linventory.get.responses.u_o00.content.applicationu_ljson.schema.schema
+import test_petstore.paths.u_luseru_llogin.get.responses.u_o00.headers
 
 
 class ApiClient(ClientBase):
     def __init__(
         self,
         *,
-        base_url: str = 'https://petstore3.swagger.io/api/v3',
+        base_url: str = 'https://petstore3.swagger.io/v3',
         **kwargs,
     ):
         super().__init__(
@@ -45,48 +35,60 @@ class ApiClient(ClientBase):
     async def __aexit__(self, __exc_type=None, __exc_value=None, __traceback=None) -> typing.Optional[bool]:
         return await super().__aexit__(__exc_type, __exc_value, __traceback)
 
-    @put('/pet', security=[{'petstore_auth': ['write:pets', 'read:pets']}])
-    async def updatePet(
+    @post('/pet', security=[{'petstore_auth': ['write:pets', 'read:pets']}])
+    async def addPet(
         self: typing.Self,
-        request_body: typing.Annotated[
+        body: typing.Annotated[
             test_petstore.components.schemas.Pet.schema.Pet,
-            RequestBody({
+            Body({
                 'application/json': test_petstore.components.schemas.Pet.schema.Pet,
             }),
         ],
     ) -> typing.Annotated[
-        test_petstore.paths.u_lpet.put.responses.u_o00.response.Response,
+        typing.Union[tuple[None, None], tuple[test_petstore.components.schemas.Pet.schema.Pet, None]],
         Responses({
-            '200': {
-                'application/json': test_petstore.paths.u_lpet.put.responses.u_o00.response.Response,
-            },
-            '400': {
-            },
-            '404': {
-            },
-            '405': {
-            },
+            '200': Response(
+                Body({
+                    'application/json': test_petstore.components.schemas.Pet.schema.Pet,
+                }),
+            ),
+            '405': Response(
+                Body({
+                }),
+            ),
         })
     ]:
         pass
 
-    @post('/pet', security=[{'petstore_auth': ['write:pets', 'read:pets']}])
-    async def addPet(
+    @put('/pet', security=[{'petstore_auth': ['write:pets', 'read:pets']}])
+    async def updatePet(
         self: typing.Self,
-        request_body: typing.Annotated[
+        body: typing.Annotated[
             test_petstore.components.schemas.Pet.schema.Pet,
-            RequestBody({
+            Body({
                 'application/json': test_petstore.components.schemas.Pet.schema.Pet,
             }),
         ],
     ) -> typing.Annotated[
-        test_petstore.paths.u_lpet.post.responses.u_o00.response.Response,
+        typing.Union[tuple[None, None], tuple[test_petstore.components.schemas.Pet.schema.Pet, None]],
         Responses({
-            '200': {
-                'application/json': test_petstore.paths.u_lpet.post.responses.u_o00.response.Response,
-            },
-            '405': {
-            },
+            '200': Response(
+                Body({
+                    'application/json': test_petstore.components.schemas.Pet.schema.Pet,
+                }),
+            ),
+            '400': Response(
+                Body({
+                }),
+            ),
+            '404': Response(
+                Body({
+                }),
+            ),
+            '405': Response(
+                Body({
+                }),
+            ),
         })
     ]:
         pass
@@ -97,13 +99,17 @@ class ApiClient(ClientBase):
         *,
         status_q: typing.Annotated[typing.Union[None, str], Query('status', explode=True,)] = None,
     ) -> typing.Annotated[
-        test_petstore.paths.u_lpetu_lfindByStatus.get.responses.u_o00.response.Response,
+        typing.Union[tuple[None, None], tuple[list[test_petstore.components.schemas.Pet.schema.Pet], None]],
         Responses({
-            '200': {
-                'application/json': test_petstore.paths.u_lpetu_lfindByStatus.get.responses.u_o00.response.Response,
-            },
-            '400': {
-            },
+            '200': Response(
+                Body({
+                    'application/json': list[test_petstore.components.schemas.Pet.schema.Pet],
+                }),
+            ),
+            '400': Response(
+                Body({
+                }),
+            ),
         })
     ]:
         pass
@@ -114,13 +120,17 @@ class ApiClient(ClientBase):
         *,
         tags_q: typing.Annotated[typing.Union[None, list[str]], Query('tags', explode=True,)] = None,
     ) -> typing.Annotated[
-        test_petstore.paths.u_lpetu_lfindByTags.get.responses.u_o00.response.Response,
+        typing.Union[tuple[None, None], tuple[list[test_petstore.components.schemas.Pet.schema.Pet], None]],
         Responses({
-            '200': {
-                'application/json': test_petstore.paths.u_lpetu_lfindByTags.get.responses.u_o00.response.Response,
-            },
-            '400': {
-            },
+            '200': Response(
+                Body({
+                    'application/json': list[test_petstore.components.schemas.Pet.schema.Pet],
+                }),
+            ),
+            '400': Response(
+                Body({
+                }),
+            ),
         })
     ]:
         pass
@@ -131,15 +141,21 @@ class ApiClient(ClientBase):
         *,
         petId_p: typing.Annotated[int, Path('petId', )],
     ) -> typing.Annotated[
-        test_petstore.paths.u_lpetu_lu_1zpetIdu_21.get.responses.u_o00.response.Response,
+        typing.Union[tuple[None, None], tuple[test_petstore.components.schemas.Pet.schema.Pet, None]],
         Responses({
-            '200': {
-                'application/json': test_petstore.paths.u_lpetu_lu_1zpetIdu_21.get.responses.u_o00.response.Response,
-            },
-            '400': {
-            },
-            '404': {
-            },
+            '200': Response(
+                Body({
+                    'application/json': test_petstore.components.schemas.Pet.schema.Pet,
+                }),
+            ),
+            '400': Response(
+                Body({
+                }),
+            ),
+            '404': Response(
+                Body({
+                }),
+            ),
         })
     ]:
         pass
@@ -152,10 +168,12 @@ class ApiClient(ClientBase):
         name_q: typing.Annotated[typing.Union[None, str], Query('name', )] = None,
         status_q: typing.Annotated[typing.Union[None, str], Query('status', )] = None,
     ) -> typing.Annotated[
-        None,
+        tuple[None, None],
         Responses({
-            '405': {
-            },
+            '405': Response(
+                Body({
+                }),
+            ),
         })
     ]:
         pass
@@ -167,10 +185,12 @@ class ApiClient(ClientBase):
         petId_p: typing.Annotated[int, Path('petId', )],
         api_key_h: typing.Annotated[typing.Union[None, str], Header('api_key', )] = None,
     ) -> typing.Annotated[
-        None,
+        tuple[None, None],
         Responses({
-            '400': {
-            },
+            '400': Response(
+                Body({
+                }),
+            ),
         })
     ]:
         pass
@@ -182,11 +202,13 @@ class ApiClient(ClientBase):
         petId_p: typing.Annotated[int, Path('petId', )],
         additionalMetadata_q: typing.Annotated[typing.Union[None, str], Query('additionalMetadata', )] = None,
     ) -> typing.Annotated[
-        test_petstore.paths.u_lpetu_lu_1zpetIdu_21u_luploadImage.post.responses.u_o00.response.Response,
+        tuple[test_petstore.components.schemas.ApiResponse.schema.ApiResponse, None],
         Responses({
-            '200': {
-                'application/json': test_petstore.paths.u_lpetu_lu_1zpetIdu_21u_luploadImage.post.responses.u_o00.response.Response,
-            },
+            '200': Response(
+                Body({
+                    'application/json': test_petstore.components.schemas.ApiResponse.schema.ApiResponse,
+                }),
+            ),
         })
     ]:
         pass
@@ -195,11 +217,13 @@ class ApiClient(ClientBase):
     async def getInventory(
         self: typing.Self,
     ) -> typing.Annotated[
-        test_petstore.paths.u_lstoreu_linventory.get.responses.u_o00.response.Response,
+        tuple[test_petstore.paths.u_lstoreu_linventory.get.responses.u_o00.content.applicationu_ljson.schema.schema.schema, None],
         Responses({
-            '200': {
-                'application/json': test_petstore.paths.u_lstoreu_linventory.get.responses.u_o00.response.Response,
-            },
+            '200': Response(
+                Body({
+                    'application/json': test_petstore.paths.u_lstoreu_linventory.get.responses.u_o00.content.applicationu_ljson.schema.schema.schema,
+                }),
+            ),
         })
     ]:
         pass
@@ -207,20 +231,24 @@ class ApiClient(ClientBase):
     @post('/store/order')
     async def placeOrder(
         self: typing.Self,
-        request_body: typing.Annotated[
+        body: typing.Annotated[
             test_petstore.components.schemas.Order.schema.Order,
-            RequestBody({
+            Body({
                 'application/json': test_petstore.components.schemas.Order.schema.Order,
             }),
         ],
     ) -> typing.Annotated[
-        test_petstore.paths.u_lstoreu_lorder.post.responses.u_o00.response.Response,
+        typing.Union[tuple[None, None], tuple[test_petstore.components.schemas.Order.schema.Order, None]],
         Responses({
-            '200': {
-                'application/json': test_petstore.paths.u_lstoreu_lorder.post.responses.u_o00.response.Response,
-            },
-            '405': {
-            },
+            '200': Response(
+                Body({
+                    'application/json': test_petstore.components.schemas.Order.schema.Order,
+                }),
+            ),
+            '405': Response(
+                Body({
+                }),
+            ),
         })
     ]:
         pass
@@ -231,15 +259,21 @@ class ApiClient(ClientBase):
         *,
         orderId_p: typing.Annotated[int, Path('orderId', )],
     ) -> typing.Annotated[
-        test_petstore.paths.u_lstoreu_lorderu_lu_1zorderIdu_21.get.responses.u_o00.response.Response,
+        typing.Union[tuple[None, None], tuple[test_petstore.components.schemas.Order.schema.Order, None]],
         Responses({
-            '200': {
-                'application/json': test_petstore.paths.u_lstoreu_lorderu_lu_1zorderIdu_21.get.responses.u_o00.response.Response,
-            },
-            '400': {
-            },
-            '404': {
-            },
+            '200': Response(
+                Body({
+                    'application/json': test_petstore.components.schemas.Order.schema.Order,
+                }),
+            ),
+            '400': Response(
+                Body({
+                }),
+            ),
+            '404': Response(
+                Body({
+                }),
+            ),
         })
     ]:
         pass
@@ -250,12 +284,16 @@ class ApiClient(ClientBase):
         *,
         orderId_p: typing.Annotated[int, Path('orderId', )],
     ) -> typing.Annotated[
-        None,
+        tuple[None, None],
         Responses({
-            '400': {
-            },
-            '404': {
-            },
+            '400': Response(
+                Body({
+                }),
+            ),
+            '404': Response(
+                Body({
+                }),
+            ),
         })
     ]:
         pass
@@ -263,18 +301,20 @@ class ApiClient(ClientBase):
     @post('/user')
     async def createUser(
         self: typing.Self,
-        request_body: typing.Annotated[
+        body: typing.Annotated[
             test_petstore.components.schemas.User.schema.User,
-            RequestBody({
+            Body({
                 'application/json': test_petstore.components.schemas.User.schema.User,
             }),
         ],
     ) -> typing.Annotated[
-        test_petstore.paths.u_luser.post.responses.default.response.Response,
+        tuple[test_petstore.components.schemas.User.schema.User, None],
         Responses({
-            'default': {
-                'application/json': test_petstore.paths.u_luser.post.responses.default.response.Response,
-            },
+            'default': Response(
+                Body({
+                    'application/json': test_petstore.components.schemas.User.schema.User,
+                }),
+            ),
         })
     ]:
         pass
@@ -282,20 +322,24 @@ class ApiClient(ClientBase):
     @post('/user/createWithList')
     async def createUsersWithListInput(
         self: typing.Self,
-        request_body: typing.Annotated[
+        body: typing.Annotated[
             list[test_petstore.components.schemas.User.schema.User],
-            RequestBody({
+            Body({
                 'application/json': list[test_petstore.components.schemas.User.schema.User],
             }),
         ],
     ) -> typing.Annotated[
-        test_petstore.paths.u_luseru_lcreateWithList.post.responses.u_o00.response.Response,
+        typing.Union[tuple[None, None], tuple[test_petstore.components.schemas.User.schema.User, None]],
         Responses({
-            '200': {
-                'application/json': test_petstore.paths.u_luseru_lcreateWithList.post.responses.u_o00.response.Response,
-            },
-            'default': {
-            },
+            '200': Response(
+                Body({
+                    'application/json': test_petstore.components.schemas.User.schema.User,
+                }),
+            ),
+            'default': Response(
+                Body({
+                }),
+            ),
         })
     ]:
         pass
@@ -307,13 +351,18 @@ class ApiClient(ClientBase):
         username_q: typing.Annotated[typing.Union[None, str], Query('username', )] = None,
         password_q: typing.Annotated[typing.Union[None, str], Query('password', )] = None,
     ) -> typing.Annotated[
-        test_petstore.paths.u_luseru_llogin.get.responses.u_o00.response.Response,
+        typing.Union[tuple[None, None], tuple[str, test_petstore.paths.u_luseru_llogin.get.responses.u_o00.headers.ResponseMetadata]],
         Responses({
-            '200': {
-                'application/json': test_petstore.paths.u_luseru_llogin.get.responses.u_o00.response.Response,
-            },
-            '400': {
-            },
+            '200': Response(
+                Body({
+                    'application/json': str,
+                }),
+                test_petstore.paths.u_luseru_llogin.get.responses.u_o00.headers.ResponseMetadata
+            ),
+            '400': Response(
+                Body({
+                }),
+            ),
         })
     ]:
         pass
@@ -322,10 +371,12 @@ class ApiClient(ClientBase):
     async def logoutUser(
         self: typing.Self,
     ) -> typing.Annotated[
-        None,
+        tuple[None, None],
         Responses({
-            'default': {
-            },
+            'default': Response(
+                Body({
+                }),
+            ),
         })
     ]:
         pass
@@ -336,15 +387,21 @@ class ApiClient(ClientBase):
         *,
         username_p: typing.Annotated[str, Path('username', )],
     ) -> typing.Annotated[
-        test_petstore.paths.u_luseru_lu_1zusernameu_21.get.responses.u_o00.response.Response,
+        typing.Union[tuple[None, None], tuple[test_petstore.components.schemas.User.schema.User, None]],
         Responses({
-            '200': {
-                'application/json': test_petstore.paths.u_luseru_lu_1zusernameu_21.get.responses.u_o00.response.Response,
-            },
-            '400': {
-            },
-            '404': {
-            },
+            '200': Response(
+                Body({
+                    'application/json': test_petstore.components.schemas.User.schema.User,
+                }),
+            ),
+            '400': Response(
+                Body({
+                }),
+            ),
+            '404': Response(
+                Body({
+                }),
+            ),
         })
     ]:
         pass
@@ -352,19 +409,21 @@ class ApiClient(ClientBase):
     @put('/user/{username}')
     async def updateUser(
         self: typing.Self,
-        request_body: typing.Annotated[
+        body: typing.Annotated[
             test_petstore.components.schemas.User.schema.User,
-            RequestBody({
+            Body({
                 'application/json': test_petstore.components.schemas.User.schema.User,
             }),
         ],
         *,
         username_p: typing.Annotated[str, Path('username', )],
     ) -> typing.Annotated[
-        None,
+        tuple[None, None],
         Responses({
-            'default': {
-            },
+            'default': Response(
+                Body({
+                }),
+            ),
         })
     ]:
         pass
@@ -375,12 +434,16 @@ class ApiClient(ClientBase):
         *,
         username_p: typing.Annotated[str, Path('username', )],
     ) -> typing.Annotated[
-        None,
+        tuple[None, None],
         Responses({
-            '400': {
-            },
-            '404': {
-            },
+            '400': Response(
+                Body({
+                }),
+            ),
+            '404': Response(
+                Body({
+                }),
+            ),
         })
     ]:
         pass

@@ -9,12 +9,11 @@ import typing_extensions as typing
 from lapidary.runtime import *
 
 import test_dummy.components.requestBodies.dummy.content.applicationu_ljson.schema.schema
-import test_dummy.components.responses.default.response
+import test_dummy.components.schemas.all.schema
 import test_dummy.components.schemas.schema1.schema
-import test_dummy.paths.u_lcustomu_jsecurity.get.responses.default.response
-import test_dummy.paths.u_linline_schema_propertiesu_l.get.responses.default.response
+import test_dummy.paths.u_linline_schema_propertiesu_l.get.responses.default.content.applicationu_ljson.schema.schema
 import test_dummy.paths.u_ltestu_l.get.parameters.u_n.schema.schema
-import test_dummy.paths.u_ltestu_l.get.responses.default.response
+import test_dummy.paths.u_ltestu_l.get.responses.default.headers
 
 
 class ApiClient(ClientBase):
@@ -44,14 +43,19 @@ class ApiClient(ClientBase):
         param1_q: typing.Annotated[test_dummy.components.schemas.schema1.schema.schema1, Query('param1', )],
         param2_q: typing.Annotated[typing.Union[None, test_dummy.paths.u_ltestu_l.get.parameters.u_n.schema.schema.schema], Query('param2', )] = None,
     ) -> typing.Annotated[
-        typing.Union[test_dummy.components.responses.default.response.Response, test_dummy.paths.u_ltestu_l.get.responses.default.response.Response],
+        typing.Union[tuple[test_dummy.components.schemas.all.schema.all, None], tuple[test_dummy.components.schemas.all.schema.all, test_dummy.paths.u_ltestu_l.get.responses.default.headers.ResponseMetadata]],
         Responses({
-            'default': {
-                'application/json': test_dummy.paths.u_ltestu_l.get.responses.default.response.Response,
-            },
-            '300': {
-                'application/json': test_dummy.components.responses.default.response.Response,
-            },
+            'default': Response(
+                Body({
+                    'application/json': test_dummy.components.schemas.all.schema.all,
+                }),
+                test_dummy.paths.u_ltestu_l.get.responses.default.headers.ResponseMetadata
+            ),
+            '300': Response(
+                Body({
+                    'application/json': test_dummy.components.schemas.all.schema.all,
+                }),
+            ),
         })
     ]:
         pass
@@ -60,11 +64,13 @@ class ApiClient(ClientBase):
     async def inline_schema_properties(
         self: typing.Self,
     ) -> typing.Annotated[
-        test_dummy.paths.u_linline_schema_propertiesu_l.get.responses.default.response.Response,
+        tuple[test_dummy.paths.u_linline_schema_propertiesu_l.get.responses.default.content.applicationu_ljson.schema.schema.schema, None],
         Responses({
-            'default': {
-                'application/json': test_dummy.paths.u_linline_schema_propertiesu_l.get.responses.default.response.Response,
-            },
+            'default': Response(
+                Body({
+                    'application/json': test_dummy.paths.u_linline_schema_propertiesu_l.get.responses.default.content.applicationu_ljson.schema.schema.schema,
+                }),
+            ),
         })
     ]:
         pass
@@ -73,11 +79,13 @@ class ApiClient(ClientBase):
     async def customSecurity(
         self: typing.Self,
     ) -> typing.Annotated[
-        test_dummy.paths.u_lcustomu_jsecurity.get.responses.default.response.Response,
+        tuple[list[test_dummy.components.schemas.all.schema.all], None],
         Responses({
-            'default': {
-                'application/json': test_dummy.paths.u_lcustomu_jsecurity.get.responses.default.response.Response,
-            },
+            'default': Response(
+                Body({
+                    'application/json': list[test_dummy.components.schemas.all.schema.all],
+                }),
+            ),
         })
     ]:
         pass
@@ -85,18 +93,20 @@ class ApiClient(ClientBase):
     @get('/insecure', security=[])
     async def insecure(
         self: typing.Self,
-        request_body: typing.Annotated[
+        body: typing.Annotated[
             test_dummy.components.requestBodies.dummy.content.applicationu_ljson.schema.schema.schema,
-            RequestBody({
+            Body({
                 'application/json': test_dummy.components.requestBodies.dummy.content.applicationu_ljson.schema.schema.schema,
             }),
         ],
     ) -> typing.Annotated[
-        test_dummy.components.responses.default.response.Response,
+        tuple[test_dummy.components.schemas.all.schema.all, None],
         Responses({
-            'default': {
-                'application/json': test_dummy.components.responses.default.response.Response,
-            },
+            'default': Response(
+                Body({
+                    'application/json': test_dummy.components.schemas.all.schema.all,
+                }),
+            ),
         })
     ]:
         pass

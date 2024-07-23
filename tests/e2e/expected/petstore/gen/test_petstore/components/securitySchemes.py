@@ -19,7 +19,7 @@ def oauth2_implicit_petstore_auth(
         kwargs['scope'] = ' '.join(scope)
 
     return 'petstore_auth', httpx_auth.OAuth2Implicit(
-        authorization_url='https://petstore3.swagger.io/oauth/authorize',
+        authorization_url='https://petstore.swagger.io/oauth/authorize',
         **kwargs,
     )
 

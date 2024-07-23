@@ -1,6 +1,6 @@
 import dataclasses as dc
 from collections.abc import Iterable, MutableSet
-from typing import cast
+from typing import Self, cast
 
 
 @dc.dataclass(slots=True, frozen=True, kw_only=True)
@@ -33,10 +33,14 @@ class TypeHint:
     def is_union(self) -> bool:
         return False
 
+    # used by template
     def is_none(self) -> bool:
         return False
 
-    def dependencies(self) -> 'Iterable[TypeHint]':
+    def get_origin(self) -> Self:
+        return self
+
+    def get_args(self) -> Iterable[Self]:
         return ()
 
     def __eq__(self, other) -> bool:
@@ -53,8 +57,11 @@ class GenericTypeHint(TypeHint):
     def is_union(self) -> bool:
         return self.module == 'typing' and self.name == 'Union'
 
-    def dependencies(self) -> Iterable[TypeHint]:
-        yield from self.args
+    def get_origin(self) -> Self:
+        return TypeHint(module=self.module, name=self.name)
+
+    def get_args(self) -> Iterable[Self]:
+        return self.args
 
     def __repr__(self) -> str:
         return self.full_name()
@@ -128,5 +135,14 @@ def flatten(types: Iterable[TypeHint]) -> Iterable[TypeHint]:
 
 def _flatten(types: Iterable[TypeHint], target: MutableSet[TypeHint]) -> None:
     for typ in types:
-        target.add(typ)
-        _flatten(typ.dependencies(), target)
+        target.add(typ.get_origin())
+        _flatten(typ.get_args(), target)
+
+
+def tuple_of(*types: TypeHint) -> TypeHint:
+    assert len(types) > 1
+    return GenericTypeHint(
+        module='builtins',
+        name='tuple',
+        args=tuple(types),
+    )

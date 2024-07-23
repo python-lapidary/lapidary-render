@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-import typing_extensions as typing
 from lapidary.runtime import *
+import pydantic
+import typing_extensions as typing
 
 
-class Response(ResponseEnvelope):
-    body: typing.Annotated[str, ResponseBody()]
+class ResponseMetadata(pydantic.BaseModel):
     Xu_jRateu_jLimit: typing.Annotated[typing.Union[None, int], Header('X-Rate-Limit')]
     Xu_jExpiresu_jAfter: typing.Annotated[typing.Union[None, str], Header('X-Expires-After')]

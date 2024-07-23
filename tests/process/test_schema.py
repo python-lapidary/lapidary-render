@@ -11,17 +11,18 @@ from lapidary.render.model import OpenApi30Converter, openapi, python, stack
 logging.basicConfig()
 logging.getLogger('lapidary').setLevel(logging.DEBUG)
 
+yaml = ruamel.yaml.YAML(typ='safe')
+
 
 @pytest.fixture
 def document() -> openapi.OpenApiModel:
-    doc_text = (Path(__file__).parent.parent / 'e2e/init/petstore/src/openapi/openapi.json').read_text()
-    return openapi.OpenApiModel.model_validate_json(doc_text)
+    doc_text = (Path(__file__).parent.parent / 'e2e/init/petstore/src/openapi/openapi.yaml').read_text()
+    return openapi.OpenApiModel.model_validate(yaml.load(doc_text))
 
 
 @pytest.fixture
 def doc_dummy() -> openapi.OpenApiModel:
     doc_text = (Path(__file__).parent.parent / 'e2e/init/dummy/dummy.yaml').read_text()
-    yaml = ruamel.yaml.YAML(typ='safe')
     return openapi.OpenApiModel.model_validate(yaml.load(doc_text))
 
 
@@ -33,9 +34,7 @@ def test_schema_str(document: openapi.OpenApiModel) -> None:
         operations['get'].responses, stack.Stack(('#', 'paths', '/user/login', 'get', 'responses'))
     )
 
-    assert responses['200']['application/json'] == python.TypeHint(
-        module='petstore.paths.u_luseru_llogin.get.responses.u_o00.response', name='Response'
-    )
+    assert responses['200'].content['application/json'] == python.TypeHint(module='builtins', name='str')
     assert converter.schema_converter.schema_modules == []
 
 

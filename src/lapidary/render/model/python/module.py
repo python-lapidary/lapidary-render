@@ -2,7 +2,7 @@ import abc
 import dataclasses as dc
 from collections.abc import Iterable, Mapping
 
-from .model import ClientClass, ResponseEnvelopeModel, SchemaClass
+from .model import ClientClass, MetadataModel, SchemaClass
 from .module_path import ModulePath
 from .type_hint import NONE, TypeHint, flatten
 
@@ -69,11 +69,12 @@ class EmptyModule(AbstractModule[None]):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class ResponseEnvelopeModule(AbstractModule[ResponseEnvelopeModel]):
-    module_type: str = dc.field(default='response')
+class MetadataModule(AbstractModule[Iterable[MetadataModel]]):
+    module_type: str = 'metadata'
 
     def dependencies(self) -> Iterable[TypeHint]:
-        return self.body.dependencies()
+        for model in self.body:
+            yield from model.dependencies()
 
 
 @dc.dataclass(frozen=True, kw_only=True)

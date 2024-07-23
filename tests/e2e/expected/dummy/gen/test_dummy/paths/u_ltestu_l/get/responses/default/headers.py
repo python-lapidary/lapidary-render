@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
-import typing_extensions as typing
 from lapidary.runtime import *
-import test_dummy.components.schemas.all.schema
+import pydantic
+import typing_extensions as typing
 
 
-class Response(ResponseEnvelope):
-    body: typing.Annotated[test_dummy.components.schemas.all.schema.all, ResponseBody()]
+class ResponseMetadata(pydantic.BaseModel):
     xu_jcount: typing.Annotated[typing.Union[None, int], Header('x-count')]

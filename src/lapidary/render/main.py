@@ -45,7 +45,7 @@ async def init_project(
                 # document path is a file outside of the project root.
                 # If it's relative, make it relative to the project root.
                 try:
-                    config_document_path = document_path_path.relative_to(project_root, walk_up=True)
+                    config_document_path = str(document_path_path.relative_to(project_root, walk_up=True))
                 except ValueError:
                     config_document_path = str(await anyio.Path.cwd() / document_path_path)
             else:

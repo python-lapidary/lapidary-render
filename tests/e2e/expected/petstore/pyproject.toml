@@ -14,12 +14,9 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-lapidary = {path="../../../../../lapidary"}
-
-[tool.poetry.group.dev.dependencies]
-lapidary-render = {path="../../../..", python="^3.12"}
+lapidary = {path = "../../../../../lapidary", develop = true}
 
 [tool.lapidary]
-document_path = "src/openapi/openapi.json"
+document_path = "src/openapi/openapi.yaml"
 origin = "https://petstore3.swagger.io/api/v3/openapi.json"
 package = "test_petstore"
