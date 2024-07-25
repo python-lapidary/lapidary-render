@@ -179,13 +179,9 @@ PRIMITIVE_TYPES = {
 }
 
 FIELD_PROPS = {
-    'exclusive_maximum': 'lt',
-    'exclusive_minimum': 'gt',
-    'maximum': 'le',
     'max_items': 'max_length',
     'max_length': 'max_length',
-    'max_properties': 'min_length',
-    'minimum': 'ge',
+    'max_properties': 'man_length',
     'min_items': 'min_length',
     'min_length': 'min_length',
     'min_properties': 'min_length',
