@@ -8,6 +8,7 @@ __all__ = [
 import typing_extensions as typing
 from lapidary.runtime import *
 
+import datetime
 import test_dummy.components.requestBodies.dummy.content.applicationu_ljson.schema.schema
 import test_dummy.components.schemas.all.schema
 import test_dummy.components.schemas.schema1.schema
@@ -43,6 +44,7 @@ class ApiClient(ClientBase):
         *,
         param1_q: typing.Annotated[test_dummy.components.schemas.schema1.schema.schema1, Query('param1', )],
         param2_q: typing.Annotated[typing.Union[None, test_dummy.paths.u_ltestu_l.get.parameters.u_n.schema.schema.schema], Query('param2', )] = None,
+        param3_q: typing.Annotated[typing.Union[None, datetime.date], Query('param3', )] = None,
         meta: typing.Annotated[typing.Union[None, test_dummy.paths.u_ltestu_l.get.parameters.meta.RequestMetadata], Headers()] = None,
     ) -> typing.Annotated[
         typing.Union[tuple[test_dummy.components.schemas.all.schema.all, None], tuple[test_dummy.components.schemas.all.schema.all, test_dummy.paths.u_ltestu_l.get.responses.default.headers.ResponseMetadata]],
@@ -53,7 +55,7 @@ class ApiClient(ClientBase):
                 }),
                 test_dummy.paths.u_ltestu_l.get.responses.default.headers.ResponseMetadata
             ),
-            '300': Response(
+            '2XX': Response(
                 Body({
                     'application/json': test_dummy.components.schemas.all.schema.all,
                 }),

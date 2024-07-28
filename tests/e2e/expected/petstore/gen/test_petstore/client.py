@@ -98,7 +98,7 @@ class ApiClient(ClientBase):
     async def findPetsByStatus(
         self: typing.Self,
         *,
-        status_q: typing.Annotated[typing.Union[None, str], Query('status', explode=True,)] = None,
+        status_q: typing.Annotated[typing.Union[None, str], Query('status', )] = None,
     ) -> typing.Annotated[
         typing.Union[tuple[None, None], tuple[list[test_petstore.components.schemas.Pet.schema.Pet], None]],
         Responses({
@@ -119,7 +119,7 @@ class ApiClient(ClientBase):
     async def findPetsByTags(
         self: typing.Self,
         *,
-        tags_q: typing.Annotated[typing.Union[None, list[str]], Query('tags', explode=True,)] = None,
+        tags_q: typing.Annotated[typing.Union[None, list[str]], Query('tags', )] = None,
     ) -> typing.Annotated[
         typing.Union[tuple[None, None], tuple[list[test_petstore.components.schemas.Pet.schema.Pet], None]],
         Responses({

@@ -5,6 +5,7 @@ from __future__ import annotations
 import lapidary.runtime
 import pydantic
 import typing_extensions as typing
+import datetime
 
 
 class Order(lapidary.runtime.ModelBase):
@@ -14,7 +15,7 @@ class Order(lapidary.runtime.ModelBase):
 
     quantity: typing.Union[None, int] = None
 
-    shipDate: typing.Union[None, str] = None
+    shipDate: typing.Union[None, datetime.datetime] = None
 
     status: typing.Union[None, str] = None
 

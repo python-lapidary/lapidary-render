@@ -18,7 +18,7 @@ paths:
             x-count:
               schema:
                 type: integer
-        '300':
+        '2XX':
           $ref: '#/components/responses/default'
       parameters:
       - name: param1
@@ -33,10 +33,16 @@ paths:
           properties:
             prop1:
               type: string
+              format: date
           additionalProperties: false
           required:
           - prop1
         required: false
+      - name: param3
+        in: query
+        schema:
+          type: string
+          format: date
       - name: param1
         in: header
         schema:
