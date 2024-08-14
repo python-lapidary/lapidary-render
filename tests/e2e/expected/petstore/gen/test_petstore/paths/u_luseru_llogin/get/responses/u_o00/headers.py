@@ -9,5 +9,5 @@ import datetime
 
 
 class ResponseMetadata(pydantic.BaseModel):
-    Xu_jRateu_jLimit: typing.Annotated[typing.Union[None, int], Header('X-Rate-Limit', style=Simple,)] = None
-    Xu_jExpiresu_jAfter: typing.Annotated[typing.Union[None, datetime.datetime], Header('X-Expires-After', style=Simple,)] = None
+    Xu_jRateu_jLimit: typing.Annotated[typing.Union[None, int], Header('X-Rate-Limit', style=SimpleMultimap,)] = None
+    Xu_jExpiresu_jAfter: typing.Annotated[typing.Union[None, datetime.datetime], Header('X-Expires-After', style=SimpleMultimap,)] = None

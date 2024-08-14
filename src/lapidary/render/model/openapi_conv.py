@@ -482,7 +482,7 @@ def param_style(
         else:
             style_name = 'simple_multimap'
     if explode:
-        style_name = f'{style_name}_{explode}'
+        style_name = f'{style_name}_explode'
     try:
         return python.ParamStyle[style_name]
     except ValueError:
