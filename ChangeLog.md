@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [unreleased]
+
+### Added
+
+- Wrap request headers (and cookies) in a model class
+
+### Changed
+
+- Replace return envelope with a tuple
+- Generate new serialization style parameter
+
+### Fixed
+
+- Removed `Awaitable` from return type hints
+- Fixed support for read/writeOnly fields - add default value `None`
+- Added missing runtime dependency on httpx
+
+
 ## [0.10.1] - 2034-07-01
 
 ### Fixed
