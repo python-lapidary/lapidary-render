@@ -2,6 +2,6 @@
 {%- macro render_field(param, indent_by=0) %}
 {{ '' | indent(width=indent_by, blank=True, first=True) }}    {{ param.name }}: typing.Annotated[{{ th.type_hint(param.type, path) }}, {{ param.annotation }}(
     {%- if param.alias %}'{{ param.alias }}', {% endif %}
-    {%- if param.style %}style={{ param.style.value | capitalize }}{%- if param.explode %}Explode{% endif -%},{% endif -%}
+    {%- if param.style %}style={{ param.style.value }},{% endif -%}
 )]{% if not param.required %} = None{% endif %}
 {%- endmacro %}

@@ -9,3 +9,4 @@ import typing_extensions as typing
 
 class RequestMetadata(pydantic.BaseModel):
     param1_h: typing.Annotated[typing.Union[None, str], Header('param1', )] = None
+    param4_c: typing.Annotated[typing.Union[None, list[str]], Cookie('param4', style=Form,)] = None

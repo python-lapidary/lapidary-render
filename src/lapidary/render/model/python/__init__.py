@@ -23,6 +23,7 @@ from .model import (
     MimeMap,
     ModelType,
     OperationFunction,
+    ParamStyle,
     PasswordOAuth2Flow,
     Response,
     ResponseCode,

@@ -5,7 +5,6 @@ from collections.abc import Iterable, Mapping
 from typing import Any, Literal, TypeAlias
 
 from ..openapi import ParameterLocation as ParamLocation
-from ..openapi import Style as ParamStyle
 from .type_hint import NONE, TypeHint, union_of
 
 MimeType: TypeAlias = str
@@ -150,6 +149,13 @@ class OperationFunction:
         return union_of(*types)
 
 
+class ParamStyle(enum.Enum):
+    simple_string = 'SimpleString'
+    simple_multimap = 'SimpleMultimap'
+    form = 'Form'
+    form_explode = 'FormExplode'
+
+
 @dc.dataclass(kw_only=True)
 class MetaField:
     """
@@ -176,7 +182,6 @@ class MetaField:
 
     media_type: str | None = None
     style: ParamStyle | None
-    explode: bool | None
 
     def dependencies(self) -> Iterable[TypeHint]:
         yield self.type

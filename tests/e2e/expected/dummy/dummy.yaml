@@ -47,6 +47,13 @@ paths:
         in: header
         schema:
           type: string
+      - name: param4
+        in: cookie
+        schema:
+          type: array
+          items:
+            type: string
+        explode: false
   /inline_schema_properties/:
     get:
       operationId: inline_schema_properties

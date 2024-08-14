@@ -8,4 +8,4 @@ import typing_extensions as typing
 
 
 class ResponseMetadata(pydantic.BaseModel):
-    xu_jcount: typing.Annotated[typing.Union[None, int], Header('x-count', style=Simple,)] = None
+    xu_jcount: typing.Annotated[typing.Union[None, int], Header('x-count', style=SimpleMultimap,)] = None

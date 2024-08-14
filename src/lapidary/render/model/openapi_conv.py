@@ -135,8 +135,7 @@ class OpenApi30Converter:
             alias=value.name,
             type=typ,
             annotation=value.in_.value.capitalize(),
-            style=value.style,
-            explode=value.explode,
+            style=param_style(value.style, value.explode, value.in_, stack),
             required=value.required,
             media_type=media_type,
         )
@@ -214,8 +213,7 @@ class OpenApi30Converter:
             type=typ,
             annotation='Header',
             required=value.required,
-            style=value.style,
-            explode=value.explode,
+            style=param_style(value.style, value.explode, value.in_, stack),
         )
 
     def process_content(self, value: Mapping[str, openapi.MediaType], stack: Stack) -> python.MimeMap:
@@ -297,7 +295,6 @@ class OpenApi30Converter:
                     required=required,
                     annotation='Headers',
                     style=None,
-                    explode=None,
                 )
             )
 
@@ -453,6 +450,43 @@ class OpenApi30Converter:
         """Resolve reference to OpenAPI object and its direct path."""
         value, pointer = self.src.resolve_ref(ref)
         return cast(Target, value), Stack.from_str(pointer)
+
+
+def param_style(
+    style: openapi.Style | None,
+    explode: bool | None,
+    in_: openapi.ParameterLocation,
+    stack: Stack,
+) -> python.ParamStyle | None:
+    if style is explode is None:
+        # None = Lapidary uses default
+        return None
+
+    if style is None:
+        match in_:
+            case openapi.ParameterLocation.cookie | openapi.ParameterLocation.query:
+                style_name = 'form'
+            case openapi.ParameterLocation.header | openapi.ParameterLocation.path:
+                style_name = 'simple'
+            case _:
+                raise ValueError('Unsupported `in`', in_, stack)
+    else:
+        style_name = style.value
+
+    if explode is None:
+        explode = style_name == 'form'
+
+    if style_name == 'simple':
+        if in_ == openapi.ParameterLocation.path:
+            style_name = 'simple_string'
+        else:
+            style_name = 'simple_multimap'
+    if explode:
+        style_name = f'{style_name}_{explode}'
+    try:
+        return python.ParamStyle[style_name]
+    except ValueError:
+        raise ValueError('Unsupported style', style_name, stack)
 
 
 def parameter_name(value: openapi.Parameter) -> str:
