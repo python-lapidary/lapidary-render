@@ -246,7 +246,11 @@ class OpenApi30Converter:
         security = self.process_security(value.security, stack.push('security'))
 
         return_types = set()
-        for response in responses.values():
+        for status_code, response in responses.items():
+            # Don't include error responses in the return type
+            if status_code[0] in ('4', '5'):
+                continue
+
             body_type = type_hint.union_of(*response.content.values())
             return_types.add(type_hint.tuple_of(body_type, response.headers_type))
 

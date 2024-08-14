@@ -46,7 +46,7 @@ class ApiClient(ClientBase):
             }),
         ],
     ) -> typing.Annotated[
-        typing.Union[tuple[None, None], tuple[test_petstore.components.schemas.Pet.schema.Pet, None]],
+        tuple[test_petstore.components.schemas.Pet.schema.Pet, None],
         Responses({
             '200': Response(
                 Body({
@@ -71,7 +71,7 @@ class ApiClient(ClientBase):
             }),
         ],
     ) -> typing.Annotated[
-        typing.Union[tuple[None, None], tuple[test_petstore.components.schemas.Pet.schema.Pet, None]],
+        tuple[test_petstore.components.schemas.Pet.schema.Pet, None],
         Responses({
             '200': Response(
                 Body({
@@ -100,7 +100,7 @@ class ApiClient(ClientBase):
         *,
         status_q: typing.Annotated[typing.Union[None, str], Query('status', style=FormExplode,)] = None,
     ) -> typing.Annotated[
-        typing.Union[tuple[None, None], tuple[list[test_petstore.components.schemas.Pet.schema.Pet], None]],
+        tuple[list[test_petstore.components.schemas.Pet.schema.Pet], None],
         Responses({
             '200': Response(
                 Body({
@@ -121,7 +121,7 @@ class ApiClient(ClientBase):
         *,
         tags_q: typing.Annotated[typing.Union[None, list[str]], Query('tags', style=FormExplode,)] = None,
     ) -> typing.Annotated[
-        typing.Union[tuple[None, None], tuple[list[test_petstore.components.schemas.Pet.schema.Pet], None]],
+        tuple[list[test_petstore.components.schemas.Pet.schema.Pet], None],
         Responses({
             '200': Response(
                 Body({
@@ -142,7 +142,7 @@ class ApiClient(ClientBase):
         *,
         petId_p: typing.Annotated[int, Path('petId', )],
     ) -> typing.Annotated[
-        typing.Union[tuple[None, None], tuple[test_petstore.components.schemas.Pet.schema.Pet, None]],
+        tuple[test_petstore.components.schemas.Pet.schema.Pet, None],
         Responses({
             '200': Response(
                 Body({
@@ -169,7 +169,7 @@ class ApiClient(ClientBase):
         name_q: typing.Annotated[typing.Union[None, str], Query('name', )] = None,
         status_q: typing.Annotated[typing.Union[None, str], Query('status', )] = None,
     ) -> typing.Annotated[
-        tuple[None, None],
+        None,
         Responses({
             '405': Response(
                 Body({
@@ -186,7 +186,7 @@ class ApiClient(ClientBase):
         petId_p: typing.Annotated[int, Path('petId', )],
         meta: typing.Annotated[typing.Union[None, test_petstore.paths.u_lpetu_lu_1zpetIdu_21.delete.parameters.meta.RequestMetadata], Metadata()] = None,
     ) -> typing.Annotated[
-        tuple[None, None],
+        None,
         Responses({
             '400': Response(
                 Body({
@@ -239,7 +239,7 @@ class ApiClient(ClientBase):
             }),
         ],
     ) -> typing.Annotated[
-        typing.Union[tuple[None, None], tuple[test_petstore.components.schemas.Order.schema.Order, None]],
+        tuple[test_petstore.components.schemas.Order.schema.Order, None],
         Responses({
             '200': Response(
                 Body({
@@ -260,7 +260,7 @@ class ApiClient(ClientBase):
         *,
         orderId_p: typing.Annotated[int, Path('orderId', )],
     ) -> typing.Annotated[
-        typing.Union[tuple[None, None], tuple[test_petstore.components.schemas.Order.schema.Order, None]],
+        tuple[test_petstore.components.schemas.Order.schema.Order, None],
         Responses({
             '200': Response(
                 Body({
@@ -285,7 +285,7 @@ class ApiClient(ClientBase):
         *,
         orderId_p: typing.Annotated[int, Path('orderId', )],
     ) -> typing.Annotated[
-        tuple[None, None],
+        None,
         Responses({
             '400': Response(
                 Body({
@@ -352,7 +352,7 @@ class ApiClient(ClientBase):
         username_q: typing.Annotated[typing.Union[None, str], Query('username', )] = None,
         password_q: typing.Annotated[typing.Union[None, str], Query('password', )] = None,
     ) -> typing.Annotated[
-        typing.Union[tuple[None, None], tuple[str, test_petstore.paths.u_luseru_llogin.get.responses.u_o00.headers.ResponseMetadata]],
+        tuple[str, test_petstore.paths.u_luseru_llogin.get.responses.u_o00.headers.ResponseMetadata],
         Responses({
             '200': Response(
                 Body({
@@ -388,7 +388,7 @@ class ApiClient(ClientBase):
         *,
         username_p: typing.Annotated[str, Path('username', )],
     ) -> typing.Annotated[
-        typing.Union[tuple[None, None], tuple[test_petstore.components.schemas.User.schema.User, None]],
+        tuple[test_petstore.components.schemas.User.schema.User, None],
         Responses({
             '200': Response(
                 Body({
@@ -435,7 +435,7 @@ class ApiClient(ClientBase):
         *,
         username_p: typing.Annotated[str, Path('username', )],
     ) -> typing.Annotated[
-        tuple[None, None],
+        None,
         Responses({
             '400': Response(
                 Body({
