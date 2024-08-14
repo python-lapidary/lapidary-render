@@ -184,7 +184,7 @@ class ApiClient(ClientBase):
         self: typing.Self,
         *,
         petId_p: typing.Annotated[int, Path('petId', )],
-        meta: typing.Annotated[typing.Union[None, test_petstore.paths.u_lpetu_lu_1zpetIdu_21.delete.parameters.meta.RequestMetadata], Headers()] = None,
+        meta: typing.Annotated[typing.Union[None, test_petstore.paths.u_lpetu_lu_1zpetIdu_21.delete.parameters.meta.RequestMetadata], Metadata()] = None,
     ) -> typing.Annotated[
         tuple[None, None],
         Responses({

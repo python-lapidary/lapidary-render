@@ -293,7 +293,7 @@ class OpenApi30Converter:
                     alias=None,
                     type=metadata if required else type_hint.optional(metadata),
                     required=required,
-                    annotation='Headers',
+                    annotation='Metadata',
                     style=None,
                 )
             )

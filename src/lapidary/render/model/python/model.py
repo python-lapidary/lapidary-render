@@ -175,7 +175,7 @@ class MetaField:
     Required params are rendered before optional, and optional have default value None
     """
 
-    annotation: Literal['Cookie', 'Header', 'Headers', 'Link', 'Path', 'Query']
+    annotation: Literal['Cookie', 'Header', 'Metadata', 'Link', 'Path', 'Query']
 
     default: Any = None
     """Default value, used only for global headers."""
