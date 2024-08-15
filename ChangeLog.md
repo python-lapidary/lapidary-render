@@ -10,7 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-- Removed support for generating exceptions.
+- Removed support for generating exceptions
+
+### Fixed
+
+- Don't include body models of error responses in return types of operation methods
+- Update `Metadata` annotation name from `Headers`
 
 
 ## [0.11.0] - 2024-08-14
