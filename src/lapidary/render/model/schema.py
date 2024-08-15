@@ -30,30 +30,19 @@ class OpenApi30SchemaConverter:
             return self.schema_types[stack][1]
 
         name = value.lapidary_name or names.maybe_mangle_name(stack.top())
-        base_type = (
-            python.TypeHint.from_type(Exception)
-            if value.lapidary_model_type is openapi.LapidaryModelType.exception
-            else python.TypeHint.from_str('lapidary.runtime:ModelBase')
-        )
-
         stack_props = stack.push('properties')
         fields = [
             self.process_property(prop_schema, stack_props.push(prop_name), prop_name, prop_name in value.required)
             for prop_name, prop_schema in value.properties.items()
         ]
 
-        model_type = (
-            python.ModelType[value.lapidary_model_type.name] if value.lapidary_model_type else python.ModelType.model
-        )
-
         type_hint = resolve_type_hint(str(self.root_package), stack.push('schema', name))
         schema_class = python.SchemaClass(
             class_name=name,
-            base_type=base_type,
+            base_type=python.TypeHint.from_str('lapidary.runtime:ModelBase'),
             allow_extra=value.additional_properties is not False,
             fields=fields,
             docstr=value.description or None,
-            model_type=model_type,
         )
         self.schema_types[stack] = schema_class, type_hint
         return type_hint

@@ -200,7 +200,6 @@ class SchemaClass:
     allow_extra: bool = False
     docstr: str | None = None
     fields: list[Field] = dc.field(default_factory=list)
-    model_type: ModelType = ModelType.model
 
     def dependencies(self) -> Iterable[TypeHint]:
         yield self.base_type

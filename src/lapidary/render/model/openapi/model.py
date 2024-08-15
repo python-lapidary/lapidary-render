@@ -17,7 +17,6 @@ from .base import (
     PropertyPattern,
     validate_example_xor_examples,
 )
-from .ext import LapidaryModelType
 
 
 class Reference[Target](BaseModel):
@@ -237,7 +236,6 @@ class Schema(ExtendableModel):
         ),
     ]
     lapidary_name: typing.Annotated[str | None, pydantic.Field(alias='x-lapidary-type-name')] = None
-    lapidary_model_type: typing.Annotated[LapidaryModelType | None, pydantic.Field(alias='x-lapidary-modelType')] = None
 
 
 class Tag(ExtendableModel):
