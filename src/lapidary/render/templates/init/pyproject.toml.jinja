@@ -18,9 +18,6 @@ packages = [
 python = "^3.9"
 lapidary = "^0.11.0"
 
-[tool.poetry.group.dev.dependencies]
-lapidary-render = "{{ get_version('lapidary_render') }}"
-
 [tool.lapidary]
 {%- for key, value in config.items() %}
 {{ key }} = "{{ value }}"
