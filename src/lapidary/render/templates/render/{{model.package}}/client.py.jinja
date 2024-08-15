@@ -17,7 +17,7 @@ class ApiClient(ClientBase):
         *,
         base_url: str{% if model.client.body.init_method.base_url %} = '{{ model.client.body.init_method.base_url }}'{% endif %},
         **kwargs,
-    ):
+    ) -> None:
         super().__init__(
             base_url=base_url,
             {% if model.client.body.init_method.security is not none %}security={{ model.client.body.init_method.security }},
@@ -25,7 +25,7 @@ class ApiClient(ClientBase):
             **kwargs,
         )
 
-    async def __aenter__(self) -> 'ApiClient':
+    async def __aenter__(self) -> typing.Self:
         await super().__aenter__()
         return self
 
