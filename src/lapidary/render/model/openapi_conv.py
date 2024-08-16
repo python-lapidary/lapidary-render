@@ -114,10 +114,9 @@ class OpenApi30Converter:
             # encoding = media_type_obj.encoding
             return (
                 self.schema_converter.process_schema(
-                    media_type_obj.schema_ or openapi.Schema(),
-                    stack.push('content', media_type),
-                    value.required),
-                media_type
+                    media_type_obj.schema_ or openapi.Schema(), stack.push('content', media_type), value.required
+                ),
+                media_type,
             )
         else:
             raise TypeError(f'{stack}: schema or content is required')
@@ -229,8 +228,7 @@ class OpenApi30Converter:
             if mime_parsed[:2] != ('application', 'json'):
                 continue
             types[mime] = self.schema_converter.process_schema(
-                media_type.schema_ or openapi.Schema(),
-                stack.push(mime, 'schema')
+                media_type.schema_ or openapi.Schema(), stack.push(mime, 'schema')
             )
         return types
 

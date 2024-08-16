@@ -26,7 +26,7 @@ def resolve_ref[Target, R, **P](
         value: Target | openapi.Reference[Target],
         stack: Stack,
         *args: P.args,
-        **kwargs: P.kwargs
+        **kwargs: P.kwargs,
     ) -> R:
         if isinstance(value, openapi.Reference):
             logger.debug('Resolving ref %s', value.ref)
