@@ -58,7 +58,7 @@ class ClientModel:
 
         for mod in self.model_modules:
             path: ModulePath | None = mod.path
-            while path := path.parent():
+            while path := path.parent():  # type: ignore[union-attr]
                 if path in known_packages:
                     break
                 yield path

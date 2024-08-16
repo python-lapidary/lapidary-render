@@ -34,7 +34,7 @@ class ModulePath:
     def parent(self) -> typing.Self | None:
         if len(self.parts) == 1:
             return None
-        return ModulePath(self.parts[:-1], False)
+        return ModulePath(self.parts[:-1], False)  # type: ignore[return-value]
 
     def __truediv__(self, other: str | Iterable[str]):
         if isinstance(other, str):

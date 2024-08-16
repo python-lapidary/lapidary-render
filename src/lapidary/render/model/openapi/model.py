@@ -135,7 +135,7 @@ class ImplicitOAuthFlow(BaseModel):
 class PasswordOAuthFlow(BaseModel):
     token_url: Annotated[str, pydantic.Field(alias='tokenUrl')]
     refresh_url: Annotated[str | None, pydantic.Field(alias='refreshUrl')] = None
-    scopes: dict[str, str] | None = None
+    scopes: Annotated[dict[str, str], pydantic.Field(default_factory=dict)]
 
 
 class ClientCredentialsFlow(PasswordOAuthFlow):
@@ -146,7 +146,7 @@ class AuthorizationCodeOAuthFlow(BaseModel):
     authorization_url: Annotated[str, pydantic.Field(alias='authorizationUrl')]
     token_url: Annotated[str, pydantic.Field(alias='tokenUrl')]
     refresh_url: Annotated[str | None, pydantic.Field(alias='refreshUrl')] = None
-    scopes: dict[str, str] | None = None
+    scopes: Annotated[dict[str, str], pydantic.Field(default_factory=dict)]
 
 
 class Info(ExtendableModel):
@@ -424,7 +424,7 @@ class OpenApiModel(ExtendableModel):
     openapi: typing.Annotated[str, pydantic.Field(pattern='^3\\.0\\.\\d(-.+)?$')]
     info: Info
     external_docs: Annotated[ExternalDocumentation | None, pydantic.Field(alias='externalDocs')] = None
-    servers: list[Server] = (Server(url='/'),)
+    servers: Sequence[Server] = (Server(url='/'),)
     security: list[SecurityRequirement] | None = None
     tags: typing.Annotated[list[Tag] | None, UniqueListValidator] = None
     paths: Paths
@@ -452,7 +452,7 @@ class OpenApiModel(ExtendableModel):
 
     def resolve_ref[Target](self, ref: Reference[Target]) -> tuple[Target, str]:
         pointer = ref.ref
-        target = self._resolve_ref(pointer)
+        target: Target | Reference[Target] = self._resolve_ref(pointer)
         stack = [pointer]
 
         while isinstance(target, Reference):

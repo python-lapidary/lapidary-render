@@ -30,3 +30,10 @@ repos:
   - id: poetry-lock
     args:
     - --no-update
+- repo: https://github.com/pre-commit/mirrors-mypy
+  rev: v1.11.1
+  hooks:
+  - id: mypy
+    pass_filenames: false
+    args:
+    - --enable-incomplete-feature=NewGenericSyntax

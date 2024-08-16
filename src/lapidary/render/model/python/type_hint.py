@@ -57,10 +57,10 @@ class GenericTypeHint(TypeHint):
     def is_union(self) -> bool:
         return self.module == 'typing' and self.name == 'Union'
 
-    def get_origin(self) -> Self:
+    def get_origin(self) -> TypeHint:  # type: ignore[override]
         return TypeHint(module=self.module, name=self.name)
 
-    def get_args(self) -> Iterable[Self]:
+    def get_args(self) -> Iterable[TypeHint]:  # type: ignore[override]
         return self.args
 
     def __repr__(self) -> str:
@@ -128,7 +128,7 @@ def union_of(*types: TypeHint) -> TypeHint:
 
 
 def flatten(types: Iterable[TypeHint]) -> Iterable[TypeHint]:
-    all_types = set()
+    all_types: set[TypeHint] = set()
     _flatten(types, all_types)
     return all_types
 

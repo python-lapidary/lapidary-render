@@ -45,7 +45,7 @@ class AuthModule(AbstractModule[Mapping[str, TypeHint]]):
     module_type = 'auth'
 
     @property
-    def dependencies(self) -> Iterable[TypeHint]:
+    def dependencies(self) -> Iterable[TypeHint]:  # type: ignore[override]
         return self.body.values()
 
 

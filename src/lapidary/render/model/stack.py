@@ -15,7 +15,7 @@ class Stack:
         return '/'.join(self.path)
 
     def push(self, *names: str) -> Self:
-        return Stack(self.path + names)
+        return Stack(self.path + names)  # type: ignore[return-value]
 
     def top(self) -> str:
         return self.path[-1]

@@ -112,9 +112,13 @@ class OpenApi30Converter:
         elif value.content:
             media_type, media_type_obj = next(iter(value.content.items()))
             # encoding = media_type_obj.encoding
-            return self.schema_converter.process_schema(
-                media_type_obj.schema_, stack.push('content', media_type), value.required
-            ), media_type
+            return (
+                self.schema_converter.process_schema(
+                    media_type_obj.schema_ or openapi.Schema(),
+                    stack.push('content', media_type),
+                    value.required),
+                media_type
+            )
         else:
             raise TypeError(f'{stack}: schema or content is required')
 
@@ -134,7 +138,7 @@ class OpenApi30Converter:
             name=parameter_name(value),
             alias=value.name,
             type=typ,
-            annotation=value.in_.value.capitalize(),
+            annotation=value.in_.value.capitalize(),  # type: ignore[arg-type]
             style=param_style(value.style, value.explode, value.in_, stack),
             required=value.required,
             media_type=media_type,
@@ -157,7 +161,8 @@ class OpenApi30Converter:
 
         for method, operation in value.model_extra.items():
             self.process_operation(operation, stack.push(method), common_params)
-        self._path_progress(json_pointer.decode_json_pointer(stack.top()))
+        if self._path_progress:
+            self._path_progress(json_pointer.decode_json_pointer(stack.top()))
 
     @resolve_ref
     def process_request_body(self, value: openapi.RequestBody, stack: Stack) -> python.MimeMap:
@@ -189,7 +194,7 @@ class OpenApi30Converter:
         headers = [self.process_header(header, stack.push(name)) for name, header in value.items()]
         if not headers:
             return python.NONE
-        model = python.MetadataModel('ResponseMetadata', headers) if headers else None
+        model = python.MetadataModel('ResponseMetadata', headers)
         typ = resolve_type_hint(str(self.root_package), stack.push('ResponseMetadata'))
 
         self.target.model_modules.append(
@@ -223,7 +228,10 @@ class OpenApi30Converter:
             mime_parsed = parse_media_range(mime)
             if mime_parsed[:2] != ('application', 'json'):
                 continue
-            types[mime] = self.schema_converter.process_schema(media_type.schema_, stack.push(mime, 'schema'))
+            types[mime] = self.schema_converter.process_schema(
+                media_type.schema_ or openapi.Schema(),
+                stack.push(mime, 'schema')
+            )
         return types
 
     def process_operation(

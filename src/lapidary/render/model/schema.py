@@ -162,13 +162,14 @@ class OpenApi30SchemaConverter:
         elif value.type == openapi.Type.object:
             return self._process_schema_object(value, stack)
         elif value.type == openapi.Type.array:
-            return python.list_of(self.process_schema(value.items, stack.push('items')))
+            return python.list_of(self.process_schema(value.items or openapi.Schema(), stack.push('items')))
         elif value.type is None:
             return python.TypeHint.from_str('typing:Any')
         else:
             raise NotImplementedError(str(stack))
 
     def _process_string(self, value: openapi.Schema, _: Stack) -> python.TypeHint:
+        assert value.type == openapi.Type.string
         if value.format:
             if typ := FORMAT_ENCODERS.get((value.type, value.format), None):
                 return python.TypeHint.from_type(typ)
