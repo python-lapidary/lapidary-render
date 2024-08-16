@@ -24,19 +24,12 @@ class ApiClient(ClientBase):
         *,
         base_url: str = '/',
         **kwargs,
-    ):
+    ) -> None:
         super().__init__(
             base_url=base_url,
             security=[{'oauth-refresh': ['read', 'write']}, {'oauth': ['read', 'write']}, {'api-key': []}, {'api-key-cookie': []}, {'api-key-query': []}, {'http_basic': []}, {'http_digest': []}],
             **kwargs,
         )
-
-    async def __aenter__(self) -> 'ApiClient':
-        await super().__aenter__()
-        return self
-
-    async def __aexit__(self, __exc_type=None, __exc_value=None, __traceback=None) -> typing.Optional[bool]:
-        return await super().__aexit__(__exc_type, __exc_value, __traceback)
 
     @get('/test/')
     async def test_op(

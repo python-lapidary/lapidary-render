@@ -24,13 +24,6 @@ class ApiClient(ClientBase):
             {% endif -%}
             **kwargs,
         )
-
-    async def __aenter__(self) -> typing.Self:
-        await super().__aenter__()
-        return self
-
-    async def __aexit__(self, __exc_type=None, __exc_value=None, __traceback=None) -> typing.Optional[bool]:
-        return await super().__aexit__(__exc_type, __exc_value, __traceback)
 {% for func in model.client.body.methods %}
 {%- include 'includes/client/method_operation.py.jinja' %}
 {%- else %}
