@@ -1,4 +1,5 @@
 import tomllib
+from collections.abc import Sequence
 
 import anyio
 import pydantic
@@ -10,7 +11,7 @@ class Config(pydantic.BaseModel):
     document_path: str | None = None
     origin: pydantic.AnyHttpUrl | None = None
     package: str
-    patches: str = 'src/patches'
+    plugins: Sequence[str] = ()
 
 
 async def load_config(project_root: anyio.Path) -> Config:

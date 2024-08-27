@@ -1,14 +1,16 @@
 import abc
+import importlib.machinery
+import importlib.util
 import logging
-from collections.abc import AsyncIterator, Mapping, Sequence
+from collections.abc import Mapping, MutableSequence, Sequence
 from typing import cast
 
 import anyio
 import httpx
 import ruamel.yaml
-from jsonpatch import JsonPatch
 
 from .config import Config
+from .plugins import ProcessorPlugin, sys_path_manager
 
 logger = logging.getLogger(__name__)
 
@@ -17,15 +19,24 @@ async def load_document(root: anyio.Path, config: Config) -> Mapping:
     logger.info('Load OpenAPI document')
     spec_dict: dict = cast(dict, await load_parse(root, config.document_path))
 
-    from jsonpointer import JsonPointerException
-
-    async for path, patch in load_patches(root / config.patches):
-        try:
-            spec_dict = patch.apply(spec_dict)
-        except JsonPointerException as error:
-            raise JsonPointerException(f'Error while applying patch {str(path)}', error.args[0][:100] + '...') from None
+    if config.plugins:
+        spec_dict = await apply_processor_plugins(spec_dict, config, root)
 
     return spec_dict
+
+
+async def apply_processor_plugins(descr_dict: dict, config: Config, project_root: anyio.Path) -> dict:
+    processor_classes: MutableSequence[type[ProcessorPlugin]] = []
+    with sys_path_manager(str(project_root / 'plugins')):
+        for plugin_path in config.plugins:
+            module_name, class_name = plugin_path.split(':')
+            processor_classes.append(getattr(importlib.import_module(module_name), class_name))
+
+    for factory in processor_classes:
+        processor = factory()
+        descr_dict = await processor.process_mapping(descr_dict, config, project_root)
+
+    return descr_dict
 
 
 async def load_parse(root: anyio.Path, path: str | anyio.Path) -> Mapping | Sequence:
@@ -36,20 +47,6 @@ async def load_parse(root: anyio.Path, path: str | anyio.Path) -> Mapping | Sequ
 def parse(text: str) -> Mapping:
     yaml = ruamel.yaml.YAML(typ='safe')
     return yaml.load(text)
-
-
-async def load_patches(patches_root: anyio.Path) -> AsyncIterator[tuple[anyio.Path, JsonPatch]]:
-    patches = sorted([p async for p in patches_root.rglob('*[yamljson]')])
-
-    if not patches:
-        return
-
-    logger.info('Load patches')
-
-    for patch in patches:
-        if patch.suffix in ('.yaml', '.yml', '.json'):
-            path = patch.relative_to(patches_root)
-            yield path, JsonPatch(await load_parse(patches_root, path))
 
 
 class DocumentHandler[P: str | anyio.Path](abc.ABC):
