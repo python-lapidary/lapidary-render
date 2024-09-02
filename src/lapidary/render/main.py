@@ -157,7 +157,7 @@ async def dump_model(project_root: anyio.Path, process: bool, output: TextIO):
 
 
 def prepare_python_model(oa_doc: Mapping, config: Config) -> python.ClientModel:
-    oa_model = openapi.OpenApiModel.model_validate(oa_doc)
+    oa_model = openapi.OpenAPI.model_validate(oa_doc)
     with click.progressbar(
         length=len(oa_model.paths.paths),
         label='Processing paths',

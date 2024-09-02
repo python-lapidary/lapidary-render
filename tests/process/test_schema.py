@@ -1,5 +1,4 @@
 import logging
-from collections.abc import Mapping
 from pathlib import Path
 
 import pytest
@@ -15,35 +14,35 @@ yaml = ruamel.yaml.YAML(typ='safe')
 
 
 @pytest.fixture
-def document() -> openapi.OpenApiModel:
+def document() -> openapi.OpenAPI:
     doc_text = (Path(__file__).parent.parent / 'e2e/init/petstore/src/openapi/openapi.yaml').read_text()
-    return openapi.OpenApiModel.model_validate(yaml.load(doc_text))
+    return openapi.OpenAPI.model_validate(yaml.load(doc_text))
 
 
 @pytest.fixture
-def doc_dummy() -> openapi.OpenApiModel:
+def doc_dummy() -> openapi.OpenAPI:
     doc_text = (Path(__file__).parent.parent / 'e2e/init/dummy/dummy.yaml').read_text()
-    return openapi.OpenApiModel.model_validate(yaml.load(doc_text))
+    return openapi.OpenAPI.model_validate(yaml.load(doc_text))
 
 
-def test_schema_str(document: openapi.OpenApiModel) -> None:
+def test_schema_str(document: openapi.OpenAPI) -> None:
     converter = OpenApi30Converter(python.ModulePath('petstore', False), document, None)
-    operations: Mapping[str, openapi.Operation] = document.paths.paths['/user/login'].model_extra
+    operations: openapi.PathItem = document.paths.paths['/user/login']
 
     responses = converter.process_responses(
-        operations['get'].responses, stack.Stack(('#', 'paths', '/user/login', 'get', 'responses'))
+        operations.get.responses, stack.Stack(('#', 'paths', '/user/login', 'get', 'responses'))
     )
 
     assert responses['200'].content['application/json'] == python.TypeHint(module='builtins', name='str')
     assert converter.schema_converter.schema_modules == []
 
 
-def test_schema_array(document: openapi.OpenApiModel) -> None:
+def test_schema_array(document: openapi.OpenAPI) -> None:
     converter = OpenApi30Converter(python.ModulePath('petstore', False), document, None)
-    operations: Mapping[str, openapi.Operation] = document.paths.paths['/user/createWithList'].model_extra
+    operations: openapi.PathItem = document.paths.paths['/user/createWithList']
 
     request = converter.process_request_body(
-        operations['post'].request_body, stack.Stack(('#', 'paths', '/user/createWithList', 'post', 'requestBody'))
+        operations.post.requestBody, stack.Stack(('#', 'paths', '/user/createWithList', 'post', 'requestBody'))
     )
 
     assert request['application/json'] == python.GenericTypeHint(
@@ -52,12 +51,12 @@ def test_schema_array(document: openapi.OpenApiModel) -> None:
     assert converter.schema_converter.schema_modules[0].body[0].class_name == 'User'
 
 
-def test_property_schema(doc_dummy: openapi.OpenApiModel) -> None:
+def test_property_schema(doc_dummy: openapi.OpenAPI) -> None:
     converter = OpenApi30Converter(python.ModulePath('dummy', False), doc_dummy, None)
-    operations: Mapping[str, openapi.Operation] = doc_dummy.paths.paths['/test/'].model_extra
+    operations: openapi.PathItem = doc_dummy.paths.paths['/test/']
 
     schema = converter.schema_converter.process_schema(
-        operations['get'].parameters[1].schema_,
+        operations.get.parameters[1].param_schema,
         stack.Stack(('#', 'paths', json_pointer.encode_json_pointer('/test/'), 'get', 'parameters', '1', 'schema')),
     )
 

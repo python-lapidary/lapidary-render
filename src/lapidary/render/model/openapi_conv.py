@@ -1,4 +1,3 @@
-import functools
 import itertools
 import logging
 from collections.abc import Callable, Iterable, Mapping, MutableMapping
@@ -20,7 +19,7 @@ class OpenApi30Converter:
     def __init__(
         self,
         root_package: python.ModulePath,
-        source: openapi.OpenApiModel,
+        source: openapi.OpenAPI,
         origin: str | None,
         schema_converter: OpenApi30SchemaConverter | None = None,
         path_progress: Callable[[Any], None] | None = None,
@@ -28,11 +27,11 @@ class OpenApi30Converter:
         self.root_package = root_package
         self.global_headers: dict[str, python.MetaField] = {}
         self.global_responses: dict[python.ResponseCode, python.Response]
-        self.src = source
+        self.source = source
         self._origin = origin
         self._path_progress = path_progress
 
-        self.schema_converter = schema_converter or OpenApi30SchemaConverter(self.root_package, self.resolve_ref)
+        self.schema_converter = schema_converter or OpenApi30SchemaConverter(self.root_package, source)
 
         self.target = python.ClientModel(
             client=python.ClientModule(
@@ -48,7 +47,7 @@ class OpenApi30Converter:
         stack = Stack()
 
         map_process(
-            self.src,
+            self.source,
             stack,
             {
                 'servers': self.process_servers,
@@ -97,7 +96,7 @@ class OpenApi30Converter:
             return
 
         self.global_responses = {
-            code: self.process_response(response, stack.push(code)) for code, response in value.responses.items()
+            code: self.process_response(response, stack.push(code)) for code, response in value.items()
         }
 
     def _process_schema_or_content(
@@ -105,16 +104,16 @@ class OpenApi30Converter:
         value: openapi.ParameterBase,
         stack: Stack,
     ) -> tuple[python.TypeHint, str | None]:
-        if value.schema_ and value.content:
+        if value.param_schema and value.content:
             raise ValueError()
-        if value.schema_:
-            return self.schema_converter.process_schema(value.schema_, stack.push('schema'), value.required), None
+        if value.param_schema:
+            return self.schema_converter.process_schema(value.param_schema, stack.push('schema'), value.required), None
         elif value.content:
             media_type, media_type_obj = next(iter(value.content.items()))
             # encoding = media_type_obj.encoding
             return (
                 self.schema_converter.process_schema(
-                    media_type_obj.schema_ or openapi.Schema(), stack.push('content', media_type), value.required
+                    media_type_obj.param_schema or openapi.Schema(), stack.push('content', media_type), value.required
                 ),
                 media_type,
             )
@@ -137,15 +136,16 @@ class OpenApi30Converter:
             name=parameter_name(value),
             alias=value.name,
             type=typ,
-            annotation=value.in_.value.capitalize(),  # type: ignore[arg-type]
-            style=param_style(value.style, value.explode, value.in_, stack),
+            annotation=value.param_in.value.capitalize(),  # type: ignore[arg-type]
+            style=param_style(value.style, value.explode, value.param_in, stack),
             required=value.required,
             media_type=media_type,
         )
 
     def process_paths(self, value: openapi.Paths, stack: Stack) -> None:
         for path, path_item in value.paths.items():
-            self.process_path(path_item, stack.push(json_pointer.encode_json_pointer(path)))
+            if path.startswith('/'):
+                self.process_path(path_item, stack.push(json_pointer.encode_json_pointer(path)))
 
     def process_path(
         self,
@@ -153,13 +153,18 @@ class OpenApi30Converter:
         stack: Stack,
     ) -> None:
         common_params_stack = stack.push('parameters')
-        common_params = {
-            param.name: self.process_parameter(param, common_params_stack.push(str(idx)))
-            for idx, param in enumerate(value.parameters)
-        }
+        common_params = (
+            {
+                param.name: self.process_parameter(param, common_params_stack.push(str(idx)))
+                for idx, param in enumerate(value.parameters)
+            }
+            if value.parameters
+            else {}
+        )
 
-        for method, operation in value.model_extra.items():
-            self.process_operation(operation, stack.push(method), common_params)
+        for method in ('get', 'post', 'put', 'delete', 'head', 'patch', 'options', 'trace'):
+            if operation := getattr(value, method):
+                self.process_operation(operation, stack.push(method), common_params)
         if self._path_progress:
             self._path_progress(json_pointer.decode_json_pointer(stack.top()))
 
@@ -190,9 +195,9 @@ class OpenApi30Converter:
         return response
 
     def process_headers(self, value: Mapping[str, openapi.Header], stack: Stack) -> python.TypeHint:
-        headers = [self.process_header(header, stack.push(name)) for name, header in value.items()]
-        if not headers:
+        if not value:
             return python.NONE
+        headers = [self.process_header(header, stack.push(name)) for name, header in value.items()]
         model = python.MetadataModel('ResponseMetadata', headers)
         typ = resolve_type_hint(str(self.root_package), stack.push('ResponseMetadata'))
 
@@ -217,18 +222,20 @@ class OpenApi30Converter:
             type=typ,
             annotation='Header',
             required=value.required,
-            style=param_style(value.style, value.explode, value.in_, stack),
+            style=param_style(value.style, value.explode, openapi.ParameterLocation.HEADER, stack),
         )
 
     def process_content(self, value: Mapping[str, openapi.MediaType], stack: Stack) -> python.MimeMap:
         """Returns: {mime_type: response body type hint}"""
+        if not value:
+            return {}
         types = {}
         for mime, media_type in value.items():
             mime_parsed = parse_media_range(mime)
             if mime_parsed[:2] != ('application', 'json'):
                 continue
             types[mime] = self.schema_converter.process_schema(
-                media_type.schema_ or openapi.Schema(), stack.push(mime, 'schema')
+                media_type.media_type_schema or openapi.Schema(), stack.push(mime, 'schema')
             )
         return types
 
@@ -240,13 +247,13 @@ class OpenApi30Converter:
     ) -> None:
         logger.debug('Process operation %s', stack)
 
-        if not value.operation_id:
+        if not value.operationId:
             raise ValueError(f'{stack}: operationId is required')
 
         params = self._mk_params(value.parameters, stack.push('parameters'), common_params)
 
         request_body = (
-            self.process_request_body(value.request_body, stack.push('requestBody')) if value.request_body else {}
+            self.process_request_body(value.requestBody, stack.push('requestBody')) if value.requestBody else {}
         )
         responses = self.process_responses(value.responses, stack.push('responses'))
         security = self.process_security(value.security, stack.push('security'))
@@ -261,7 +268,7 @@ class OpenApi30Converter:
             return_types.add(type_hint.tuple_of(body_type, response.headers_type))
 
         model = python.OperationFunction(
-            name=value.operation_id,
+            name=value.operationId,
             method=stack.top(),
             path=json_pointer.decode_json_pointer(stack[-2]),
             request_body=request_body,
@@ -275,15 +282,19 @@ class OpenApi30Converter:
 
     def _mk_params(
         self,
-        value: list[openapi.Parameter | openapi.Reference[openapi.Parameter]],
+        value: list[openapi.Parameter | openapi.Reference],
         stack: Stack,
         common_params: Mapping[str, python.MetaField],
     ) -> Iterable[python.MetaField]:
-        processed_params = [
-            self.process_parameter(oa_param, stack.push(str(idx)))
-            for idx, oa_param in enumerate(value)
-            if oa_param.name not in common_params
-        ]
+        processed_params = (
+            [
+                self.process_parameter(oa_param, stack.push(str(idx)))
+                for idx, oa_param in enumerate(value)
+                if oa_param.name not in common_params
+            ]
+            if value
+            else ()
+        )
 
         all_fields = {field.name: field for field in itertools.chain(common_params.values(), processed_params)}.values()
 
@@ -339,24 +350,23 @@ class OpenApi30Converter:
     ) -> Mapping[str, Iterable[str]]:
         logger.debug('Process security requirement %s', stack)
         schemes_root = Stack(('#', 'components', 'securitySchemes'))
-        for scheme_name, scopes in value.root.items():
+        for scheme_name, scopes in value.items():
             scheme_stack = schemes_root.push(scheme_name)
-            self.process_security_scheme(
-                openapi.Reference[openapi.SecuritySchemeBase](ref=str(scheme_stack)), scheme_stack
-            )
-        return value.root
+            self.process_security_scheme(openapi.Reference(ref=str(scheme_stack)), scheme_stack)
+        return value
 
     # need separate method to resolve references before calling a single-dispatched method
     @resolve_ref
-    def process_security_scheme(self, value: openapi.SecuritySchemeBase, stack: Stack) -> None:
-        self.process_security_scheme_(value, stack)
+    def process_security_scheme(self, value: openapi.SecurityScheme, stack: Stack) -> None:
+        match value.type:
+            case 'apiKey':
+                self.process_security_scheme_api_key(value, stack)
+            case 'oauth2':
+                self.process_security_scheme_oauth2(value, stack)
+            case 'http':
+                self.process_security_scheme_http(value, stack)
 
-    @functools.singledispatchmethod
-    def process_security_scheme_(self, _: openapi.SecuritySchemeBase, stack: Stack) -> None:
-        raise NotImplementedError(str(stack))
-
-    @process_security_scheme_.register(openapi.APIKeySecurityScheme)
-    def _(self, value: openapi.APIKeySecurityScheme, stack: Stack) -> None:
+    def process_security_scheme_api_key(self, value: openapi.SecurityScheme, stack: Stack) -> None:
         logger.debug('Process API key security scheme %s', stack)
         auth_name = stack.top()
         flow_name = f'api_key_{auth_name}'
@@ -367,12 +377,11 @@ class OpenApi30Converter:
             name=auth_name,
             python_name=names.maybe_mangle_name(auth_name),
             key=value.name,
-            location=value.in_,
+            location=openapi.ParameterLocation(value.security_scheme_in),
             format=value.format,
         )
 
-    @process_security_scheme_.register(openapi.OAuth2SecurityScheme)
-    def _(self, value: openapi.OAuth2SecurityScheme, stack: Stack) -> None:
+    def process_security_scheme_oauth2(self, value: openapi.SecurityScheme, stack: Stack) -> None:
         auth_name = stack.top()
         if auth_name in self.target.security_schemes:
             return
@@ -384,63 +393,62 @@ class OpenApi30Converter:
             {
                 'implicit': self.process_oauth2_implicit,
                 'password': self.process_oauth2_password,
-                'authorization_code': self.process_oauth2_auth_code,
-                'client_credentials': self.process_oauth2_client_credentials,
+                'authorizationCode': self.process_oauth2_auth_code,
+                'clientCredentials': self.process_oauth2_client_credentials,
             },
             True,
         )
 
-    def process_oauth2_implicit(self, value: openapi.ImplicitOAuthFlow, stack: Stack) -> None:
-        if value.refresh_url:
+    def process_oauth2_implicit(self, value: openapi.OAuthFlow, stack: Stack) -> None:
+        if value.refreshUrl:
             raise NotImplementedError(stack.push('refreshUrl'))
 
         auth_name = stack[-3]
         self.target.security_schemes[f'oauth2_implicit_{auth_name}'] = python.ImplicitOAuth2Flow(
             name=auth_name,
             python_name=names.maybe_mangle_name(auth_name),
-            authorization_url=value.authorization_url,
+            authorization_url=value.authorizationUrl,
             scopes=value.scopes,
         )
 
-    def process_oauth2_password(self, value: openapi.PasswordOAuthFlow, stack: Stack) -> None:
-        if value.refresh_url:
+    def process_oauth2_password(self, value: openapi.OAuthFlow, stack: Stack) -> None:
+        if value.refreshUrl:
             raise NotImplementedError(stack.push('refreshUrl'))
 
         auth_name = stack[-3]
         self.target.security_schemes[f'oauth2_password_{auth_name}'] = python.PasswordOAuth2Flow(
             name=auth_name,
             python_name=names.maybe_mangle_name(auth_name),
-            token_url=value.token_url,
+            token_url=value.tokenUrl,
             scopes=value.scopes,
         )
 
-    def process_oauth2_auth_code(self, value: openapi.AuthorizationCodeOAuthFlow, stack: Stack) -> None:
-        if value.refresh_url:
+    def process_oauth2_auth_code(self, value: openapi.OAuthFlow, stack: Stack) -> None:
+        if value.refreshUrl:
             raise NotImplementedError(stack.push('refreshUrl'))
 
         auth_name = stack[-3]
         self.target.security_schemes[f'oauth2_auth_code_{auth_name}'] = python.AuthorizationCodeOAuth2Flow(
             name=auth_name,
             python_name=names.maybe_mangle_name(auth_name),
-            authorization_url=value.authorization_url,
-            token_url=value.token_url,
+            authorization_url=value.authorizationUrl,
+            token_url=value.tokenUrl,
             scopes=value.scopes,
         )
 
-    def process_oauth2_client_credentials(self, value: openapi.ClientCredentialsFlow, stack: Stack) -> None:
-        if value.refresh_url:
+    def process_oauth2_client_credentials(self, value: openapi.OAuthFlow, stack: Stack) -> None:
+        if value.refreshUrl:
             raise NotImplementedError(stack.push('refreshUrl'))
 
         auth_name = stack[-3]
         self.target.security_schemes[f'oauth2_client_credentials_{auth_name}'] = python.ClientCredentialsOAuth2Flow(
             name=auth_name,
             python_name=names.maybe_mangle_name(auth_name),
-            token_url=value.token_url,
+            token_url=value.tokenUrl,
             scopes=value.scopes,
         )
 
-    @process_security_scheme_.register(openapi.HTTPSecurityScheme)
-    def _(self, value: openapi.HTTPSecurityScheme, stack: Stack) -> None:
+    def process_security_scheme_http(self, value: openapi.SecurityScheme, stack: Stack) -> None:
         logger.debug('Process HTTP security scheme %s', stack)
         auth_name = stack.top()
         flow_name = f'http_{auth_name}'
@@ -456,14 +464,14 @@ class OpenApi30Converter:
         except KeyError:
             raise NotImplementedError(stack.push('scheme'), value.scheme) from None
 
-    def resolve_ref[Target](self, ref: openapi.Reference[Target]) -> tuple[Target, Stack]:
+    def resolve_ref[Target](self, ref: openapi.Reference) -> tuple[Target, Stack]:
         """Resolve reference to OpenAPI object and its direct path."""
-        value, pointer = self.src.resolve_ref(ref)
+        value, pointer = self.source.resolve_ref(ref)
         return cast(Target, value), Stack.from_str(pointer)
 
 
 def param_style(
-    style: openapi.Style | None,
+    style: str | None,
     explode: bool | None,
     in_: openapi.ParameterLocation,
     stack: Stack,
@@ -474,20 +482,20 @@ def param_style(
 
     if style is None:
         match in_:
-            case openapi.ParameterLocation.cookie | openapi.ParameterLocation.query:
+            case 'cookie' | 'query':
                 style_name = 'form'
-            case openapi.ParameterLocation.header | openapi.ParameterLocation.path:
+            case 'header' | 'path':
                 style_name = 'simple'
             case _:
                 raise ValueError('Unsupported `in`', in_, stack)
     else:
-        style_name = style.value
+        style_name = style
 
     if explode is None:
         explode = style_name == 'form'
 
     if style_name == 'simple':
-        if in_ == openapi.ParameterLocation.path:
+        if in_ == 'path':
             style_name = 'simple_string'
         else:
             style_name = 'simple_multimap'
@@ -500,7 +508,7 @@ def param_style(
 
 
 def parameter_name(value: openapi.Parameter) -> str:
-    return value.lapidary_name or names.maybe_mangle_name(value.name) + '_' + value.in_.name[0]
+    return value.lapidary_name or names.maybe_mangle_name(value.name) + '_' + value.param_in.name[0].lower()
 
 
 def map_process(

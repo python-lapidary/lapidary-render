@@ -21,7 +21,7 @@ test_files = [
 @pytest.mark.parametrize('document_path, expected', test_files)
 def test_servers(document_path: Path, expected: str | None):
     doc_text = document_path.read_text()
-    document = openapi.OpenApiModel.model_validate(yaml.load(doc_text))
+    document = openapi.OpenAPI.model_validate(yaml.load(doc_text))
 
     converter = model.OpenApi30Converter(python.ModulePath('package', False), document, None)
     converter.process_servers(document.servers, Stack(('#', 'servers')))

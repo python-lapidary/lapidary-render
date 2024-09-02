@@ -13,15 +13,15 @@ from . import openapi, python
 from .refs import resolve_ref
 from .stack import Stack
 
-type ResolveRefFn[Target] = Callable[[openapi.Reference[Target]], tuple[Stack, Target]]
+type ResolveRefFn[Target] = Callable[[openapi.Reference], tuple[Stack, Target]]
 
 logger = logging.getLogger(__name__)
 
 
 class OpenApi30SchemaConverter:
-    def __init__(self, root_package: python.ModulePath, resolve_ref_: ResolveRefFn) -> None:
+    def __init__(self, root_package: python.ModulePath, source: openapi.OpenAPI) -> None:
         self.root_package = root_package
-        self.resolve_ref = staticmethod(resolve_ref_)
+        self.source = source
         self.schema_types: MutableMapping[Stack, tuple[python.SchemaClass, python.TypeHint]] = {}
 
     @resolve_ref
@@ -31,16 +31,22 @@ class OpenApi30SchemaConverter:
 
         name = value.lapidary_name or names.maybe_mangle_name(stack.top())
         stack_props = stack.push('properties')
-        fields = [
-            self.process_property(prop_schema, stack_props.push(prop_name), prop_name, prop_name in value.required)
-            for prop_name, prop_schema in value.properties.items()
-        ]
+        fields = (
+            [
+                self.process_property(
+                    prop_schema, stack_props.push(prop_name), prop_name, prop_name in (value.required or ())
+                )
+                for prop_name, prop_schema in value.properties.items()
+            ]
+            if value.properties
+            else []
+        )
 
         type_hint = resolve_type_hint(str(self.root_package), stack.push('schema', name))
         schema_class = python.SchemaClass(
             class_name=name,
             base_type=python.TypeHint.from_str('lapidary.runtime:ModelBase'),
-            allow_extra=value.additional_properties is not False,
+            allow_extra=value.additionalProperties is not False,
             fields=fields,
             docstr=value.description or None,
         )
@@ -74,11 +80,11 @@ class OpenApi30SchemaConverter:
             v = getattr(value, k)
 
             if k == 'maximum':
-                field_prop = 'lt' if value.exclusive_maximum else 'le'
+                field_prop = 'lt' if value.exclusiveMaximum else 'le'
                 field_props[field_prop] = v
                 continue
             if k == 'minimum':
-                field_prop = 'gt' if value.exclusive_minimum else 'ge'
+                field_prop = 'gt' if value.exclusiveMinimum else 'ge'
                 field_props[field_prop] = v
                 continue
             if k not in FIELD_PROPS:
@@ -100,7 +106,7 @@ class OpenApi30SchemaConverter:
         if name != prop_name:
             field_props['alias'] = f"'{prop_name}'"
 
-        required = in_required and not (value.read_only or value.write_only)
+        required = in_required and not (value.readOnly or value.writeOnly)
 
         return python.Field(
             name=name,
@@ -118,7 +124,7 @@ class OpenApi30SchemaConverter:
 
         typ = self._process_schema(value, stack)
 
-        if value.nullable or not required or value.read_only or value.write_only:
+        if value.nullable or not required or value.readOnly or value.writeOnly:
             typ = python.union_of(typ, python.NONE)
 
         return typ
@@ -126,7 +132,7 @@ class OpenApi30SchemaConverter:
     def _get_one_of_type_hint(
         self,
         stack: Stack,
-        one_of: Iterable[openapi.Reference[openapi.Schema] | openapi.Schema],
+        one_of: Iterable[openapi.Reference | openapi.Schema],
     ) -> python.TypeHint:
         return python.union_of(
             *tuple(self.process_schema(sub_schema, stack.push(str(idx))) for idx, sub_schema in enumerate(one_of))
@@ -147,21 +153,21 @@ class OpenApi30SchemaConverter:
         value: openapi.Schema,
         stack: Stack,
     ) -> python.TypeHint:
-        if value.any_of:
-            return self._get_composite_type_hint(stack.push('anyOf'), value.any_of)
-        elif value.one_of:
-            return self._get_one_of_type_hint(stack.push('oneOf'), value.one_of)
-        elif value.all_of:
-            return self._get_composite_type_hint(stack.push('allOf'), value.all_of)
-        elif value.not_:
+        if value.anyOf:
+            return self._get_composite_type_hint(stack.push('anyOf'), value.anyOf)
+        elif value.oneOf:
+            return self._get_one_of_type_hint(stack.push('oneOf'), value.oneOf)
+        elif value.allOf:
+            return self._get_composite_type_hint(stack.push('allOf'), value.allOf)
+        elif value.schema_not:
             raise NotImplementedError(stack.push('not'))
-        elif value.type == openapi.Type.string and value.format:
+        elif value.type == openapi.DataType.STRING and value.schema_format:
             return self._process_string(value, stack)
         elif value.type in PRIMITIVE_TYPES:
             return python.TypeHint.from_type(PRIMITIVE_TYPES[value.type])
-        elif value.type == openapi.Type.object:
+        elif value.type == openapi.DataType.OBJECT:
             return self._process_schema_object(value, stack)
-        elif value.type == openapi.Type.array:
+        elif value.type == openapi.DataType.ARRAY:
             return python.list_of(self.process_schema(value.items or openapi.Schema(), stack.push('items')))
         elif value.type is None:
             return python.TypeHint.from_str('typing:Any')
@@ -169,9 +175,9 @@ class OpenApi30SchemaConverter:
             raise NotImplementedError(str(stack))
 
     def _process_string(self, value: openapi.Schema, _: Stack) -> python.TypeHint:
-        assert value.type == openapi.Type.string
-        if value.format:
-            if typ := FORMAT_ENCODERS.get((value.type, value.format), None):
+        assert value.type == openapi.DataType.STRING
+        if value.schema_format:
+            if typ := FORMAT_ENCODERS.get((value.type, value.schema_format), None):
                 return python.TypeHint.from_type(typ)
         return python.TypeHint.from_type(str)
 
@@ -198,28 +204,28 @@ def in_types(typ: python.TypeHint, allowed: Iterable[python.TypeHint]) -> bool:
 
 
 PRIMITIVE_TYPES = {
-    openapi.Type.string: str,
-    openapi.Type.integer: int,
-    openapi.Type.number: float,
-    openapi.Type.boolean: bool,
+    openapi.DataType.STRING: str,
+    openapi.DataType.INTEGER: int,
+    openapi.DataType.NUMBER: float,
+    openapi.DataType.BOOLEAN: bool,
 }
 
 FORMAT_ENCODERS = {
-    (openapi.Type.string, 'uuid'): uuid.UUID,
-    (openapi.Type.string, 'date'): dt.date,
-    (openapi.Type.string, 'date-time'): dt.datetime,
-    (openapi.Type.string, 'time'): dt.time,
-    (openapi.Type.string, 'decimal'): dec.Decimal,
+    (openapi.DataType.STRING, 'uuid'): uuid.UUID,
+    (openapi.DataType.STRING, 'date'): dt.date,
+    (openapi.DataType.STRING, 'date-time'): dt.datetime,
+    (openapi.DataType.STRING, 'time'): dt.time,
+    (openapi.DataType.STRING, 'decimal'): dec.Decimal,
 }
 
 FIELD_PROPS = {
-    'max_items': 'max_length',
-    'max_length': 'max_length',
-    'max_properties': 'man_length',
-    'min_items': 'min_length',
-    'min_length': 'min_length',
-    'min_properties': 'min_length',
-    'multiple_of': 'multiple_of',
+    'maxItems': 'max_length',
+    'maxLength': 'max_length',
+    'maxProperties': 'man_length',
+    'minItems': 'min_length',
+    'minLength': 'min_length',
+    'minProperties': 'min_length',
+    'multipleOf': 'multiple_of',
     'pattern': 'pattern',
 }
 
