@@ -76,16 +76,20 @@ class OpenApi30SchemaConverter:
             else None
         )
 
+        # constraints should be processed and applied per type, but for now we only have a single Field annotation,
+        # and pydantic doesn't like float constraints for int fields.
+        is_int = in_types(typ, (python.TypeHint.from_type(int),))
+
         for k in value.model_fields_set:
             v = getattr(value, k)
 
             if k == 'maximum':
                 field_prop = 'lt' if value.exclusiveMaximum else 'le'
-                field_props[field_prop] = v
+                field_props[field_prop] = int(v) if is_int else v
                 continue
             if k == 'minimum':
                 field_prop = 'gt' if value.exclusiveMinimum else 'ge'
-                field_props[field_prop] = v
+                field_props[field_prop] = int(v) if is_int else v
                 continue
             if k not in FIELD_PROPS:
                 continue
