@@ -47,16 +47,23 @@ Renders the client code in the project root. The default project root is the cur
 
 All python files are generated in the `PROJECT_ROOT/gen` directory.
 
-If the patches directory (`PROJECT_ROOT/src/patches` by default) exists, Lapidary will read all JSON and YAML files
-and apply them as JSONPatch files against the original OpenAPI file.
-
 ## Configuration
 
 Lapidary can be configured with a `pyproject.yaml` file of the client project, under `[tool.lapidary]` key.
 
-- package - root package name.
-- document_path - path of the OpenAPI document, relative to the project root.
-- origin - URL of the OpenAPI document, used when document_path is missing, or when `servers` is not defined, or the first server URL is a relative path.
-- patches - patches directory [default = 'src/patches'].
+package
+: root package name.
+
+document_path
+: path of the OpenAPI document, relative to the project root.
+
+origin
+: URL of the OpenAPI document, used when document_path is missing, or when `servers` is not defined, or the first server URL is a relative path.
+
+extra_sources
+: list of additional source roots for manually written code. The files will be interpreted as templates, but non-template files will also work.
+
+plugins
+: list of plugin classes. See [the section on plug-ins](/plugins)
 
 At least one of `document_path` and `origin` is required. Saving OpenAPI document in the project is recommended for repeatable builds.
