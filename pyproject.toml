@@ -91,3 +91,4 @@ ignore = ["115", "126"]
 
 [tool.pytest.ini_options]
 norecursedirs = ['tests/e2e']
+asyncio_default_fixture_loop_scope='function'
