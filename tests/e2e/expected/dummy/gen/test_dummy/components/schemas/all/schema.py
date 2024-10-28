@@ -11,7 +11,7 @@ import test_dummy.components.schemas.all.properties.u_0for.schema
 
 class all(lapidary.runtime.ModelBase):
     u_0for: typing.Annotated[
-        test_dummy.components.schemas.all.properties.u_0for.schema.uu_1X0for,
+        test_dummy.components.schemas.all.properties.u_0for.schema.u_0for,
         pydantic.Field(
             alias='for',
         )
