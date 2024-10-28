@@ -39,7 +39,7 @@ pybase62 = "^1.0.0"
 pydantic = "^2.5.2"
 python-mimeparse = ">=1.6,<3.0"
 ruamel-yaml = "^0.18.6"
-rybak = { version = "^0.4", extras = ['jinja'] }
+rybak = {extras = ["jinja"], version = "^0.5.0"}
 openapi-pydantic = "^0.4.1"
 
 [tool.poetry.scripts]
