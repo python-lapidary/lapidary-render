@@ -29,7 +29,7 @@ class OpenApi30SchemaConverter:
         if stack in self.schema_types:
             return self.schema_types[stack][1]
 
-        name = value.lapidary_name or names.maybe_mangle_name(stack.top())
+        name = value.lapidary_name or stack.top()
         stack_props = stack.push('properties')
         fields = (
             [
@@ -44,7 +44,7 @@ class OpenApi30SchemaConverter:
 
         type_hint = resolve_type_hint(str(self.root_package), stack.push('schema', name))
         schema_class = python.SchemaClass(
-            class_name=name,
+            class_name=names.maybe_mangle_name(name),
             base_type=python.TypeHint.from_str('lapidary.runtime:ModelBase'),
             allow_extra=value.additionalProperties is not False,
             fields=fields,
