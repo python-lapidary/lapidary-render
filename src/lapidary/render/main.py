@@ -95,12 +95,14 @@ async def render_project(project_root: anyio.Path) -> None:
     from rybak import TreeTemplate
     from rybak.jinja import JinjaAdapter
 
+    loaders = [jinja2.loaders.PackageLoader('lapidary.render', package_path='templates/render')]
+    for path in config.extra_sources:
+        if pathlib.Path(path).is_absolute():
+            raise ValueError('Unacceptable absolute path in extra template sources', path)
+        loaders.append(jinja2.loaders.FileSystemLoader(project_root / path))
+
     template = TreeTemplate(
-        JinjaAdapter(
-            jinja2.Environment(
-                loader=jinja2.loaders.PackageLoader('lapidary.render', package_path='templates/render'),
-            )
-        ),
+        JinjaAdapter(jinja2.Environment(loader=jinja2.loaders.ChoiceLoader(loaders))),
         exclude_extend=[
             'includes',
         ],

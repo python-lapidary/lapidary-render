@@ -21,7 +21,7 @@ class JSONPatchPlugin(ProcessorPlugin):
     async def process_mapping(self, model: dict, config: Config, project_root: anyio.Path) -> dict:
         from jsonpointer import JsonPointerException
 
-        async for path, patch in self.load_patches(project_root / 'src/patches'):
+        async for path, patch in self.load_patches(project_root / 'openapi/patches'):
             try:
                 model = patch.apply(model)
             except JsonPointerException as error:

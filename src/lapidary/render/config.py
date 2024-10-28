@@ -9,6 +9,7 @@ PYPROJ_TOML = 'pyproject.toml'
 
 class Config(pydantic.BaseModel):
     document_path: str | None = None
+    extra_sources: Sequence[str] = ()
     origin: pydantic.AnyHttpUrl | None = None
     package: str
     plugins: Sequence[str] = ()
