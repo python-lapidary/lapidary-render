@@ -10,3 +10,7 @@ import datetime
 
 class schema(lapidary.runtime.ModelBase):
     prop1: datetime.date
+
+    model_config = pydantic.ConfigDict(
+        extra='forbid'
+    )

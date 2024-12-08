@@ -7,7 +7,8 @@ from mimeparse import parse_media_range
 
 from .. import json_pointer, names
 from . import openapi, python
-from .conv_schema import OpenApi30SchemaConverter, resolve_type_hint
+from .conv_schema import OpenApi30SchemaConverter
+from .metamodel import resolve_type_hint
 from .python import type_hint
 from .refs import resolve_ref
 from .stack import Stack
@@ -96,7 +97,7 @@ class OpenApi30Converter:
             return
 
         self.global_responses = {
-            code: self.process_response(response, stack.push(code)) for code, response in value.items()
+            code: self.process_response(response, stack.push(code)) for code, response in value.responses.items()
         }
 
     def _process_schema_or_content(
@@ -107,16 +108,17 @@ class OpenApi30Converter:
         if value.param_schema and value.content:
             raise ValueError()
         if value.param_schema:
-            return self.schema_converter.process_schema(value.param_schema, stack.push('schema'), value.required), None
+            model = self.schema_converter.process_type_schema(value.param_schema, stack.push('schema'))
+            assert model
+            return model.as_annotation(str(self.root_package), value.required), None
         elif value.content:
             media_type, media_type_obj = next(iter(value.content.items()))
             # encoding = media_type_obj.encoding
-            return (
-                self.schema_converter.process_schema(
-                    media_type_obj.param_schema or openapi.Schema(), stack.push('content', media_type), value.required
-                ),
-                media_type,
+            model = self.schema_converter.process_type_schema(
+                media_type_obj.media_type_schema or openapi.Schema(), stack.push('content', media_type)
             )
+            assert model
+            return model.as_annotation(str(self.root_package), value.required), media_type
         else:
             raise TypeError(f'{stack}: schema or content is required')
 
@@ -145,7 +147,7 @@ class OpenApi30Converter:
     def process_paths(self, value: openapi.Paths, stack: Stack) -> None:
         for path, path_item in value.paths.items():
             if path.startswith('/'):
-                self.process_path(path_item, stack.push(json_pointer.encode_json_pointer(path)))
+                self.process_path(path_item, stack.push(path))
 
     def process_path(
         self,
@@ -234,9 +236,12 @@ class OpenApi30Converter:
             mime_parsed = parse_media_range(mime)
             if mime_parsed[:2] != ('application', 'json'):
                 continue
-            types[mime] = self.schema_converter.process_schema(
-                media_type.media_type_schema or openapi.Schema(), stack.push(mime, 'schema')
+            model = self.schema_converter.process_type_schema(
+                media_type.media_type_schema or openapi.Schema(),
+                stack.push(mime, 'schema'),
             )
+            assert model
+            types[mime] = model.as_annotation(str(self.root_package))
         return types
 
     def process_operation(
@@ -287,11 +292,7 @@ class OpenApi30Converter:
         common_params: Mapping[str, python.MetaField],
     ) -> Iterable[python.MetaField]:
         processed_params = (
-            [
-                self.process_parameter(oa_param, stack.push(str(idx)))
-                for idx, oa_param in enumerate(value)
-                if oa_param.name not in common_params
-            ]
+            [self.process_parameter(oa_param, stack.push(str(idx))) for idx, oa_param in enumerate(value)]
             if value
             else ()
         )

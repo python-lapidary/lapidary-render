@@ -20,7 +20,3 @@ class Order(lapidary.runtime.ModelBase):
     status: typing.Union[None, str] = None
 
     complete: typing.Union[None, bool] = None
-
-    model_config = pydantic.ConfigDict(
-        extra='allow'
-    )

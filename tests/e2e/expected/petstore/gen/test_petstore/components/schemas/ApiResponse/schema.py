@@ -13,7 +13,3 @@ class ApiResponse(lapidary.runtime.ModelBase):
     type: typing.Union[None, str] = None
 
     message: typing.Union[None, str] = None
-
-    model_config = pydantic.ConfigDict(
-        extra='allow'
-    )

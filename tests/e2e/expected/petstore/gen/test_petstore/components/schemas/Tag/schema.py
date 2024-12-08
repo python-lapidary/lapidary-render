@@ -5,8 +5,9 @@ from __future__ import annotations
 import lapidary.runtime
 import pydantic
 import typing_extensions as typing
-import test_dummy.components.schemas.schema1.properties.prop1.schema
 
 
-class schema1(lapidary.runtime.ModelBase):
-    prop1: test_dummy.components.schemas.schema1.properties.prop1.schema.prop1
+class Tag(lapidary.runtime.ModelBase):
+    id: typing.Union[None, int] = None
+
+    name: typing.Union[None, str] = None

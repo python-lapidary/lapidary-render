@@ -108,15 +108,29 @@ class NoneTypeHint(TypeHint):
 NONE = NoneTypeHint()
 
 
+@dc.dataclass(slots=True, frozen=True)
+class AnnotatedTypehint(TypeHint):
+    """Typically type hints are simply types, optionally quoted. Annotated allows a list of things, where the first
+    thing must be a type.
+    """
+
+    module: str = dc.field(init=False, default='typing')
+    name: str = dc.field(init=False, default='Annotated')
+    args: tuple[TypeHint | str, ...]
+
+    @classmethod
+    def for_type(cls, typ: TypeHint, args: Iterable[TypeHint | str]) -> Self:
+        return cls((typ, *args))
+
+
 def list_of(item: TypeHint) -> TypeHint:
+    assert item is not None
     return GenericTypeHint(module='builtins', name='list', args=(item,))
 
 
 def union_of(*types: TypeHint) -> TypeHint:
     if not types:
         return NONE
-    if len(types) == 1:
-        return next(iter(types))
 
     args: set[TypeHint] = set()
     for typ in types:
@@ -124,6 +138,10 @@ def union_of(*types: TypeHint) -> TypeHint:
             args.update(cast(GenericTypeHint, typ).args)
         else:
             args.add(typ)
+
+    if len(args) == 1:
+        return next(iter(args))
+
     return GenericTypeHint(module='typing', name='Union', args=sorted(args, key=str))
 
 

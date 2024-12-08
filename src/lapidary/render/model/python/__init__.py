@@ -7,6 +7,7 @@ from typing import Self
 
 from ..openapi import ParameterLocation as ParamLocation
 from .model import (
+    AbstractType,
     Annotation,
     ApiKeyAuth,
     Auth,
@@ -22,6 +23,7 @@ from .model import (
     MetaField,
     MimeMap,
     ModelType,
+    ModelTypeAlias,
     OperationFunction,
     ParamStyle,
     PasswordOAuth2Flow,
@@ -41,7 +43,7 @@ from .module import (
     SchemaModule,
 )
 from .module_path import ModulePath
-from .type_hint import NONE, GenericTypeHint, TypeHint, list_of, union_of
+from .type_hint import NONE, AnnotatedTypehint, GenericTypeHint, TypeHint, list_of, union_of
 
 
 @dc.dataclass

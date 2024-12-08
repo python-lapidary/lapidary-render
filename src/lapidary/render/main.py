@@ -140,7 +140,9 @@ class RenderProgressBar(rybak.EventSink):
     def writing_file(self, template: pathlib.PurePath, target: pathlib.Path) -> None:
         super().writing_file(template, target)
         if str(template) == '{{loop_over(model.modules).file_path}}.py.jinja':
-            self._progress_bar.update(1, str(target).split('/')[-2])
+            target_parts = str(target).split('/')
+            assert len(target_parts) > 1
+            self._progress_bar.update(1, target_parts[-2])
 
 
 async def dump_model(project_root: anyio.Path, process: bool, output: TextIO):

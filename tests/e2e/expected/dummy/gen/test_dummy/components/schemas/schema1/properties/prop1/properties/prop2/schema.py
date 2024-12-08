@@ -8,17 +8,10 @@ import typing_extensions as typing
 
 
 class prop2(lapidary.runtime.ModelBase):
-    key: typing.Annotated[
-        str,
-        pydantic.Field(
-            max_length=10,
-            min_length=5,
-        )
-    ]
+    key: str
 
-    nonu_lalpha: typing.Annotated[
-        typing.Union[None, str],
-        pydantic.Field(
-            alias='non/alpha',
-        )
-    ] = None
+    nonu_lalpha: str
+
+    model_config = pydantic.ConfigDict(
+        extra='forbid'
+    )

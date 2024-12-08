@@ -1,7 +1,6 @@
 import typing
 from collections.abc import Iterable
 from pathlib import PurePath
-from typing import Self
 
 
 class ModulePath:
@@ -25,7 +24,7 @@ class ModulePath:
 
         self._is_module = is_module
 
-    def to_path(self, root: PurePath | None = None):
+    def to_path(self, root: PurePath | None = None) -> PurePath:
         parts = list(self.parts)
         if not self._is_module:
             parts.append('__init__')

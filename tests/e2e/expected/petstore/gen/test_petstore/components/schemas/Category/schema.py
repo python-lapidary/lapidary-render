@@ -11,7 +11,3 @@ class Category(lapidary.runtime.ModelBase):
     id: typing.Union[None, int] = None
 
     name: typing.Union[None, str] = None
-
-    model_config = pydantic.ConfigDict(
-        extra='allow'
-    )

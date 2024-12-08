@@ -10,18 +10,12 @@ import test_dummy.components.schemas.all.properties.u_0for.schema
 
 
 class all(lapidary.runtime.ModelBase):
-    u_0for: typing.Annotated[
-        test_dummy.components.schemas.all.properties.u_0for.schema.u_0for,
-        pydantic.Field(
-            alias='for',
-        )
-    ]
+    u_0for: test_dummy.components.schemas.all.properties.u_0for.schema.u_0for
 
     any: typing.Union[None, test_dummy.components.schemas.all.properties.any.schema.any] = None
 
-    uu_1X0for: typing.Annotated[
-        typing.Union[None, str],
-        pydantic.Field(
-            alias='u_0for',
-        )
-    ] = None
+    uu_1X0for: typing.Union[None, str] = None
+
+    model_config = pydantic.ConfigDict(
+        extra='forbid'
+    )

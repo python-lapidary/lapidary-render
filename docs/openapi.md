@@ -1,4 +1,6 @@
-# OpenAPI compatibility
+# OpenAPI
+
+OpenAPI compatibility
 
 - ✅ `openapi`: validated (3.0.* accepted)
 - `info`
@@ -32,7 +34,7 @@
         - 🔍 `enum`: ignored; might be implemented for simple types as `Literal`
         - 📄 `description`: planned as part of docstr
         - ✅ `default`: if present, the property type turned to `Union[None, $type]` and has default value `None`
-            - 🔍 caveat: default values are not to be sent between Web API client and server, instead they are implied be the receiving side. Lapidary could potentially fill such values in response models, but it might be expensive, so it would be an optional feature.
+            - 🔍 caveat: default values are not to be sent between Web API client and server, instead they are implied by the receiving side. Lapidary could potentially implement generating default values for some cases but they don't necessary need to validate against the schema.
         - ✅ `nullable`: if true, the property type is turned to `Union[None, $type]`
         - ✅ `readOnly` & `writeOnly`: if either is true, the property type is turned to `Union[None, $type]` and has default value `None`; planned as part of docstr
             - ⚠️ caveat: readOnly properties are only to be sent to API server, and writeOnly only to be received by the client. A property might be both required one way, and invalid the other way, which could not be directly represented in Python, except with two or three classes for every schema.
@@ -57,20 +59,22 @@
         - ❌ `refreshUrl`: not supported
     - 🗓️ `links`: planned
     - ❌ `callbacks`: not planned
-- `paths`
-    - 🗓️ `summary`, `description`: planned as parts of docstr
-    - ❌ `servers`: ignored
-    - `parameters`
-        - ✅ `name`: OpenAPI parameter names are not unique and might contain characters invalid for python names, therefore they're escaped and suffix-hungarian notation is used to distinguish between cookie, header, path and query parameters
-        - ✅ `in`: implemented, suffix-hungarian notation is used to separate parameters
-        - ✅ `required`: non-required parameters are optional with default value `None`
-        - 🗓️ `deprecated`: planned
-        - 🗓️ `allowEmptyValue`: planned
-        - 🗓️ `content`: key: planned, value: processed as schema
-        - ⚠️ `style`: partially implemented
-        - 🗓️ `allowReserved`: planned
-        - ✅ `schema`: implemented
-        - 🔍 `example` & examples: considered
-        - 🔧 `x-lapidary-name`: name of a parameter in the python
+- `paths`: 🗓️ planned as keys in a TypedDict
+    - operations: ✅ mapped to operation methods
+        - `operationId`: ✅ used as method name
+        - 🗓️ `summary`, `description`: planned as parts of docstr
+        - ❌ `servers`: ignored
+        - `parameters`
+            - ✅ `name`: OpenAPI parameter names are not unique and might contain characters invalid for python names, therefore they're escaped and suffix-hungarian notation is used to distinguish between cookie, header, path and query parameters
+            - ✅ `in`: implemented, suffix-hungarian notation is used to separate parameters
+            - ✅ `required`: non-required parameters are optional with default value `None`
+            - 🗓️ `deprecated`: planned
+            - 🗓️ `allowEmptyValue`: planned
+            - 🗓️ `content`: key: planned, value: processed as schema
+            - ⚠️ `style`: partially implemented
+            - 🗓️ `allowReserved`: planned
+            - ✅ `schema`: implemented
+            - 🔍 `example` & examples: considered
+            - 🔧 `x-lapidary-name`: name of a parameter in the python
 - 🔧 `x-lapidary-responses-global`: responses that might come from any operation
 - 🔧 `x-lapidary-headers-global`: headers accepted by any operation

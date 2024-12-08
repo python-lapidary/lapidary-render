@@ -6,6 +6,7 @@ import lapidary.runtime
 import pydantic
 import typing_extensions as typing
 import test_petstore.components.schemas.Category.schema
+import test_petstore.components.schemas.Tag.schema
 
 
 class Pet(lapidary.runtime.ModelBase):
@@ -17,10 +18,6 @@ class Pet(lapidary.runtime.ModelBase):
 
     category: typing.Union[None, test_petstore.components.schemas.Category.schema.Category] = None
 
-    tags: typing.Union[None, list[typing.Any]] = None
+    tags: typing.Union[None, list[test_petstore.components.schemas.Tag.schema.Tag]] = None
 
     status: typing.Union[None, str] = None
-
-    model_config = pydantic.ConfigDict(
-        extra='allow'
-    )

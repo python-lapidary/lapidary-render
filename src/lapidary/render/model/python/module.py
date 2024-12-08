@@ -1,8 +1,9 @@
 import abc
 import dataclasses as dc
 from collections.abc import Iterable, Mapping
+from pathlib import PurePath
 
-from .model import ClientClass, MetadataModel, SchemaClass
+from .model import AbstractType, ClientClass, MetadataModel
 from .module_path import ModulePath
 from .type_hint import NONE, TypeHint, flatten
 
@@ -16,9 +17,9 @@ template_imports = [
 
 @dc.dataclass(frozen=True, kw_only=True)
 class AbstractModule[Body](abc.ABC):
-    path: ModulePath = dc.field()
+    path: ModulePath
     module_type: str
-    body: Body = dc.field()
+    body: Body
 
     @abc.abstractmethod
     def dependencies(self) -> Iterable[TypeHint]:
@@ -36,7 +37,7 @@ class AbstractModule[Body](abc.ABC):
         )
 
     @property
-    def file_path(self) -> str:
+    def file_path(self) -> PurePath:
         return self.path.to_path()
 
 
@@ -78,7 +79,7 @@ class MetadataModule(AbstractModule[Iterable[MetadataModel]]):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class SchemaModule(AbstractModule[Iterable[SchemaClass]]):
+class SchemaModule(AbstractModule[Iterable[AbstractType]]):
     """
     One schema module per schema element directly under #/components/schemas, containing that schema and all non-reference schemas.
     One schema module for inline request and for response body for each operation

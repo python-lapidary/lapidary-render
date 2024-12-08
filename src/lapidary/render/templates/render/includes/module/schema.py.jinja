@@ -26,7 +26,7 @@ import {{ imp }}
 {% set path = item.path %}
 {%- for model in item.body %}
 
-class {{ model.class_name }}({{ type_hint(model.base_type, path) }}):
+class {{ model.name }}({{ type_hint(model.base_type, path) }}):
 {%- for field in model.fields if field.required %}
 {{- render_field(field) }}
 {% endfor %}
@@ -34,9 +34,11 @@ class {{ model.class_name }}({{ type_hint(model.base_type, path) }}):
 {{- render_field(field) }}
 {% endfor %}
 
-{%- if model.allow_extra %}
+{%- if not model.allow_extra %}
     model_config = pydantic.ConfigDict(
-        extra='allow'
+        extra='forbid'
     )
 {% endif -%}
+{% if not model.fields and model.allow_extra %}
+    pass{% endif -%}
 {%- endfor -%}

@@ -6,6 +6,7 @@ import anyio
 import asyncclick as click
 
 logger = logging.getLogger(__name__)
+logging.getLogger().setLevel(logging.DEBUG)
 
 
 @click.group()

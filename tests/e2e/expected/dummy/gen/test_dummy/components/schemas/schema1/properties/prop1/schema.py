@@ -10,3 +10,7 @@ import test_dummy.components.schemas.schema1.properties.prop1.properties.prop2.s
 
 class prop1(lapidary.runtime.ModelBase):
     prop2: test_dummy.components.schemas.schema1.properties.prop1.properties.prop2.schema.prop2
+
+    model_config = pydantic.ConfigDict(
+        extra='forbid'
+    )

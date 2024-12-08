@@ -10,3 +10,7 @@ import test_dummy.paths.u_linline_schema_propertiesu_l.get.responses.default.con
 
 class schema(lapidary.runtime.ModelBase):
     prop1: test_dummy.paths.u_linline_schema_propertiesu_l.get.responses.default.content.applicationu_ljson.schema.properties.prop1.schema.prop1
+
+    model_config = pydantic.ConfigDict(
+        extra='forbid'
+    )

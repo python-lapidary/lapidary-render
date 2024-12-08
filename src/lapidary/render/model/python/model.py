@@ -16,7 +16,7 @@ SecurityRequirements: TypeAlias = Iterable[Mapping[str, Iterable[str]]]
 @dc.dataclass
 class Annotation:
     type: TypeHint
-    field_props: dict[str, Any]
+    # field_props: dict[str, Any]
     style: str | None = None
     explode: bool | None = None
     allowReserved: bool | None = False
@@ -193,8 +193,15 @@ class ModelType(enum.Enum):
 
 
 @dc.dataclass
-class SchemaClass:
-    class_name: str
+class AbstractType:
+    name: str
+
+    def dependencies(self) -> Iterable[TypeHint]:
+        raise NotImplementedError
+
+
+@dc.dataclass
+class SchemaClass(AbstractType):
     base_type: TypeHint
 
     allow_extra: bool = False
@@ -205,6 +212,14 @@ class SchemaClass:
         yield self.base_type
         for prop in self.fields:
             yield prop.annotation.type
+
+
+@dc.dataclass
+class ModelTypeAlias(AbstractType):
+    alias: TypeHint
+
+    def dependencies(self) -> Iterable[TypeHint]:
+        yield from self.alias.get_args()
 
 
 @dc.dataclass

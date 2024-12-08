@@ -24,7 +24,11 @@ paths:
       - name: param1
         in: query
         schema:
-          $ref: '#/components/schemas/schema1'
+          anyOf:
+          - $ref: '#/components/schemas/schema1'
+          - $ref: '#/components/schemas/all'
+          - type: integer
+            nullable: true
         required: true
       - name: param2
         in: query
@@ -41,8 +45,9 @@ paths:
       - name: param3
         in: query
         schema:
-          type: string
-          format: date
+          allOf:
+          - type: string
+          - format: date
       - name: param1
         in: header
         schema:

@@ -23,7 +23,3 @@ class User(lapidary.runtime.ModelBase):
     phone: typing.Union[None, str] = None
 
     userStatus: typing.Union[None, int] = None
-
-    model_config = pydantic.ConfigDict(
-        extra='allow'
-    )

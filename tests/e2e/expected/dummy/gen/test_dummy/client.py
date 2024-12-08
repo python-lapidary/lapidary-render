@@ -11,9 +11,9 @@ from lapidary.runtime import *
 import datetime
 import test_dummy.components.requestBodies.dummy.content.applicationu_ljson.schema.schema
 import test_dummy.components.schemas.all.schema
-import test_dummy.components.schemas.schema1.schema
 import test_dummy.paths.u_linline_schema_propertiesu_l.get.responses.default.content.applicationu_ljson.schema.schema
 import test_dummy.paths.u_ltestu_l.get.parameters.meta
+import test_dummy.paths.u_ltestu_l.get.parameters.u_m.schema.schema
 import test_dummy.paths.u_ltestu_l.get.parameters.u_n.schema.schema
 import test_dummy.paths.u_ltestu_l.get.responses.default.headers
 
@@ -35,7 +35,7 @@ class ApiClient(ClientBase):
     async def test_op(
         self: typing.Self,
         *,
-        param1_q: typing.Annotated[test_dummy.components.schemas.schema1.schema.schema1, Query('param1', )],
+        param1_q: typing.Annotated[typing.Union[None, int, test_dummy.paths.u_ltestu_l.get.parameters.u_m.schema.schema.schema], Query('param1', )],
         param2_q: typing.Annotated[typing.Union[None, test_dummy.paths.u_ltestu_l.get.parameters.u_n.schema.schema.schema], Query('param2', )] = None,
         param3_q: typing.Annotated[typing.Union[None, datetime.date], Query('param3', )] = None,
         meta: typing.Annotated[typing.Union[None, test_dummy.paths.u_ltestu_l.get.parameters.meta.RequestMetadata], Metadata()] = None,

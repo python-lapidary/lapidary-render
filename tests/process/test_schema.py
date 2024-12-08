@@ -6,6 +6,8 @@ import ruamel.yaml
 
 from lapidary.render import json_pointer
 from lapidary.render.model import OpenApi30Converter, openapi, python, stack
+from lapidary.render.model.conv_schema import OpenApi30SchemaConverter
+from lapidary.render.model.metamodel import MetaModel
 
 logging.basicConfig()
 logging.getLogger('lapidary').setLevel(logging.DEBUG)
@@ -48,16 +50,129 @@ def test_schema_array(document: openapi.OpenAPI) -> None:
     assert request['application/json'] == python.GenericTypeHint(
         module='builtins', name='list', args=(python.TypeHint.from_str('petstore.components.schemas.User.schema:User'),)
     )
-    assert converter.schema_converter.schema_modules[0].body[0].class_name == 'User'
+    assert converter.schema_converter.schema_modules[0].body[0].name == 'User'
 
 
 def test_property_schema(doc_dummy: openapi.OpenAPI) -> None:
     converter = OpenApi30Converter(python.ModulePath('dummy', False), doc_dummy, None)
     operations: openapi.PathItem = doc_dummy.paths.paths['/test/']
 
-    schema = converter.schema_converter.process_schema(
+    schema: MetaModel = converter.schema_converter.process_type_schema(
         operations.get.parameters[1].param_schema,
-        stack.Stack(('#', 'paths', json_pointer.encode_json_pointer('/test/'), 'get', 'parameters', '1', 'schema')),
+        stack.Stack.from_str('#/paths/~1test~1/get/parameters/1/schema'),
     )
 
-    assert schema == python.TypeHint.from_str('dummy.paths.u_ltestu_l.get.parameters.u_n.schema.schema:schema')
+    assert schema.as_annotation('dummy') == python.TypeHint.from_str(
+        'dummy.paths.u_ltestu_l.get.parameters.u_n.schema.schema:schema'
+    )
+    print(schema.as_type('package'))
+
+
+def test_int_one_of():
+    doc = openapi.OpenAPI(
+        info=openapi.Info(
+            title='test oneOf',
+            version='1.0.0',
+        ),
+        paths={},
+        components=openapi.Components(
+            schemas={
+                'myschema': openapi.Schema(
+                    type=openapi.DataType.INTEGER,
+                    oneOf=[
+                        openapi.Schema(maximum=10),
+                        openapi.Schema(minimum=20),
+                    ],
+                )
+            }
+        ),
+    )
+    converter = OpenApi30SchemaConverter(python.ModulePath('root'), doc)
+    model = converter.process_schema(
+        doc.components.schemas['myschema'], stack.Stack(('#', 'components', 'schemas', 'myschema'))
+    )
+    print(model)
+    print(model.as_annotation('root'))
+
+
+@pytest.mark.skip('Not implemented')
+def test_int_one_of_recurrent():
+    doc = openapi.OpenAPI(
+        info=openapi.Info(
+            title='test oneOf',
+            version='1.0.0',
+        ),
+        paths={},
+        components=openapi.Components(
+            schemas={
+                'myschema': openapi.Schema(
+                    type=openapi.DataType.OBJECT,
+                    properties={
+                        'prop1': openapi.Schema(
+                            oneOf=[
+                                openapi.Schema(
+                                    maximum=10,
+                                    type=openapi.DataType.INTEGER,
+                                ),
+                                openapi.Reference[openapi.Schema](ref='#/components/schemas/myschema'),
+                            ]
+                        )
+                    },
+                )
+            }
+        ),
+    )
+    converter = OpenApi30SchemaConverter(python.ModulePath('root'), doc)
+    model = converter.process_type_schema(
+        doc.components.schemas['myschema'],
+        stack.Stack(('#', 'components', 'schemas', 'myschema')),
+    )
+    from pprint import pprint
+
+    pprint(model)
+    pprint(model.as_annotation('root'))
+    pprint(converter.schema_modules)
+
+
+def mk_schemas_doc(title: str, **schemas: openapi.Schema) -> openapi.OpenAPI:
+    return openapi.OpenAPI(
+        info=openapi.Info(
+            title=title,
+            version='1.0.0',
+        ),
+        paths={},
+        components=openapi.Components(schemas=schemas),
+    )
+
+
+def test_one_of_mix():
+    doc = mk_schemas_doc(
+        'test oneOf',
+        myschema=openapi.Schema(
+            type=openapi.DataType.INTEGER,
+            oneOf=[
+                openapi.Schema(maximum=10),
+                openapi.Schema(minimum=20),
+                openapi.Schema(maxLength=10),
+            ],
+        ),
+    )
+    converter = OpenApi30SchemaConverter(python.ModulePath('root'), doc)
+    model = converter.process_schema(
+        doc.components.schemas['myschema'], stack.Stack(('#', 'components', 'schemas', 'myschema'))
+    )
+    print(model)
+
+
+def test_enums():
+    doc = mk_schemas_doc(
+        'test enums',
+        myschema=openapi.Schema(
+            enum=[True, False, 'FileNotFound'],
+        ),
+    )
+    converter = OpenApi30SchemaConverter(python.ModulePath('root'), doc)
+    model = converter.process_schema(
+        doc.components.schemas['myschema'], stack.Stack(('#', 'components', 'schemas', 'myschema'))
+    )
+    print(model)

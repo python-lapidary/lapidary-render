@@ -8,6 +8,4 @@ import typing_extensions as typing
 
 
 class any(lapidary.runtime.ModelBase):
-    model_config = pydantic.ConfigDict(
-        extra='allow'
-    )
+    pass
