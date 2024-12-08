@@ -7,7 +7,7 @@ from collections.abc import Callable, Mapping, Sequence
 from typing import Any, Concatenate
 
 import pydantic
-from openapi_pydantic.v3 import v3_0_3 as openapi
+from openapi_pydantic.v3 import v3_0 as openapi
 
 from ..json_pointer import decode_json_pointer
 from .stack import Stack

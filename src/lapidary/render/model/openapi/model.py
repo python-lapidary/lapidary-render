@@ -3,7 +3,7 @@ from collections.abc import Mapping, Sequence
 from typing import Annotated
 
 import pydantic
-from openapi_pydantic.v3.v3_0_3 import (
+from openapi_pydantic.v3.v3_0 import (
     Components as ComponentsBase,
     Encoding as EncodingBase,
     MediaType as MediaTypeBase,
@@ -18,7 +18,7 @@ from openapi_pydantic.v3.v3_0_3 import (
     Schema as SchemaBase,
     SecurityScheme as SecuritySchemeBase,
 )
-from openapi_pydantic.v3.v3_0_3.parameter import ParameterBase as ParameterBaseBase
+from openapi_pydantic.v3.v3_0.parameter import ParameterBase as ParameterBaseBase
 
 from .base import (
     ExtendableModel,

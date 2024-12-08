@@ -1,4 +1,4 @@
-from openapi_pydantic.v3.v3_0_3 import (
+from openapi_pydantic.v3.v3_0 import (
     Components as Components,
     DataType as DataType,
     OAuthFlow as OAuthFlow,
