@@ -268,7 +268,7 @@ class OpenApi30Converter:
             return_types.add(type_hint.tuple_of(body_type, response.headers_type))
 
         model = python.OperationFunction(
-            name=value.operationId,
+            name=names.maybe_mangle_name(value.operationId),
             method=stack.top(),
             path=json_pointer.decode_json_pointer(stack[-2]),
             request_body=request_body,

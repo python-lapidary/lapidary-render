@@ -7,18 +7,21 @@ import base62
 
 logger = logging.getLogger(__name__)
 
-VALID_IDENTIFIER_RE = re.compile(r'^[a-zA-Z]\w*$', re.ASCII)
+RE_REPL_FIRST = re.compile('[^a-zA-Z]')
+RE_REPL_NEXT = re.compile('[^a-zA-Z0-9_]')
 
 
 def _escape_char(s: str) -> str:
     return f'u_{base62.encode(ord(s))}'
 
 
+def _repl(match: re.Match) -> str:
+    return _escape_char(cast(str, match.group()))
+
+
 def escape_name(name: str) -> str:
     name = name.replace('u_', 'u' + _escape_char('_'))
-    return re.sub('[^a-zA-Z]', lambda match: _escape_char(cast(str, match.group())), name[0]) + re.sub(
-        '[^a-zA-Z0-9_]', lambda match: _escape_char(cast(str, match.group())), name[1:]
-    )
+    return RE_REPL_FIRST.sub(_repl, name[0]) + RE_REPL_NEXT.sub(_repl, name[1:])
 
 
 def maybe_mangle_name(name: str) -> str:
@@ -33,7 +36,4 @@ def maybe_mangle_name(name: str) -> str:
 
     if keyword.iskeyword(name):
         name = '\0' + name
-    if not VALID_IDENTIFIER_RE.match(name) or 'u_' in name:
-        return escape_name(name)
-    else:
-        return name
+    return escape_name(name)
