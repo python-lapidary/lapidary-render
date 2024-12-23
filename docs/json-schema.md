@@ -831,11 +831,6 @@ Now we can see a simple python class like this:
             Annotated[int, Field()]
         ]
 
-
-
-
-
-
 # Conflicting schemas
 
 1. There are many ways of declaring schemas that no value could validate. Such schemas aren't invalid, but the part describing a single type the the keywords apply to, must be discarded.
@@ -864,6 +859,51 @@ Now we can see a simple python class like this:
         allOf:
         -   enum: ["red"]
         -   enum: ["green"]
+
+# Annotations
+
+Schemas could produce annotations (type hints) and python types or type aliases (type aliases are not currently implemented).
+
+Whenever a schema is _used_, in an object property, or in case of OpenAPI, operation parameter, request or response body, in python an annotation is used.
+
+```yaml
+Alice:
+    properties:
+        bob:
+            type: object
+            properties:
+                prop1:
+                    type: str
+```
+
+```python
+
+class Alice(ModelBase):
+    bob: bob
+```
+
+But in order for `bob` to be valid, it also needs to be defined:
+
+```python
+class bob
+    prop1: str
+```
+
+Scalar schemas could produce type aliases, but currently are used inline.
+
+```yaml
+Alice:
+    type: object
+    properties:
+        prop1:
+            type: integer
+            maximum: 20
+```
+
+```python
+class Alice:
+    prop1: Annotated[int, Le(20)]
+```
 
 # References
 

@@ -5,26 +5,23 @@ from collections.abc import Iterable, MutableMapping, MutableSequence, MutableSe
 from functools import cached_property
 from typing import Self
 
-from ..openapi import ParameterLocation as ParamLocation
 from .model import (
     AbstractType,
-    Annotation,
+    AnnotatedVariable,
     ApiKeyAuth,
     Auth,
     AuthorizationCodeOAuth2Flow,
     ClientClass,
     ClientCredentialsOAuth2Flow,
     ClientInit,
-    Field,
     HttpBasicAuth,
     HttpDigestAuth,
     ImplicitOAuth2Flow,
     MetadataModel,
-    MetaField,
     MimeMap,
     ModelType,
-    ModelTypeAlias,
     OperationFunction,
+    Parameter,
     ParamStyle,
     PasswordOAuth2Flow,
     Response,
@@ -43,7 +40,7 @@ from .module import (
     SchemaModule,
 )
 from .module_path import ModulePath
-from .type_hint import NONE, AnnotatedTypehint, GenericTypeHint, TypeHint, list_of, union_of
+from .type_hint import AnnotatedType, GenericType, NameRef, NoneMetaType, list_of, union_of
 
 
 @dc.dataclass

@@ -4,12 +4,15 @@ import dataclasses as dc
 import itertools
 import operator
 from collections.abc import Callable, Collection, Container
+from types import NoneType
 from typing import Any, Self
 
 from openapi_pydantic.v3.v3_1 import schema as schema31
 
 from .. import json_pointer, names
+from ..runtime import AnyJsonType, ModelBase
 from . import python
+from .python import AnnotatedType
 from .stack import Stack
 
 
@@ -214,33 +217,34 @@ class MetaModel:
 
         if union_items:
             fields.append(
-                python.Field(
+                python.AnnotatedVariable(
                     name='model_anyone_of',
-                    annotation=python.Annotation(
-                        type=python.union_of(*(model.as_annotation(root_package) for model in union_items))
-                    ),
+                    typ=python.union_of(*(model.as_annotation(root_package) for model in union_items)),
                     required=True,
+                    alias=None,
                 )
             )
 
         return python.SchemaClass(
             name=names.maybe_mangle_name(name),
-            base_type=python.TypeHint.from_str('lapidary.runtime:ModelBase'),
+            base_type=ModelBase,
             allow_extra=self.additional_props is not False,
             fields=fields,
             docstr=self.description or None,
         )
 
-    def _as_class_field(self, root_package: str, name: str, required: bool) -> python.Field:
-        return python.Field(
-            name=names.maybe_mangle_name(name),
-            annotation=python.Annotation(
-                type=self.as_annotation(root_package, required),
-            ),
+    def _as_class_field(self, root_package: str, name: str, required: bool) -> python.AnnotatedVariable:
+        python_name = names.maybe_mangle_name(name)
+        return python.AnnotatedVariable(
+            name=python_name,
+            typ=self.as_annotation(root_package, required),
+            alias=name if name != python_name else None,
             required=required,
         )
 
-    def as_annotation(self, root_package: str, required: bool = True, include_object: bool = True) -> python.TypeHint:
+    def as_annotation(
+        self, root_package: str, required: bool = True, include_object: bool = True
+    ) -> python.AnnotatedType:
         """
         Create type hint for the type represented by the source schema.
 
@@ -266,12 +270,15 @@ class MetaModel:
             ),
         )
 
-        types: set[python.TypeHint] = set()
+        types: set[python.AnnotatedType] = set()
         if union_items:
-            types = {item.as_annotation(root_package, True, False) for item in union_items}
+            try:
+                types = set(item.as_annotation(root_package, True, False) for item in union_items)
+            except TypeError:
+                raise
             if include_object:
                 if any(schema31.DataType.OBJECT in item.type_ for item in union_items):  # type: ignore[operator]
-                    types.add(resolve_type_hint(root_package, self.stack))
+                    types.add(resolve_type_name(root_package, self.stack))
         else:
             for schema_type in self.type_ or ():
                 if include_object is False and schema_type == schema31.DataType.OBJECT:
@@ -279,56 +286,53 @@ class MetaModel:
 
                 match schema_type:
                     case schema31.DataType.STRING:
-                        if self.format:
-                            try:
-                                typ = FORMAT_ENCODERS[(schema_type, self.format)]
-                            except KeyError:
-                                typ = python.TypeHint.from_type(str)
-                        else:
-                            typ = python.TypeHint.from_type(str)
+                        try:
+                            typ = AnnotatedType(python.GenericType(FORMAT_ENCODERS[(schema_type, self.format)]))
+                        except KeyError:
+                            typ = python.AnnotatedType.from_type(str)
                     case schema31.DataType.BOOLEAN:
-                        typ = python.TypeHint.from_type(bool)
+                        typ = python.AnnotatedType.from_type(bool)
                     case schema31.DataType.NUMBER:
-                        typ = python.TypeHint.from_type(float)
+                        typ = python.AnnotatedType.from_type(float)
                     case schema31.DataType.INTEGER:
-                        typ = python.TypeHint.from_type(int)
+                        typ = python.AnnotatedType.from_type(int)
                     case schema31.DataType.NULL:
-                        typ = python.NONE
+                        typ = python.AnnotatedType.from_type(NoneType)
                     case schema31.DataType.OBJECT:
-                        typ = resolve_type_hint(root_package, self.stack)
+                        typ = resolve_type_name(root_package, self.stack)
                     case schema31.DataType.ARRAY:
-                        typ = python.GenericTypeHint(
-                            module='builtins',
-                            name='list',
-                            args=(
-                                self.items.as_annotation(root_package)
-                                if self.items
-                                else python.TypeHint(module='lapidary.runtime', name='AnyJSONValue'),
-                            ),
+                        typ = python.list_of(
+                            self.items.as_annotation(root_package) if self.items else AnyJsonType,
                         )
                     case _:
                         raise TypeError(schema_type)
-                types.add(typ)
+                try:
+                    types.add(typ)
+                except TypeError:
+                    raise
 
         if not required:
-            types.add(python.NONE)
+            types.add(python.NoneMetaType)
 
         return python.union_of(*types)
 
 
-def resolve_type_hint(root_package: str, pointer: Stack) -> python.TypeHint:
+def resolve_type_name(root_package: str, pointer: Stack) -> python.AnnotatedType:
+    # FIXME all fields should be saved as json ref; all schemas saved in a map with json ref as a key
+
     parts = [names.maybe_mangle_name(json_pointer.decode_json_pointer(part)) for part in pointer.path[1:]]
     module_name = '.'.join([root_package, *(part for part in parts[:-1])])
     top = parts[-1]
-    return python.TypeHint(module=module_name, name=top)
+    return python.AnnotatedType(python.GenericType(python.NameRef(module_name, top)))
 
 
 FORMAT_ENCODERS = {
-    (schema31.DataType.STRING, 'uuid'): python.TypeHint(module='uuid', name='UUID'),
-    (schema31.DataType.STRING, 'date'): python.TypeHint(module='datetime', name='date'),
-    (schema31.DataType.STRING, 'date-time'): python.TypeHint(module='datetime', name='datetime'),
-    (schema31.DataType.STRING, 'time'): python.TypeHint(module='datetime', name='time'),
-    (schema31.DataType.STRING, 'decimal'): python.TypeHint(module='decimal', name='Decimal'),
+    (schema31.DataType.STRING, None): python.NameRef.from_type(str),
+    (schema31.DataType.STRING, 'uuid'): python.NameRef(module='uuid', name='UUID'),
+    (schema31.DataType.STRING, 'date'): python.NameRef(module='datetime', name='date'),
+    (schema31.DataType.STRING, 'date-time'): python.NameRef(module='datetime', name='datetime'),
+    (schema31.DataType.STRING, 'time'): python.NameRef(module='datetime', name='time'),
+    (schema31.DataType.STRING, 'decimal'): python.NameRef(module='decimal', name='Decimal'),
 }
 
 

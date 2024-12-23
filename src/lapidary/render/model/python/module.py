@@ -5,7 +5,7 @@ from pathlib import PurePath
 
 from .model import AbstractType, ClientClass, MetadataModel
 from .module_path import ModulePath
-from .type_hint import NONE, TypeHint, flatten
+from .type_hint import NameRef
 
 template_imports = [
     'builtins',
@@ -22,17 +22,16 @@ class AbstractModule[Body](abc.ABC):
     body: Body
 
     @abc.abstractmethod
-    def dependencies(self) -> Iterable[TypeHint]:
+    def dependencies(self) -> Iterable[NameRef]:
         pass
 
     @property
     def imports(self) -> Iterable[str]:
-        dependencies = flatten(self.dependencies())
         return sorted(
             {
                 dep.module
-                for dep in dependencies
-                if dep.module not in template_imports and dep != NONE and dep.module != str(self.path)
+                for dep in self.dependencies()
+                if dep.module not in template_imports and dep.module != str(self.path)
             }
         )
 
@@ -42,11 +41,11 @@ class AbstractModule[Body](abc.ABC):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class AuthModule(AbstractModule[Mapping[str, TypeHint]]):
+class AuthModule(AbstractModule[Mapping[str, NameRef]]):
     module_type = 'auth'
 
     @property
-    def dependencies(self) -> Iterable[TypeHint]:  # type: ignore[override]
+    def dependencies(self) -> Iterable[NameRef]:  # type: ignore[override]
         return self.body.values()
 
 
@@ -54,7 +53,7 @@ class AuthModule(AbstractModule[Mapping[str, TypeHint]]):
 class ClientModule(AbstractModule[ClientClass]):
     module_type: str = dc.field(default='client')
 
-    def dependencies(self) -> Iterable[TypeHint]:
+    def dependencies(self) -> Iterable[NameRef]:
         return self.body.dependencies()
 
 
@@ -65,7 +64,7 @@ class EmptyModule(AbstractModule[None]):
     module_type: str = dc.field(default='empty')
     body: None = None
 
-    def dependencies(self) -> Iterable[TypeHint]:
+    def dependencies(self) -> Iterable[NameRef]:
         return ()
 
 
@@ -73,7 +72,7 @@ class EmptyModule(AbstractModule[None]):
 class MetadataModule(AbstractModule[Iterable[MetadataModel]]):
     module_type: str = 'metadata'
 
-    def dependencies(self) -> Iterable[TypeHint]:
+    def dependencies(self) -> Iterable[NameRef]:
         for model in self.body:
             yield from model.dependencies()
 
@@ -87,6 +86,6 @@ class SchemaModule(AbstractModule[Iterable[AbstractType]]):
 
     module_type: str = 'schema'
 
-    def dependencies(self) -> Iterable[TypeHint]:
+    def dependencies(self) -> Iterable[NameRef]:
         for schema in self.body:
             yield from schema.dependencies()

@@ -175,12 +175,12 @@ class OpenAPI(OpenAPIBase):
     components: Components | None = None
 
     lapidary_headers_global: typing.Annotated[
-        dict[str, Header],
+        dict[str, Header] | None,
         pydantic.Field(
             alias='x-lapidary-headers-global',
             default_factory=dict,
         ),
-    ]
+    ] = None
     """Headers added to every request.
     Unlike with operation headers, the default value found in the schema is sent over the wire"""
 
@@ -192,4 +192,4 @@ class OpenAPI(OpenAPIBase):
             'Values in Responses declared in Operations override values in this one.',
             default=None,
         ),
-    ]
+    ] = None

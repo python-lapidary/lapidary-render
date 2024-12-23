@@ -8,7 +8,7 @@ from typing import Any
 from openapi_pydantic.v3.v3_1 import schema as schema31
 
 from . import openapi, python
-from .metamodel import MetaModel, resolve_type_hint
+from .metamodel import MetaModel, resolve_type_name
 from .refs import resolve_ref, resolve_refs_recursive
 from .stack import Stack
 
@@ -201,7 +201,9 @@ class OpenApi30SchemaConverter:
             typ = model.as_type(str(self.root_package))
 
             if typ:
-                modules[python.ModulePath(resolve_type_hint(str(self.root_package), model.stack).module)].append(typ)
+                modules[
+                    python.ModulePath(resolve_type_name(str(self.root_package), model.stack).typ.typ.module)
+                ].append(typ)
         return [
             python.SchemaModule(
                 path=module,

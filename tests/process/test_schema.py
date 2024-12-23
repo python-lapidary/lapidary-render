@@ -4,7 +4,6 @@ from pathlib import Path
 import pytest
 import ruamel.yaml
 
-from lapidary.render import json_pointer
 from lapidary.render.model import OpenApi30Converter, openapi, python, stack
 from lapidary.render.model.conv_schema import OpenApi30SchemaConverter
 from lapidary.render.model.metamodel import MetaModel
@@ -35,7 +34,9 @@ def test_schema_str(document: openapi.OpenAPI) -> None:
         operations.get.responses, stack.Stack(('#', 'paths', '/user/login', 'get', 'responses'))
     )
 
-    assert responses['200'].content['application/json'] == python.TypeHint(module='builtins', name='str')
+    assert responses['200'].content['application/json'] == python.AnnotatedType(
+        python.GenericType(python.NameRef.from_type(str))
+    )
     assert converter.schema_converter.schema_modules == []
 
 
@@ -47,9 +48,12 @@ def test_schema_array(document: openapi.OpenAPI) -> None:
         operations.post.requestBody, stack.Stack(('#', 'paths', '/user/createWithList', 'post', 'requestBody'))
     )
 
-    assert request['application/json'] == python.GenericTypeHint(
-        module='builtins', name='list', args=(python.TypeHint.from_str('petstore.components.schemas.User.schema:User'),)
+    assert request['application/json'] == python.list_of(
+        python.AnnotatedType(
+            python.GenericType(python.NameRef(module='petstore.components.schemas.User.schema', name='User'))
+        )
     )
+
     assert converter.schema_converter.schema_modules[0].body[0].name == 'User'
 
 
@@ -62,8 +66,8 @@ def test_property_schema(doc_dummy: openapi.OpenAPI) -> None:
         stack.Stack.from_str('#/paths/~1test~1/get/parameters/1/schema'),
     )
 
-    assert schema.as_annotation('dummy') == python.TypeHint.from_str(
-        'dummy.paths.u_ltestu_l.get.parameters.u_n.schema.schema:schema'
+    assert schema.as_annotation('dummy') == python.AnnotatedType(
+        python.GenericType(python.NameRef('dummy.paths.u_ltestu_l.get.parameters.u_n.schema.schema', 'schema'))
     )
     print(schema.as_type('package'))
 
@@ -74,7 +78,7 @@ def test_int_one_of():
             title='test oneOf',
             version='1.0.0',
         ),
-        paths={},
+        paths=openapi.Paths(paths={}),
         components=openapi.Components(
             schemas={
                 'myschema': openapi.Schema(
@@ -102,7 +106,7 @@ def test_int_one_of_recurrent():
             title='test oneOf',
             version='1.0.0',
         ),
-        paths={},
+        paths=openapi.Paths(paths={}),
         components=openapi.Components(
             schemas={
                 'myschema': openapi.Schema(
@@ -140,7 +144,7 @@ def mk_schemas_doc(title: str, **schemas: openapi.Schema) -> openapi.OpenAPI:
             title=title,
             version='1.0.0',
         ),
-        paths={},
+        paths=openapi.Paths(paths={}),
         components=openapi.Components(schemas=schemas),
     )
 
