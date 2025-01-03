@@ -25,6 +25,8 @@ async def init_project(
     if await project_root.exists():
         raise FileExistsError
 
+    from .writer import init_project
+
     document_handler = document_handler_for(anyio.Path(), document_path)
 
     if save_document:
@@ -58,32 +60,12 @@ async def init_project(
 
     yaml = ruamel.yaml.YAML(typ='safe')
     document = yaml.load(await document_handler.load())
-    # keep ruff happy
-    config.__str__()
-    document.__str__()
 
-    # from rybak import TreeTemplate
-    # from rybak.jinja import JinjaAdapter
-    #
-    # TreeTemplate(
-    #     JinjaAdapter(
-    #         jinja2.Environment(
-    #             loader=jinja2.loaders.PackageLoader('lapidary.render', package_path='templates/init'),
-    #         )
-    #     ),
-    #     remove_suffixes=['.jinja'],
-    # ).render(
-    #     dict(
-    #         get_version=importlib.metadata.version,
-    #         config=config.model_dump(exclude_unset=True, exclude_defaults=True, exclude_none=True),
-    #         document=document,
-    #     ),
-    #     pathlib.Path(project_root),
-    # )
+    await init_project(project_root, config, document)
 
 
 async def render_project(project_root: anyio.Path) -> None:
-    from .writer import write_all
+    from .writer import update_project
 
     config = await load_config(project_root)
 
@@ -102,7 +84,7 @@ async def render_project(project_root: anyio.Path) -> None:
         def progress(module: python.AbstractModule) -> None:
             progressbar.update(1, module)
 
-        await write_all(
+        await update_project(
             model.modules,
             project_root / config.extra_sources[0] if config.extra_sources else None,
             project_root / 'gen',
