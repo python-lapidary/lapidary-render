@@ -7,12 +7,12 @@ import typing_extensions as typing
 
 
 class Category(lapidary.runtime.ModelBase):
-
+    
     id: typing.Union[
         None,
         int,
     ] = None
-
+    
     name: typing.Union[
         None,
         str,

@@ -724,7 +724,7 @@ def mk_metadata_module(module: python.MetadataModule) -> cst.Module:
     )
 
 
-MODULE_EMPTY = cst.Module(header=MODULE_HEADER, body=())
+MODULE_EMPTY = cst.Module(header=MODULE_HEADER, body=(), has_trailing_newline=False)
 
 MODULE_ROOT = cst.Module(
     header=MODULE_HEADER, body=[cst.helpers.parse_template_statement('from .client import ApiClient')]

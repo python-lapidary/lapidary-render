@@ -7,17 +7,17 @@ import typing_extensions as typing
 
 
 class ApiResponse(lapidary.runtime.ModelBase):
-
+    
     code: typing.Union[
         None,
         int,
     ] = None
-
+    
     type: typing.Union[
         None,
         str,
     ] = None
-
+    
     message: typing.Union[
         None,
         str,

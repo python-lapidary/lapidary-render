@@ -8,32 +8,32 @@ import datetime
 
 
 class Order(lapidary.runtime.ModelBase):
-
+    
     id: typing.Union[
         None,
         int,
     ] = None
-
+    
     petId: typing.Union[
         None,
         int,
     ] = None
-
+    
     quantity: typing.Union[
         None,
         int,
     ] = None
-
+    
     shipDate: typing.Union[
         None,
         datetime.datetime,
     ] = None
-
+    
     status: typing.Union[
         None,
         str,
     ] = None
-
+    
     complete: typing.Union[
         None,
         bool,

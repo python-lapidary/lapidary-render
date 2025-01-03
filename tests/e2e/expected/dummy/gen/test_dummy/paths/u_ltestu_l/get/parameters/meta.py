@@ -7,7 +7,7 @@ import typing_extensions as typing
 
 
 class RequestMetadata(pydantic.BaseModel):
-
+    
     param1_h: typing.Annotated[
         typing.Union[
             None,
@@ -15,7 +15,7 @@ class RequestMetadata(pydantic.BaseModel):
         ],
         lapidary.runtime.Header('param1',),
     ] = None
-
+    
     param4_c: typing.Annotated[
         typing.Union[
             None,

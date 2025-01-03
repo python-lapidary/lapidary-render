@@ -7,42 +7,42 @@ import typing_extensions as typing
 
 
 class User(lapidary.runtime.ModelBase):
-
+    
     id: typing.Union[
         None,
         int,
     ] = None
-
+    
     username: typing.Union[
         None,
         str,
     ] = None
-
+    
     firstName: typing.Union[
         None,
         str,
     ] = None
-
+    
     lastName: typing.Union[
         None,
         str,
     ] = None
-
+    
     email: typing.Union[
         None,
         str,
     ] = None
-
+    
     password: typing.Union[
         None,
         str,
     ] = None
-
+    
     phone: typing.Union[
         None,
         str,
     ] = None
-
+    
     userStatus: typing.Union[
         None,
         int,

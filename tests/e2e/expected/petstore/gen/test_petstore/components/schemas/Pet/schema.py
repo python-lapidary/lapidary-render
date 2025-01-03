@@ -8,26 +8,26 @@ import test_petstore.components.schemas.Category.schema
 
 
 class Pet(lapidary.runtime.ModelBase):
-
+    
     id: typing.Union[
         None,
         int,
     ] = None
-
+    
     name: str
-
+    
     category: typing.Union[
         None,
         test_petstore.components.schemas.Category.schema.Category,
     ] = None
-
+    
     photoUrls: list[str,]
-
+    
     tags: typing.Union[
         None,
         list[typing.Any,],
     ] = None
-
+    
     status: typing.Union[
         None,
         str,

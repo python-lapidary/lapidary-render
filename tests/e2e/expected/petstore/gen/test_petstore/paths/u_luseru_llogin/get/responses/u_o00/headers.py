@@ -8,7 +8,7 @@ import datetime
 
 
 class ResponseMetadata(pydantic.BaseModel):
-
+    
     Xu_jRateu_jLimit: typing.Annotated[
         typing.Union[
             None,
@@ -19,7 +19,7 @@ class ResponseMetadata(pydantic.BaseModel):
             style=lapidary.runtime.SimpleMultimap,
         ),
     ] = None
-
+    
     Xu_jExpiresu_jAfter: typing.Annotated[
         typing.Union[
             None,
