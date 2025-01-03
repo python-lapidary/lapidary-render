@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import dataclasses as dc
 from collections.abc import Iterable, MutableSet
 from typing import Self, cast
@@ -15,12 +17,12 @@ class TypeHint:
         return self.module + ':' + self.name if self.module != 'builtins' else self.name
 
     @staticmethod
-    def from_str(path: str) -> 'TypeHint':
+    def from_str(path: str) -> TypeHint:
         module, name = path.split(':')
         return TypeHint(module=module, name=name)
 
     @staticmethod
-    def from_type(typ: type) -> 'TypeHint':
+    def from_type(typ: type) -> TypeHint:
         if hasattr(typ, '__origin__'):
             raise ValueError('Generic types unsupported', typ)
         module = typ.__module__
@@ -48,6 +50,9 @@ class TypeHint:
 
     def __hash__(self) -> int:
         return self.module.__hash__() * 14159 + self.name.__hash__()
+
+    def dependencies(self) -> Iterable[TypeHint]:
+        yield self
 
 
 @dc.dataclass(slots=True, frozen=True, kw_only=True)

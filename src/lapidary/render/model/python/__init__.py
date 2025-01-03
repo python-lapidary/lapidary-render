@@ -22,6 +22,7 @@ from .model import (
     MetaField,
     MimeMap,
     ModelType,
+    OAuth2AuthBase,
     OperationFunction,
     ParamStyle,
     PasswordOAuth2Flow,
@@ -39,9 +40,10 @@ from .module import (
     EmptyModule,
     MetadataModule,
     SchemaModule,
+    SecurityModule,
 )
 from .module_path import ModulePath
-from .type_hint import NONE, GenericTypeHint, TypeHint, list_of, union_of
+from .type_hint import NONE, GenericTypeHint, NoneTypeHint, TypeHint, list_of, union_of
 
 
 @dc.dataclass
@@ -70,11 +72,22 @@ class ClientModel:
 
     def _modules(self) -> Iterable[AbstractModule]:
         known_modules = set()
+        if self.security_schemes:
+            sm = SecurityModule(
+                path=ModulePath((self.package, 'components', 'securitySchemes'), True),
+                body=self.security_schemes,
+            )
+            known_modules.add(sm.path)
+            yield sm
+
+        known_modules.add(self.client.path)
+        yield self.client
+
         for mod in self.model_modules:
-            assert mod.path not in known_modules, mod.path
+            assert mod not in known_modules, mod.path
             known_modules.add(mod.path)
             yield mod
 
         for package in self.packages():
             if package not in known_modules:
-                yield EmptyModule(path=package, body=None)
+                yield EmptyModule(path=package)

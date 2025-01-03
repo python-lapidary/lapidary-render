@@ -1,3 +1,4 @@
+import collections
 import datetime as dt
 import decimal as dec
 import itertools
@@ -45,7 +46,6 @@ class OpenApi30SchemaConverter:
         type_hint = resolve_type_hint(str(self.root_package), stack.push('schema', name))
         schema_class = python.SchemaClass(
             class_name=names.maybe_mangle_name(name),
-            base_type=python.TypeHint.from_str('lapidary.runtime:ModelBase'),
             allow_extra=value.additionalProperties is not False,
             fields=fields,
             docstr=value.description or None,
@@ -61,27 +61,32 @@ class OpenApi30SchemaConverter:
         if not in_required:
             typ = python.union_of(typ, python.NONE)
 
-        field_props = {}
-        allowed_field_props = (
-            NUMERIC_CONSTRAINTS
-            if in_types(
-                typ,
-                (
-                    python.TypeHint.from_type(int),
-                    python.TypeHint.from_type(float),
-                    python.TypeHint.from_type(dec.Decimal),
-                    python.NONE,
-                ),
-            )
-            else None
-        )
+        field_props = collections.OrderedDict()
+        if in_types(
+            typ,
+            (
+                python.TypeHint.from_type(int),
+                python.TypeHint.from_type(float),
+                python.TypeHint.from_type(dec.Decimal),
+            ),
+        ):
+            allowed_field_props = NUMERIC_CONSTRAINTS
+        else:
+            allowed_field_props = None
 
         # constraints should be processed and applied per type, but for now we only have a single Field annotation,
         # and pydantic doesn't like float constraints for int fields.
         is_int = in_types(typ, (python.TypeHint.from_type(int),))
 
-        for k in value.model_fields_set:
+        # use model_fields dict as it keeps the ordering
+        for k in value.model_fields.keys():
+            if k not in value.model_fields_set:
+                continue
             v = getattr(value, k)
+            try:
+                field_prop = FIELD_PROPS[k]
+            except KeyError:
+                continue
 
             if k == 'maximum':
                 field_prop = 'lt' if value.exclusiveMaximum else 'le'
@@ -91,24 +96,15 @@ class OpenApi30SchemaConverter:
                 field_prop = 'gt' if value.exclusiveMinimum else 'ge'
                 field_props[field_prop] = int(v) if is_int else v
                 continue
-            if k not in FIELD_PROPS:
-                continue
 
-            field_prop = FIELD_PROPS[k]
             if allowed_field_props is not None and field_prop not in allowed_field_props:
                 logger.warning('Ignoring unsupported constraint (%s) for type %s', field_prop, typ)
                 continue
 
-            if isinstance(v, str):
-                if field_prop == 'pattern':
-                    field_props[field_prop] = f"r'{v}'"
-                else:
-                    field_props[field_prop] = f"'{v}'"
-            else:
-                field_props[field_prop] = v
+            field_props[field_prop] = v
 
         if name != prop_name:
-            field_props['alias'] = f"'{prop_name}'"
+            field_props['alias'] = prop_name
 
         required = in_required and not (value.readOnly or value.writeOnly)
 
@@ -202,7 +198,7 @@ class OpenApi30SchemaConverter:
 
 def in_types(typ: python.TypeHint, allowed: Iterable[python.TypeHint]) -> bool:
     if typ.is_union():
-        return all(in_types(arg, allowed) for arg in typing.cast(python.GenericTypeHint, typ).args)
+        return any(in_types(arg, allowed) for arg in typing.cast(python.GenericTypeHint, typ).args)
 
     return typ in allowed
 
@@ -231,6 +227,10 @@ FIELD_PROPS = {
     'minProperties': 'min_length',
     'multipleOf': 'multiple_of',
     'pattern': 'pattern',
+    'maximum': 'le',
+    'minimum': 'ge',
+    'exclusiveMaximum': 'lt',
+    'exclusiveMinimum': 'gt',
 }
 
 NUMERIC_CONSTRAINTS = {'ge', 'gt', 'le', 'lt', 'multiple_of'}

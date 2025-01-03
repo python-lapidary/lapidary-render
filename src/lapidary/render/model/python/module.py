@@ -2,7 +2,7 @@ import abc
 import dataclasses as dc
 from collections.abc import Iterable, Mapping
 
-from .model import ClientClass, MetadataModel, SchemaClass
+from .model import Auth, ClientClass, MetadataModel, SchemaClass
 from .module_path import ModulePath
 from .type_hint import NONE, TypeHint, flatten
 
@@ -17,8 +17,7 @@ template_imports = [
 @dc.dataclass(frozen=True, kw_only=True)
 class AbstractModule[Body](abc.ABC):
     path: ModulePath = dc.field()
-    module_type: str
-    body: Body = dc.field()
+    body: Body = dc.field(hash=False)
 
     @abc.abstractmethod
     def dependencies(self) -> Iterable[TypeHint]:
@@ -42,8 +41,6 @@ class AbstractModule[Body](abc.ABC):
 
 @dc.dataclass(frozen=True, kw_only=True)
 class AuthModule(AbstractModule[Mapping[str, TypeHint]]):
-    module_type = 'auth'
-
     @property
     def dependencies(self) -> Iterable[TypeHint]:  # type: ignore[override]
         return self.body.values()
@@ -51,8 +48,6 @@ class AuthModule(AbstractModule[Mapping[str, TypeHint]]):
 
 @dc.dataclass(frozen=True, kw_only=True)
 class ClientModule(AbstractModule[ClientClass]):
-    module_type: str = dc.field(default='client')
-
     def dependencies(self) -> Iterable[TypeHint]:
         return self.body.dependencies()
 
@@ -61,7 +56,6 @@ class ClientModule(AbstractModule[ClientClass]):
 class EmptyModule(AbstractModule[None]):
     """Module used to generate empty __init__.py files"""
 
-    module_type: str = dc.field(default='empty')
     body: None = None
 
     def dependencies(self) -> Iterable[TypeHint]:
@@ -70,8 +64,6 @@ class EmptyModule(AbstractModule[None]):
 
 @dc.dataclass(frozen=True, kw_only=True)
 class MetadataModule(AbstractModule[Iterable[MetadataModel]]):
-    module_type: str = 'metadata'
-
     def dependencies(self) -> Iterable[TypeHint]:
         for model in self.body:
             yield from model.dependencies()
@@ -84,8 +76,18 @@ class SchemaModule(AbstractModule[Iterable[SchemaClass]]):
     One schema module for inline request and for response body for each operation
     """
 
-    module_type: str = 'schema'
-
     def dependencies(self) -> Iterable[TypeHint]:
         for schema in self.body:
             yield from schema.dependencies()
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+class SecurityModule(AbstractModule[Mapping[str, Auth]]):
+    def dependencies(self) -> Iterable[TypeHint]:
+        return (
+            TypeHint(module='httpx', name='BasicAuth'),
+            TypeHint(module='httpx_auth', name='OAuth2AuthorizationCode'),
+            TypeHint(module='typing', name='Union'),
+            TypeHint(module='collections.abc', name='Iterable'),
+            TypeHint(module='lapidary.runtime', name='NamedAuth'),
+        )
