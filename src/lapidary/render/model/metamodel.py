@@ -271,10 +271,7 @@ class MetaModel:
 
         types: set[python.AnnotatedType] = set()
         if union_items:
-            try:
-                types = set(item.as_annotation(root_package, True, False) for item in union_items)
-            except TypeError:
-                raise
+            types = set(item.as_annotation(root_package, True, False) for item in union_items)
             if include_object:
                 if any(schema31.DataType.OBJECT in item.type_ for item in union_items):  # type: ignore[operator]
                     types.add(resolve_type_name(root_package, self.stack))
@@ -305,10 +302,7 @@ class MetaModel:
                         )
                     case _:
                         raise TypeError(schema_type)
-                try:
-                    types.add(typ)
-                except TypeError:
-                    raise
+                types.add(typ)
 
         if not required:
             types.add(python.NoneMetaType)
