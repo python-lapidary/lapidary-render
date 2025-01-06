@@ -1,6 +1,6 @@
 import itertools
 import logging
-from collections.abc import Callable, Iterable, Mapping, MutableMapping
+from collections.abc import Callable, Iterable, Mapping, MutableMapping, Sequence
 from typing import Any, cast
 
 from mimeparse import parse_media_range
@@ -36,7 +36,7 @@ class OpenApi30Converter:
 
         self.target = python.ClientModel(
             client=python.ClientModule(
-                path=root_package,
+                path=python.ModulePath((str(self.root_package), 'client')),
                 body=python.ClientClass(init_method=python.ClientInit()),
             ),
             package=str(root_package),
@@ -133,15 +133,15 @@ class OpenApi30Converter:
             raise TypeError(f'Expected Parameter object at {stack}, got {type(value).__name__}.')
 
         typ, media_type = self._process_schema_or_content(value, stack)
-
+        python_name = parameter_name(value)
         return python.Parameter(
-            name=parameter_name(value),
+            name=python_name,
             typ=typ,
             in_=value.param_in.value.capitalize(),  # type: ignore[arg-type]
             style=param_style(value.style, value.explode, value.param_in, stack),
             required=value.required,
             media_type=media_type,
-            alias=None,
+            alias=value.name if value.name != python_name else None,
         )
 
     def process_paths(self, value: openapi.Paths, stack: Stack) -> None:
@@ -224,7 +224,7 @@ class OpenApi30Converter:
             in_='Header',
             required=value.required,
             style=param_style(value.style, value.explode, openapi.ParameterLocation.HEADER, stack),
-            alias=alias,
+            alias=alias if alias != python_name else None,
         )
 
     def process_content(self, value: Mapping[str, openapi.MediaType], stack: Stack) -> python.MimeMap:
@@ -290,8 +290,8 @@ class OpenApi30Converter:
         value: list[openapi.Parameter | openapi.Reference],
         stack: Stack,
         common_params: Mapping[str, python.Parameter],
-    ) -> Iterable[python.Parameter]:
-        processed_params = (
+    ) -> Sequence[python.Parameter]:
+        processed_params: Sequence[python.Parameter] = (
             [self.process_parameter(oa_param, stack.push(str(idx))) for idx, oa_param in enumerate(value)]
             if value
             else ()

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import dataclasses as dc
 import enum
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable, Mapping, Sequence
 from typing import Any, Literal, TypeAlias
 
 from ..openapi import ParameterLocation as ParamLocation
@@ -11,7 +11,7 @@ from .type_hint import AnnotatedType, NameRef, NoneMetaType, union_of
 MimeType: TypeAlias = str
 ResponseCode: TypeAlias = str
 MimeMap: TypeAlias = Mapping[MimeType, AnnotatedType]
-SecurityRequirements: TypeAlias = Iterable[Mapping[str, Iterable[str]]]
+SecurityRequirements: TypeAlias = Sequence[Mapping[str, Iterable[str]]]
 
 
 @dc.dataclass(slots=True, frozen=True)
@@ -35,14 +35,14 @@ class AnnotatedVariable:
         assert isinstance(self.typ, AnnotatedType)
 
 
-@dc.dataclass
+@dc.dataclass(kw_only=True, frozen=True)
 class Auth:
     name: str
     python_name: str
     type: str
 
 
-@dc.dataclass(kw_only=True)
+@dc.dataclass(kw_only=True, frozen=True)
 class ApiKeyAuth(Auth):
     key: str
     location: ParamLocation
@@ -50,55 +50,55 @@ class ApiKeyAuth(Auth):
     type: str = 'api_key'
 
 
-@dc.dataclass(kw_only=True)
+@dc.dataclass(kw_only=True, frozen=True)
 class HttpAuth(Auth):
     scheme: str
     bearer_format: str | None
 
 
-@dc.dataclass(kw_only=True)
+@dc.dataclass(kw_only=True, frozen=True)
 class HttpBasicAuth(Auth):
     scheme: str = 'basic'
     type: str = 'http_basic'
 
 
-@dc.dataclass(kw_only=True)
+@dc.dataclass(kw_only=True, frozen=True)
 class HttpDigestAuth(Auth):
     scheme: str = 'digest'
     type: str = 'http_digest'
 
 
-@dc.dataclass(kw_only=True)
+@dc.dataclass(kw_only=True, frozen=True)
 class OpenIdConnectAuth(Auth):
     url: str
     type: str = 'openid_connect'
 
 
-@dc.dataclass(kw_only=True)
+@dc.dataclass(kw_only=True, frozen=True)
 class OAuth2AuthBase(Auth):
-    scopes: dict[str, str]
+    scopes: Mapping[str, str]
 
 
-@dc.dataclass(kw_only=True)
+@dc.dataclass(kw_only=True, frozen=True)
 class ImplicitOAuth2Flow(OAuth2AuthBase):
     authorization_url: str
     type: str = 'oauth2_implicit'
 
 
-@dc.dataclass(kw_only=True)
+@dc.dataclass(kw_only=True, frozen=True)
 class PasswordOAuth2Flow(OAuth2AuthBase):
     token_url: str
     type: str = 'oauth2_password'
 
 
-@dc.dataclass(kw_only=True)
+@dc.dataclass(kw_only=True, frozen=True)
 class AuthorizationCodeOAuth2Flow(OAuth2AuthBase):
     authorization_url: str
     token_url: str
     type: str = 'oauth2_authorization_code'
 
 
-@dc.dataclass(kw_only=True)
+@dc.dataclass(kw_only=True, frozen=True)
 class ClientCredentialsOAuth2Flow(OAuth2AuthBase):
     token_url: str
     type: str = 'oauth2_client_credentials'
@@ -130,7 +130,7 @@ class OperationFunction:
 
     # python signature
     name: str
-    params: Iterable[Parameter]
+    params: Sequence[Parameter]
     return_type: AnnotatedType
 
     # lapidary annotations
@@ -180,15 +180,8 @@ class ModelType(enum.Enum):
 
 
 @dc.dataclass
-class AbstractType:
+class SchemaClass:
     name: str
-
-    def dependencies(self) -> Iterable[NameRef]:
-        raise NotImplementedError
-
-
-@dc.dataclass
-class SchemaClass(AbstractType):
     base_type: NameRef
 
     allow_extra: bool = False
@@ -200,7 +193,6 @@ class SchemaClass(AbstractType):
             assert isinstance(field, AnnotatedVariable)
 
     def dependencies(self) -> Iterable[NameRef]:
-        yield self.base_type
         for prop in self.fields:
             yield from prop.typ.dependencies()
 
@@ -233,16 +225,6 @@ class ClientClass:
         yield from self.init_method.dependencies()
         for fn in self.methods:
             yield from fn.dependencies()
-
-
-@dc.dataclass(frozen=True)
-class ResponseHeader:
-    name: str
-    alias: str
-    typ: AnnotatedType
-
-    def dependencies(self) -> Iterable[NameRef]:
-        yield from self.typ.dependencies()
 
 
 @dc.dataclass(frozen=True)

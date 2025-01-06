@@ -1,15 +1,11 @@
-import importlib.metadata
 import logging
 import pathlib
 from collections.abc import Mapping
-from typing import Any, TextIO
+from typing import TextIO
 
 import anyio
 import asyncclick as click
-import jinja2
-import jinja2.loaders
 import ruamel.yaml
-import rybak
 
 from .config import Config, load_config
 from .load import document_handler_for, load_document
@@ -28,6 +24,8 @@ async def init_project(
 
     if await project_root.exists():
         raise FileExistsError
+
+    from .writer import init_project
 
     document_handler = document_handler_for(anyio.Path(), document_path)
 
@@ -63,27 +61,12 @@ async def init_project(
     yaml = ruamel.yaml.YAML(typ='safe')
     document = yaml.load(await document_handler.load())
 
-    from rybak import TreeTemplate
-    from rybak.jinja import JinjaAdapter
-
-    TreeTemplate(
-        JinjaAdapter(
-            jinja2.Environment(
-                loader=jinja2.loaders.PackageLoader('lapidary.render', package_path='templates/init'),
-            )
-        ),
-        remove_suffixes=['.jinja'],
-    ).render(
-        dict(
-            get_version=importlib.metadata.version,
-            config=config.model_dump(exclude_unset=True, exclude_defaults=True, exclude_none=True),
-            document=document,
-        ),
-        pathlib.Path(project_root),
-    )
+    await init_project(project_root, config, document)
 
 
 async def render_project(project_root: anyio.Path) -> None:
+    from .writer import update_project
+
     config = await load_config(project_root)
 
     logger.info('Parse OpenAPI document')
@@ -91,58 +74,23 @@ async def render_project(project_root: anyio.Path) -> None:
     model = prepare_python_model(oa_doc, config)
 
     logger.info('Render project')
+    with click.progressbar(
+        model.modules,
+        label='Rendering modules',
+        item_show_func=lambda module: str(module.path) if module else '',
+        show_pos=True,
+    ) as progressbar:
 
-    from rybak import TreeTemplate
-    from rybak.jinja import JinjaAdapter
+        def progress(module: python.AbstractModule) -> None:
+            progressbar.update(1, module)
 
-    loaders = [jinja2.loaders.PackageLoader('lapidary.render', package_path='templates/render')]
-    for path in config.extra_sources:
-        if pathlib.Path(path).is_absolute():
-            raise ValueError('Unacceptable absolute path in extra template sources', path)
-        loaders.append(jinja2.loaders.FileSystemLoader(project_root / path))
-
-    template = TreeTemplate(
-        JinjaAdapter(jinja2.Environment(loader=jinja2.loaders.ChoiceLoader(loaders))),
-        exclude_extend=[
-            'includes',
-        ],
-        remove_suffixes=['.jinja'],
-    )
-
-    with RenderProgressBar(model) as event_sink:
-        template.render(
-            dict(
-                model=model,
-                get_version=importlib.metadata.version,
-            ),
-            pathlib.Path(project_root) / 'gen',
-            event_sink=event_sink,
-            remove_stale=True,
-        )
-
-
-class RenderProgressBar(rybak.EventSink):
-    def __init__(self, model: python.ClientModel) -> None:
-        self._progress_bar = click.progressbar(
+        await update_project(
             model.modules,
-            label='Rendering modules',
-            item_show_func=lambda item: item or '',
-            show_pos=True,
+            project_root / config.extra_sources[0] if config.extra_sources else None,
+            project_root / 'gen',
+            config.package,
+            progress,
         )
-
-    def __enter__(self) -> Any:
-        self._progress_bar.__enter__()
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb) -> bool | None:
-        return self._progress_bar.__exit__(exc_type, exc_val, exc_tb)
-
-    def writing_file(self, template: pathlib.PurePath, target: pathlib.Path) -> None:
-        super().writing_file(template, target)
-        if str(template) == '{{loop_over(model.modules).file_path}}.py.jinja':
-            target_parts = str(target).split('/')
-            assert len(target_parts) > 1
-            self._progress_bar.update(1, target_parts[-2])
 
 
 async def dump_model(project_root: anyio.Path, process: bool, output: TextIO):

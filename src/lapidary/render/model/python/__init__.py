@@ -5,8 +5,8 @@ from collections.abc import Iterable, MutableMapping, MutableSequence, MutableSe
 from functools import cached_property
 from typing import Self
 
+from ..openapi import ParameterLocation as ParamLocation
 from .model import (
-    AbstractType,
     AnnotatedVariable,
     ApiKeyAuth,
     Auth,
@@ -20,13 +20,13 @@ from .model import (
     MetadataModel,
     MimeMap,
     ModelType,
+    OAuth2AuthBase,
     OperationFunction,
     Parameter,
     ParamStyle,
     PasswordOAuth2Flow,
     Response,
     ResponseCode,
-    ResponseHeader,
     ResponseMap,
     SchemaClass,
     SecurityRequirements,
@@ -38,6 +38,7 @@ from .module import (
     EmptyModule,
     MetadataModule,
     SchemaModule,
+    SecurityModule,
 )
 from .module_path import ModulePath
 from .type_hint import AnnotatedType, GenericType, NameRef, NoneMetaType, list_of, union_of
@@ -69,11 +70,22 @@ class ClientModel:
 
     def _modules(self) -> Iterable[AbstractModule]:
         known_modules = set()
+        if self.security_schemes:
+            sm = SecurityModule(
+                path=ModulePath((self.package, 'components', 'securitySchemes'), True),
+                body=self.security_schemes,
+            )
+            known_modules.add(sm.path)
+            yield sm
+
+        known_modules.add(self.client.path)
+        yield self.client
+
         for mod in self.model_modules:
-            assert mod.path not in known_modules, mod.path
+            assert mod not in known_modules, mod.path
             known_modules.add(mod.path)
             yield mod
 
         for package in self.packages():
             if package not in known_modules:
-                yield EmptyModule(path=package, body=None)
+                yield EmptyModule(path=package)

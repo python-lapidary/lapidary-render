@@ -20,10 +20,17 @@ class NameRef:
         return self.module + ':' + self.name
 
     @staticmethod
+    def from_str(path: str) -> NameRef:
+        module, name = path.split(':')
+        return NameRef(module=module, name=name)
+
+    @staticmethod
     def from_type(typ: type) -> NameRef:
         if hasattr(typ, '__origin__'):
-            raise ValueError('Generic types not supported', typ)
-        return NameRef(typ.__module__, typ.__name__)
+            raise ValueError('Generic types unsupported', typ)
+        module = typ.__module__
+        name = typ.__name__
+        return NameRef(module=module, name=name)
 
 
 @dc.dataclass(slots=True, frozen=True)
@@ -72,7 +79,7 @@ def list_of(item: AnnotatedType) -> AnnotatedType:
 def union_of(*types: AnnotatedType) -> AnnotatedType:
     args: set[AnnotatedType] = set()
     for typ in types:
-        if typ.typ == _UNION:
+        if typ.typ.typ == _UNION:
             args.update(typ.typ.generic_args)
         else:
             args.add(typ)

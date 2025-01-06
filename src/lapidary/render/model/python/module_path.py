@@ -1,5 +1,5 @@
 import typing
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from pathlib import PurePath
 
 
@@ -15,7 +15,7 @@ class ModulePath:
         else:
             parts = module
 
-        if isinstance(parts, list):
+        if isinstance(parts, Sequence):
             if len(parts) == 0:
                 raise ValueError(module)
             self.parts = parts

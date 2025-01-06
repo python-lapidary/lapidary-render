@@ -1,8 +1,12 @@
 from __future__ import annotations
 
+import datetime as dt
+import decimal as dec
+import itertools
 import logging
 from collections import defaultdict
 from collections.abc import Iterable
+from types import NoneType
 from typing import Any
 
 from openapi_pydantic.v3.v3_1 import schema as schema31
@@ -194,7 +198,7 @@ class OpenApi30SchemaConverter:
 
     @property
     def schema_modules(self) -> Iterable[python.SchemaModule]:
-        modules: dict[python.ModulePath, list[python.AbstractType]] = defaultdict(list)
+        modules: dict[python.ModulePath, list[python.SchemaClass]] = defaultdict(list)
         for stack, model in self.all_models.items():
             if stack not in self.type_models or model is None:
                 continue
@@ -221,18 +225,10 @@ JSON_TYPE_TO_PY_TYPE = {
     schema31.DataType.NUMBER: float,
     schema31.DataType.ARRAY: list,
     schema31.DataType.OBJECT: dict,
-    schema31.DataType.NULL: type(None),
+    schema31.DataType.NULL: NoneType,
 }
 
-PY_TYPE_TO_JSON_TYPE = {
-    str: schema31.DataType.STRING,
-    int: schema31.DataType.INTEGER,
-    bool: schema31.DataType.BOOLEAN,
-    float: schema31.DataType.NUMBER,
-    list: schema31.DataType.ARRAY,
-    dict: schema31.DataType.OBJECT,
-    type(None): schema31.DataType.NULL,
-}
+PY_TYPE_TO_JSON_TYPE = {value: key for key, value in JSON_TYPE_TO_PY_TYPE.items()}
 
 PRIMITIVE_TYPES = {
     openapi.DataType.STRING: str,

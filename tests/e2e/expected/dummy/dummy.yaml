@@ -28,6 +28,7 @@ paths:
           - $ref: '#/components/schemas/schema1'
           - $ref: '#/components/schemas/all'
           - type: integer
+            maximum: 20
             nullable: true
         required: true
       - name: param2

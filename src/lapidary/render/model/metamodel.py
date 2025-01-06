@@ -4,7 +4,6 @@ import dataclasses as dc
 import itertools
 import operator
 from collections.abc import Callable, Collection, Container
-from types import NoneType
 from typing import Any, Self
 
 from openapi_pydantic.v3.v3_1 import schema as schema31
@@ -297,7 +296,7 @@ class MetaModel:
                     case schema31.DataType.INTEGER:
                         typ = python.AnnotatedType.from_type(int)
                     case schema31.DataType.NULL:
-                        typ = python.AnnotatedType.from_type(NoneType)
+                        typ = python.NoneMetaType
                     case schema31.DataType.OBJECT:
                         typ = resolve_type_name(root_package, self.stack)
                     case schema31.DataType.ARRAY:
