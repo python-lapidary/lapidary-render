@@ -3,8 +3,6 @@ from __future__ import annotations
 import dataclasses as dc
 from collections.abc import Iterable, Mapping, Sequence
 
-from frozendict import frozendict
-
 
 @dc.dataclass(slots=True, frozen=True)
 class NameRef:
@@ -34,53 +32,64 @@ class NameRef:
 
 
 @dc.dataclass(slots=True, frozen=True)
-class GenericType:
+class AnnotatedType:
     typ: NameRef
     generic_args: Sequence[AnnotatedType] = dc.field(default_factory=tuple)
+    gt: int | float | None = None
+    ge: int | float | None = None
+    lt: int | float | None = None
+    le: int | float | None = None
+    multiple_of: int | float | None = None
+    pattern: str | None = None
+    min_length: int | None = None
+    max_length: int | None = None
 
     def __post_init__(self):
-        assert isinstance(self.generic_args, tuple)
-        for typ in self.generic_args:
-            assert isinstance(typ, AnnotatedType)
+        assert isinstance(self.typ, NameRef), self.typ
+
+    def num_constraints(self) -> Iterable[tuple[NameRef, int | float]]:
+        for key, typ in CONSTRAINTS.items():
+            if (value := getattr(self, key)) is not None:
+                yield typ, value
 
     def dependencies(self) -> Iterable[NameRef]:
         yield self.typ
+        yield from (item[0] for item in self.num_constraints())
+        if self.pattern:
+            yield NameRef('pydantic', 'Field')
         for arg in self.generic_args:
             yield from arg.dependencies()
 
-
-@dc.dataclass(slots=True, frozen=True)
-class AnnotatedType:
-    typ: GenericType
-    constraints: Mapping[NameRef, int | float] = dc.field(default_factory=frozendict)
-    pattern: str | None = None
-
-    def __post_init__(self):
-        assert isinstance(self.typ, GenericType), self.typ
-
-    def dependencies(self) -> Iterable[NameRef]:
-        yield from self.typ.dependencies()
-        yield from (self.constraints or {}).keys()
-
     @staticmethod
-    def from_type(typ: type) -> AnnotatedType:
-        return AnnotatedType(GenericType(NameRef.from_type(typ)))
+    def from_type(
+        typ: type,
+        generic: Sequence[AnnotatedType] = (),
+    ) -> AnnotatedType:
+        return AnnotatedType(NameRef.from_type(typ), generic)
 
+
+CONSTRAINTS: Mapping[str, NameRef] = {
+    'lt': NameRef('annotated_types', 'Lt'),
+    'le': NameRef('annotated_types', 'Le'),
+    'gt': NameRef('annotated_types', 'Gt'),
+    'ge': NameRef('annotated_types', 'Ge'),
+    'multiple_of': NameRef('annotated_types', 'MultipleOf'),
+}
 
 # don't use from_type(types.NoneType): https://github.com/python/cpython/issues/128197
-NoneMetaType = AnnotatedType(GenericType(NameRef('types', 'NoneType')))
+NoneMetaType = AnnotatedType(NameRef('types', 'NoneType'))
 _UNION = NameRef('typing', 'Union')
 
 
 def list_of(item: AnnotatedType) -> AnnotatedType:
-    return AnnotatedType(GenericType(NameRef('builtins', 'list'), (item,)))
+    return AnnotatedType(NameRef('builtins', 'list'), (item,))
 
 
 def union_of(*types: AnnotatedType) -> AnnotatedType:
     args: set[AnnotatedType] = set()
     for typ in types:
-        if typ.typ.typ == _UNION:
-            args.update(typ.typ.generic_args)
+        if typ.typ == _UNION:
+            args.update(typ.generic_args)
         else:
             args.add(typ)
 
@@ -89,11 +98,11 @@ def union_of(*types: AnnotatedType) -> AnnotatedType:
     if len(args) == 1:
         return next(iter(args))
 
-    return AnnotatedType(GenericType(_UNION, tuple(sorted(args, key=str))))
+    return AnnotatedType(_UNION, tuple(sorted(args, key=str)))
 
 
 def tuple_of(*types: AnnotatedType) -> AnnotatedType:
-    return AnnotatedType(GenericType(NameRef('builtins', 'tuple'), tuple(types)))
+    return AnnotatedType(NameRef('builtins', 'tuple'), tuple(types))
 
 
 def optional(typ: AnnotatedType) -> AnnotatedType:

@@ -5,39 +5,32 @@ import lapidary.runtime
 import pydantic
 import typing_extensions as typing
 import test_petstore.components.schemas.Category.schema
-import test_petstore.components.schemas.Pet.properties.tags.items.schema
+import test_petstore.components.schemas.Tag.schema
 import types
 
 
 class Pet(lapidary.runtime.ModelBase):
     
     id: typing.Union[
-                int,
-                None,
-            ] = None
+            int,
+            None,
+        ] = None
     
     name: str
     
     category: typing.Union[
-                test_petstore.components.schemas.Category.schema.Category,
-                None,
-            ] = None
+            test_petstore.components.schemas.Category.schema.Category,
+            None,
+        ] = None
     
     photoUrls: list[str,]
     
     tags: typing.Union[
-                list[typing.Union[
-            bool,
-            float,
-            int,
-            list[lapidary.runtime.AnyJSONValue,],
-            str,
-            test_petstore.components.schemas.Pet.properties.tags.items.schema.items,
-        ],],
-                None,
-            ] = None
+            list[test_petstore.components.schemas.Tag.schema.Tag,],
+            None,
+        ] = None
     
     status: typing.Union[
-                str,
-                None,
-            ] = None
+            str,
+            None,
+        ] = None

@@ -10,9 +10,9 @@ import types
 class RequestMetadata(pydantic.BaseModel):
     
     api_key_h: typing.Annotated[
-    typing.Union[
+            typing.Union[
             str,
             None,
         ],
-    lapidary.runtime.Header('api_key',),
-    ] = None
+            lapidary.runtime.Header('api_key',),
+        ] = None

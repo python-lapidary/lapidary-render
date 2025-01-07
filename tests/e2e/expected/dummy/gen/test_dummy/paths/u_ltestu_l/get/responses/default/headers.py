@@ -10,12 +10,12 @@ import types
 class ResponseMetadata(pydantic.BaseModel):
     
     xu_jcount: typing.Annotated[
-    typing.Union[
+            typing.Union[
             int,
             None,
         ],
-    lapidary.runtime.Header(
-            'x-count',
-            style=lapidary.runtime.SimpleMultimap,
-        ),
-    ] = None
+            lapidary.runtime.Header(
+        'x-count',
+        style=lapidary.runtime.SimpleMultimap,
+    ),
+        ] = None

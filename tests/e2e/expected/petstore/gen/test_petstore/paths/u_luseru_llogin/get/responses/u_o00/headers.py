@@ -11,23 +11,23 @@ import types
 class ResponseMetadata(pydantic.BaseModel):
     
     Xu_jRateu_jLimit: typing.Annotated[
-    typing.Union[
+            typing.Union[
             int,
             None,
         ],
-    lapidary.runtime.Header(
-            'X-Rate-Limit',
-            style=lapidary.runtime.SimpleMultimap,
-        ),
-    ] = None
+            lapidary.runtime.Header(
+        'X-Rate-Limit',
+        style=lapidary.runtime.SimpleMultimap,
+    ),
+        ] = None
     
     Xu_jExpiresu_jAfter: typing.Annotated[
-    typing.Union[
+            typing.Union[
             datetime.datetime,
             None,
         ],
-    lapidary.runtime.Header(
-            'X-Expires-After',
-            style=lapidary.runtime.SimpleMultimap,
-        ),
-    ] = None
+            lapidary.runtime.Header(
+        'X-Expires-After',
+        style=lapidary.runtime.SimpleMultimap,
+    ),
+        ] = None

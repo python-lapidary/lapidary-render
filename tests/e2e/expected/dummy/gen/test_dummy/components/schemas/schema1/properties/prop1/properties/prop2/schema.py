@@ -11,8 +11,8 @@ class prop2(lapidary.runtime.ModelBase):
     key: str
     
     nonu_lalpha: typing.Annotated[
-        str,
-        pydantic.Field(alias='non/alpha',),
-    ]
+            str,
+            pydantic.Field(alias='non/alpha',),
+        ]
     
     model_config = pydantic.ConfigDict(extra='forbid',)

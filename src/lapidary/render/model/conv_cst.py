@@ -1,4 +1,3 @@
-import logging
 from collections.abc import Callable, Iterable, Iterator, Sequence
 from typing import cast
 
@@ -6,8 +5,6 @@ import asyncclick
 import libcst as cst
 
 from . import openapi, python
-
-logger = logging.getLogger(__name__)
 
 MODULE_HEADER: Sequence[cst.EmptyLine] = (
     cst.EmptyLine(
@@ -121,7 +118,7 @@ def mk_schema_class_body(model: python.SchemaClass) -> Iterable[cst.SimpleStatem
         yield cst.SimpleStatementLine(body=[cst.Pass()])
         return
 
-    yield from (mk_class_field_stmt(field) for field in model.fields)
+    yield from (mk_model_class_field_stmt(field) for field in model.fields)
 
     if not model.allow_extra:
         yield cst.SimpleStatementLine(
@@ -158,66 +155,55 @@ def mk_simple_type_name(typ: python.NameRef) -> cst.Name | cst.Attribute:
         return mk_name(*parts, typ.name)
 
 
-def mk_generic_type(generic: python.GenericType, indent: int) -> cst.Name | cst.Attribute | cst.Subscript:
-    origin = mk_simple_type_name(generic.typ)
-
-    if generic.generic_args:
-        return mk_parametrized_type(
-            origin, [type_hint_to_attribute(arg, indent + 1) for arg in generic.generic_args], indent + 1
-        )
-    else:
-        return origin
-
-
-def type_hint_to_attribute(
+def mk_annotated_type(
     typ: python.AnnotatedType,
-    indent=1,
+    alias: str | None = None,
+    metadata: Sequence[cst.Name | cst.Attribute | cst.Call] = (),
+    indent: int = 1,
 ) -> cst.Name | cst.Attribute | cst.Subscript:
-    metadata = [
-        mk_call(
-            mk_simple_type_name(typ),
-            [cst.Arg(mk_literal(param))],
+    result: cst.Name | cst.Attribute | cst.Subscript = mk_simple_type_name(typ.typ)
+    if typ.generic_args:
+        result = mk_parametrized_type(
+            result, [mk_annotated_type(arg, indent=indent + 1) for arg in typ.generic_args], indent + 1
         )
-        for typ, param in typ.constraints.items()
+
+    constraints = list(typ.num_constraints())
+    all_metadata = [
+        *metadata,
+        *(mk_call(mk_simple_type_name(name), [mk_literal(value)]) for name, value in constraints),
     ]
+
+    field_args = {}
     if typ.pattern:
-        metadata.append(
+        field_args['pattern'] = mk_raw_str_literal(typ.pattern)
+    if alias:
+        field_args['alias'] = str_literal(alias)
+    if field_args:
+        all_metadata.append(
             mk_call(
                 mk_name('pydantic', 'Field'),
-                [
-                    cst.Arg(
-                        keyword=cst.Name('pattern'),
-                        value=str_literal(typ.pattern),
-                    )
-                ],
-                indent,
+                [cst.Arg(keyword=cst.Name(key), value=value) for key, value in field_args.items()],
             )
         )
 
-    return mk_annotation(typ, metadata, 0)
+    if not all_metadata:
+        return result
+
+    return mk_parametrized_type(mk_name('typing', 'Annotated'), [result, *all_metadata], indent + 1)
 
 
-def mk_class_field_stmt(field: python.AnnotatedVariable) -> cst.SimpleStatementLine:
-    metadata = []
-    if field.alias:
-        metadata.append(
-            mk_call(
-                mk_name('pydantic', 'Field'),
-                [
-                    cst.Arg(
-                        keyword=cst.Name('alias'),
-                        value=str_literal(field.alias),
-                    )
-                ],
-                1,
-            )
-        )
+def mk_model_class_field_stmt(model: python.AnnotatedVariable) -> cst.SimpleStatementLine:
     return cst.SimpleStatementLine(
         body=[
             cst.AnnAssign(
-                target=cst.Name(field.name),
-                annotation=cst.Annotation(mk_annotation(field.typ, metadata)),
-                value=cst.Name('None') if not field.required else None,
+                target=cst.Name(model.name),
+                annotation=cst.Annotation(
+                    mk_annotated_type(
+                        model.typ,
+                        model.alias,
+                    )
+                ),
+                value=cst.Name('None') if not model.required else None,
             )
         ],
         leading_lines=[cst.EmptyLine()],
@@ -243,21 +229,6 @@ def mk_parametrized_type(
             lbracket=cst.LeftSquareBracket(indenter(-1)),
             slice=elements,
         )
-
-
-def mk_annotation(
-    typ: python.AnnotatedType,
-    metadata: Sequence[cst.BaseExpression],
-    indent=1,
-) -> cst.Name | cst.Attribute | cst.Subscript:
-    if metadata:
-        return mk_parametrized_type(
-            mk_name('typing', 'Annotated'),
-            [type_hint_to_attribute(typ, indent + 1), *metadata],
-            indent,
-        )
-    else:
-        return mk_generic_type(typ.typ, indent + 1)
 
 
 def mk_indent_factory(
@@ -327,21 +298,23 @@ def mk_function(
     )
 
 
+def mk_in_annotation(model: python.Parameter, indent: int) -> cst.Attribute | cst.Call:
+    in_args = []
+    if model.alias:
+        in_args.append(str_literal(model.alias))
+    if model.style:
+        in_args.append(cst.Arg(keyword=cst.Name('style'), value=mk_name('lapidary', 'runtime', model.style.value)))
+    in_ = mk_name('lapidary', 'runtime', model.in_)
+    return mk_call(in_, in_args, indent) if in_args else in_
+
+
 def mk_operation_params(operation: python.OperationFunction) -> Iterator[cst.Param]:
-    for idx, param in enumerate(operation.params):
-        param_args = []
-
-        in_ = mk_name('lapidary', 'runtime', param.in_)
-
-        if param.alias:
-            param_args.append(str_literal(param.alias))
-        if param.style:
-            param_args.append(
-                cst.Arg(keyword=cst.Name('style'), value=mk_name('lapidary', 'runtime', param.style.value))
-            )
-
-        annotation = cst.Annotation(mk_annotation(param.typ, [mk_call(in_, param_args, 3) if param_args else in_], 1))
-        yield cst.Param(cst.Name(param.name), annotation, default=cst.Name('None') if not param.required else None)
+    for param in operation.params:
+        yield cst.Param(
+            cst.Name(param.name),
+            cst.Annotation(mk_annotated_type(param.typ, metadata=[mk_in_annotation(param, 1)])),
+            default=cst.Name('None') if not param.required else None,
+        )
 
 
 def mk_client_init_fn(model: python.ClientInit) -> cst.FunctionDef:
@@ -413,7 +386,7 @@ def mk_body_annotation(mime_map: python.MimeMap, indent: int) -> cst.Call:
                 [
                     cst.DictElement(
                         str_literal(mime),
-                        type_hint_to_attribute(typ, indent),
+                        mk_annotated_type(typ, indent=indent),
                         comma=cst.Comma(whitespace_after=indenter(idx)),
                     )
                     for idx, (mime, typ) in enumerate(mime_map.items())
@@ -428,7 +401,7 @@ def mk_body_annotation(mime_map: python.MimeMap, indent: int) -> cst.Call:
 def mk_response(response: python.Response) -> cst.Call:
     args = [mk_body_annotation(response.content, 5)]
     if response.headers_type != python.NoneMetaType:
-        args.append(type_hint_to_attribute(response.headers_type))
+        args.append(mk_annotated_type(response.headers_type))
     return mk_call(mk_name('lapidary', 'runtime', 'Response'), args, mk_indent_factory(len(args), 4, 1))
 
 
@@ -467,7 +440,9 @@ def mk_operation_method(operation: python.OperationFunction) -> cst.FunctionDef:
             cst.Param(
                 cst.Name('body'),
                 cst.Annotation(
-                    mk_annotation(operation.request_body_type, [mk_body_annotation(operation.request_body, 3)])
+                    mk_annotated_type(
+                        operation.request_body_type, metadata=[mk_body_annotation(operation.request_body, 3)]
+                    )
                 ),
             )
         )
@@ -476,7 +451,7 @@ def mk_operation_method(operation: python.OperationFunction) -> cst.FunctionDef:
         name=operation.name,
         params=params,
         params_kwonly=list(mk_operation_params(operation)),
-        returns=mk_annotation(operation.return_type, [responses]),
+        returns=mk_annotated_type(operation.return_type, metadata=[responses]),
         decorators=[decorator],
         method=True,
         async_=True,
@@ -699,20 +674,16 @@ def mk_security_module(module: python.SecurityModule) -> cst.Module:
 
 
 def mk_metadata_field(model: python.Parameter) -> cst.SimpleStatementLine:
-    param_args = []
-    if model.alias:
-        param_args.append(str_literal(model.alias))
-    if model.style:
-        param_args.append(cst.Arg(keyword=cst.Name('style'), value=mk_name('lapidary', 'runtime', model.style.value)))
-
-    in_ = mk_name('lapidary', 'runtime', model.in_)
-
-    annotation = cst.Annotation(mk_annotation(model.typ, [mk_call(in_, param_args, 2) if param_args else in_], 0))
     return cst.SimpleStatementLine(
         body=[
             cst.AnnAssign(
                 target=cst.Name(model.name),
-                annotation=annotation,
+                annotation=cst.Annotation(
+                    mk_annotated_type(
+                        model.typ,
+                        metadata=[mk_in_annotation(model, 1)],
+                    )
+                ),
                 value=cst.Name('None') if not model.required else None,
             )
         ],

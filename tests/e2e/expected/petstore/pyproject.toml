@@ -20,3 +20,6 @@ lapidary = {path = "../../../../../lapidary", develop = true}
 document_path = "src/openapi/openapi.yaml"
 origin = "https://petstore3.swagger.io/api/v3/openapi.json"
 package = "test_petstore"
+plugins=[
+    'lapidary.render.plugins:JSONPatchPlugin',
+]

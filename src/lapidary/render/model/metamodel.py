@@ -3,13 +3,13 @@ from __future__ import annotations
 import dataclasses as dc
 import itertools
 import operator
-from collections.abc import Callable, Collection, Container
+from collections.abc import Callable, Collection, Container, Mapping
 from typing import Any, Self
 
 from openapi_pydantic.v3.v3_1 import schema as schema31
 
 from .. import json_pointer, names
-from ..runtime import AnyJsonType, ModelBase
+from ..runtime import JsonValue, ModelBase
 from . import python
 from .python import AnnotatedType
 from .stack import Stack
@@ -247,8 +247,8 @@ class MetaModel:
         """
         Create type hint for the type represented by the source schema.
 
-        In case where object schema and oneOf or anyOf is used, a type hint for the root schema is created, and the
-        items are rendered in as_type as synthetic class fields.
+        In case where object schema with oneOf or anyOf is used, a type hint for the parent schema is created, and the
+        items are rendered in as_type() as a synthetic class field.
 
         :param root_package: root python package for object models
         :param required: if false, make the type a Union with None
@@ -283,22 +283,22 @@ class MetaModel:
                 match schema_type:
                     case schema31.DataType.STRING:
                         try:
-                            typ = AnnotatedType(python.GenericType(FORMAT_ENCODERS[(schema_type, self.format)]))
+                            typ = AnnotatedType(FORMAT_ENCODERS[(schema_type, self.format)])  # type: ignore[index]
                         except KeyError:
-                            typ = python.AnnotatedType.from_type(str)
+                            typ = self._as_str_anno()
                     case schema31.DataType.BOOLEAN:
                         typ = python.AnnotatedType.from_type(bool)
                     case schema31.DataType.NUMBER:
-                        typ = python.AnnotatedType.from_type(float)
+                        typ = self._as_numeric_anno(float)
                     case schema31.DataType.INTEGER:
-                        typ = python.AnnotatedType.from_type(int)
+                        typ = self._as_numeric_anno(int)
                     case schema31.DataType.NULL:
                         typ = python.NoneMetaType
                     case schema31.DataType.OBJECT:
                         typ = resolve_type_name(root_package, self.stack)
                     case schema31.DataType.ARRAY:
                         typ = python.list_of(
-                            self.items.as_annotation(root_package) if self.items else AnyJsonType,
+                            self.items.as_annotation(root_package) if self.items else JsonValue,
                         )
                     case _:
                         raise TypeError(schema_type)
@@ -309,6 +309,28 @@ class MetaModel:
 
         return python.union_of(*types)
 
+    def _as_numeric_anno(self, typ: type) -> python.AnnotatedType:
+        num_constraints = {'lt', 'gt', 'ge', 'le', 'multiple_of'}
+        constraints = {}
+        for key in num_constraints:
+            if (value := getattr(self, key)) is not None:
+                constraints[key] = typ(value)
+        return python.AnnotatedType(
+            python.NameRef.from_type(typ),
+            **constraints,  # type: ignore[arg-type]
+        )
+
+    def _as_str_anno(self) -> python.AnnotatedType:
+        str_constraints = {'max_length', 'min_length', 'pattern'}
+        constraints = {}
+        for key in str_constraints:
+            if (value := getattr(self, key)) is not None:
+                constraints[key] = value
+        return python.AnnotatedType(
+            python.NameRef('builtins', 'str'),
+            **constraints,  # type: ignore[arg-type]
+        )
+
 
 def resolve_type_name(root_package: str, pointer: Stack) -> python.AnnotatedType:
     # FIXME all fields should be saved as json ref; all schemas saved in a map with json ref as a key
@@ -316,11 +338,10 @@ def resolve_type_name(root_package: str, pointer: Stack) -> python.AnnotatedType
     parts = [names.maybe_mangle_name(json_pointer.decode_json_pointer(part)) for part in pointer.path[1:]]
     module_name = '.'.join([root_package, *(part for part in parts[:-1])])
     top = parts[-1]
-    return python.AnnotatedType(python.GenericType(python.NameRef(module_name, top)))
+    return python.AnnotatedType(python.NameRef(module_name, top))
 
 
 FORMAT_ENCODERS = {
-    (schema31.DataType.STRING, None): python.NameRef.from_type(str),
     (schema31.DataType.STRING, 'uuid'): python.NameRef(module='uuid', name='UUID'),
     (schema31.DataType.STRING, 'date'): python.NameRef(module='datetime', name='date'),
     (schema31.DataType.STRING, 'date-time'): python.NameRef(module='datetime', name='datetime'),

@@ -205,7 +205,7 @@ class OpenApi30Converter:
 
         self.target.model_modules.append(
             python.MetadataModule(
-                path=python.ModulePath(annotation.typ.typ.module, is_module=True),
+                path=python.ModulePath(annotation.typ.module, is_module=True),
                 body=[model],
             )
         )
@@ -312,7 +312,7 @@ class OpenApi30Converter:
             direct_fields.append(
                 python.Parameter(
                     name='meta',
-                    typ=metadata,
+                    typ=metadata if required else type_hint.optional(metadata),
                     required=required,
                     in_='Metadata',
                     style=None,
@@ -330,7 +330,7 @@ class OpenApi30Converter:
         typ = resolve_type_name(str(self.root_package), stack.push('meta', 'RequestMetadata'))
         self.target.model_modules.append(
             python.MetadataModule(
-                path=python.ModulePath(typ.typ.typ.module, is_module=True),
+                path=python.ModulePath(typ.typ.module, is_module=True),
                 body=[metadata_model],
             )
         )

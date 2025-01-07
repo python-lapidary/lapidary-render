@@ -7,7 +7,7 @@ import typing_extensions as typing
 import types
 
 
-class Category(lapidary.runtime.ModelBase):
+class Tag(lapidary.runtime.ModelBase):
     
     id: typing.Union[
             int,

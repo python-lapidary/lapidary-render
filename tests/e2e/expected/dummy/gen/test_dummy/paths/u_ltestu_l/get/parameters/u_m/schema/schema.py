@@ -4,6 +4,7 @@ from __future__ import annotations
 import lapidary.runtime
 import pydantic
 import typing_extensions as typing
+import annotated_types
 import test_dummy.components.schemas.all.schema
 import test_dummy.components.schemas.schema1.schema
 import types
@@ -12,8 +13,11 @@ import types
 class schema(lapidary.runtime.ModelBase):
     
     model_anyone_of: typing.Union[
+            typing.Annotated[
                 int,
-                test_dummy.components.schemas.all.schema.all,
-                test_dummy.components.schemas.schema1.schema.schema1,
-                None,
-            ]
+                annotated_types.Ge(20,),
+            ],
+            test_dummy.components.schemas.all.schema.all,
+            test_dummy.components.schemas.schema1.schema.schema1,
+            None,
+        ]

@@ -12,21 +12,21 @@ import types
 class all(lapidary.runtime.ModelBase):
     
     any: typing.Union[
-                test_dummy.components.schemas.all.properties.any.schema.any,
-                None,
-            ] = None
+            test_dummy.components.schemas.all.properties.any.schema.any,
+            None,
+        ] = None
     
     u_0for: typing.Annotated[
-        test_dummy.components.schemas.all.properties.u_0for.schema.u_0for,
-        pydantic.Field(alias='for',),
-    ]
+            test_dummy.components.schemas.all.properties.u_0for.schema.u_0for,
+            pydantic.Field(alias='for',),
+        ]
     
     uu_1X0for: typing.Annotated[
-        typing.Union[
+            typing.Union[
             str,
             None,
         ],
-        pydantic.Field(alias='u_0for',),
-    ] = None
+            pydantic.Field(alias='u_0for',),
+        ] = None
     
     model_config = pydantic.ConfigDict(extra='forbid',)

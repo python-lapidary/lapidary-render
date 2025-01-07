@@ -7,6 +7,7 @@ import ruamel.yaml
 from lapidary.render.model import OpenApi30Converter, openapi, python, stack
 from lapidary.render.model.conv_schema import OpenApi30SchemaConverter
 from lapidary.render.model.metamodel import MetaModel
+from lapidary.render.model.python import type_hint
 
 logging.basicConfig()
 logging.getLogger('lapidary').setLevel(logging.DEBUG)
@@ -34,9 +35,7 @@ def test_schema_str(document: openapi.OpenAPI) -> None:
         operations.get.responses, stack.Stack(('#', 'paths', '/user/login', 'get', 'responses'))
     )
 
-    assert responses['200'].content['application/json'] == python.AnnotatedType(
-        python.GenericType(python.NameRef.from_type(str))
-    )
+    assert responses['200'].content['application/json'] == python.AnnotatedType(python.NameRef.from_type(str))
     assert converter.schema_converter.schema_modules == []
 
 
@@ -49,9 +48,7 @@ def test_schema_array(document: openapi.OpenAPI) -> None:
     )
 
     assert request['application/json'] == python.list_of(
-        python.AnnotatedType(
-            python.GenericType(python.NameRef(module='petstore.components.schemas.User.schema', name='User'))
-        )
+        python.AnnotatedType(python.NameRef(module='petstore.components.schemas.User.schema', name='User'))
     )
 
     assert converter.schema_converter.schema_modules[0].body[0].name == 'User'
@@ -67,7 +64,7 @@ def test_property_schema(doc_dummy: openapi.OpenAPI) -> None:
     )
 
     assert schema.as_annotation('dummy') == python.AnnotatedType(
-        python.GenericType(python.NameRef('dummy.paths.u_ltestu_l.get.parameters.u_n.schema.schema', 'schema'))
+        python.NameRef('dummy.paths.u_ltestu_l.get.parameters.u_n.schema.schema', 'schema')
     )
     print(schema.as_type('package'))
 
@@ -180,3 +177,50 @@ def test_enums():
         doc.components.schemas['myschema'], stack.Stack(('#', 'components', 'schemas', 'myschema'))
     )
     print(model)
+
+
+def test_process_anyof():
+    doc = mk_schemas_doc(
+        'test enums',
+        object1=openapi.Schema(
+            type=openapi.DataType.OBJECT,
+            properties={
+                'str': openapi.Schema(type=openapi.DataType.STRING),
+            },
+        ),
+        object2=openapi.Schema(
+            type=openapi.DataType.OBJECT,
+            properties={
+                'int': openapi.Schema(
+                    type=openapi.DataType.INTEGER,
+                ),
+            },
+        ),
+        myschema=openapi.Schema(
+            anyOf=[
+                openapi.Reference(ref='#/components/schemas/object1'),
+                openapi.Reference(ref='#/components/schemas/object2'),
+                openapi.Schema(
+                    type=openapi.DataType.INTEGER,
+                    maximum=20,
+                    nullable=True,
+                ),
+            ]
+        ),
+    )
+    converter = OpenApi30SchemaConverter(python.ModulePath('root'), doc)
+    model = converter.process_type_schema(
+        doc.components.schemas['myschema'], stack.Stack(('#', 'components', 'schemas', 'myschema'))
+    )
+    assert model is not None
+
+    annotation = model.as_annotation('package')
+
+    assert annotation == python.AnnotatedType(
+        type_hint._UNION,
+        (
+            python.AnnotatedType(python.NameRef.from_type(int), ge=20),
+            python.AnnotatedType(python.NameRef('package.components.schemas.myschema.schema', 'myschema')),
+            python.NoneMetaType,
+        ),
+    )

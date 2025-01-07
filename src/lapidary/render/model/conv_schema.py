@@ -205,9 +205,9 @@ class OpenApi30SchemaConverter:
             typ = model.as_type(str(self.root_package))
 
             if typ:
-                modules[
-                    python.ModulePath(resolve_type_name(str(self.root_package), model.stack).typ.typ.module)
-                ].append(typ)
+                modules[python.ModulePath(resolve_type_name(str(self.root_package), model.stack).typ.module)].append(
+                    typ
+                )
         return [
             python.SchemaModule(
                 path=module,
