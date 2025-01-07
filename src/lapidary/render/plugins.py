@@ -22,7 +22,7 @@ class JSONPatchPlugin(ProcessorPlugin):
         from jsonpointer import JsonPointerException
 
         async for path, patch in self.load_patches(project_root / 'openapi/patches'):
-            logger.debug('Applying patches from %s', path)
+            logger.info('Applying patches from %s', path)
             try:
                 model = patch.apply(model)
             except JsonPointerException as error:
