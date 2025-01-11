@@ -1,8 +1,5 @@
 from __future__ import annotations
 
-import datetime as dt
-import decimal as dec
-import itertools
 import logging
 from collections import defaultdict
 from collections.abc import Iterable

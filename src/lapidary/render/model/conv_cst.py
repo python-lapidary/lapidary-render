@@ -468,11 +468,11 @@ def mk_client_module(module: python.ClientModule) -> cst.Module:
         header=MODULE_HEADER,
         body=[
             FUTURE_ANNOTATIONS,
+            cst.EmptyLine(),
             cst.helpers.parse_template_statement("""
 __all__ = (
     'ApiClient',
 )"""),
-            cst.EmptyLine(),
             *mk_imports(module),
             mk_class_def(
                 class_name='ApiClient',
