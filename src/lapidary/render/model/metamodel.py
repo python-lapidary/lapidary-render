@@ -73,7 +73,6 @@ class MetaModel:
     any_of: list[MetaModel] | None = None
     one_of: list[MetaModel] | None = None
     all_of: list[MetaModel] | None = None
-    not_: MetaModel | None = None
 
     def normalize_model(self) -> MetaModel | None:
         if self.type_ is None:
@@ -94,7 +93,6 @@ class MetaModel:
             any_of=None,
             all_of=None,
             one_of=None,
-            not_=None,
         )
 
     def __and__(self, other) -> MetaModel | None:

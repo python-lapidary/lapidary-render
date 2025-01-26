@@ -159,9 +159,6 @@ class OpenApi30SchemaConverter:
     def process_schema_allOf(self, value: list[openapi.Schema], stack: Stack, model: MetaModel, _) -> None:
         model.all_of = self._process_subschemas(value, stack)
 
-    def process_schema_not(self, value: openapi.Schema | bool, stack: Stack, model: MetaModel, _) -> None:
-        model.not_ = self.process_schema(value, stack)
-
     def process_schema_xml(self, *_) -> None:
         pass
 
