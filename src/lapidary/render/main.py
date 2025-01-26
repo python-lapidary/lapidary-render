@@ -5,6 +5,7 @@ from typing import TextIO
 
 import anyio
 import asyncclick as click
+import pydantic
 import ruamel.yaml
 
 from .config import Config, load_config
@@ -94,18 +95,17 @@ async def render_project(project_root: anyio.Path) -> None:
 
 
 async def dump_model(project_root: anyio.Path, process: bool, output: TextIO):
-    from pprint import pprint
-
     config = await load_config(project_root)
     oa_doc = await load_document(project_root, config)
+    yaml = ruamel.yaml.YAML(typ='safe')
 
     if not process:
-        yaml = ruamel.yaml.YAML(typ='safe')
         yaml.dump(oa_doc, output)
 
     else:
         py_model = prepare_python_model(oa_doc, config)
-        pprint(py_model, output)
+        doc = pydantic.TypeAdapter(python.ClientModel).dump_python(py_model, mode='json', exclude_none=True)
+        yaml.dump(doc, output)
 
 
 def prepare_python_model(oa_doc: Mapping, config: Config) -> python.ClientModel:
