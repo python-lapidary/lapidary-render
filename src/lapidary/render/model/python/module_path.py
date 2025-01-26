@@ -1,9 +1,10 @@
+import dataclasses as dc
 import typing
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from pathlib import PurePath
-from typing import Self
 
 
+@dc.dataclass
 class ModulePath:
     _SEP = '.'
 
@@ -16,7 +17,7 @@ class ModulePath:
         else:
             parts = module
 
-        if isinstance(parts, list):
+        if isinstance(parts, Sequence):
             if len(parts) == 0:
                 raise ValueError(module)
             self.parts = parts
@@ -25,7 +26,7 @@ class ModulePath:
 
         self._is_module = is_module
 
-    def to_path(self, root: PurePath | None = None):
+    def to_path(self, root: PurePath | None = None) -> PurePath:
         parts = list(self.parts)
         if not self._is_module:
             parts.append('__init__')

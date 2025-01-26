@@ -34,7 +34,7 @@ class SecurityScheme(SecuritySchemeBase):
 
 
 class Reference[Target](ReferenceBase):
-    pass
+    model_config = pydantic.ConfigDict(frozen=True)
 
 
 def validate_list_unique(v: Sequence[typing.Any]) -> Sequence[typing.Any]:
@@ -51,13 +51,13 @@ class Schema(SchemaBase):
     items: 'None | Reference[Schema] | Schema' = None
 
     # type == object
-    properties: 'typing.Annotated[dict[str, Reference[Schema] | Schema], pydantic.Field(default_factory=dict)]'
-    additionalProperties: 'Annotated[bool | Reference[Schema] | Schema, pydantic.Field(alias="additionalProperties")]' = True
+    properties: 'None | dict[str, Reference[Schema] | Schema]' = None
+    additionalProperties: 'None | bool | Reference[Schema] | Schema' = None
 
     schema_not: 'Annotated[None | Reference[Schema] | Schema, pydantic.Field(alias="not")]' = None
-    allOf: 'Annotated[None | list[Reference[Schema] | Schema], pydantic.Field(alias="allOf")]' = None
-    oneOf: 'Annotated[None | list[Reference[Schema] | Schema], pydantic.Field(alias="oneOf")]' = None
-    anyOf: 'Annotated[None | list[Reference[Schema] | Schema], pydantic.Field(alias="anyOf")]' = None
+    allOf: 'None | list[Reference[Schema] | Schema]' = None
+    oneOf: 'None | list[Reference[Schema] | Schema]' = None
+    anyOf: 'None | list[Reference[Schema] | Schema]' = None
 
     lapidary_name: typing.Annotated[str | None, pydantic.Field(alias='x-lapidary-type-name')] = None
 
@@ -175,12 +175,12 @@ class OpenAPI(OpenAPIBase):
     components: Components | None = None
 
     lapidary_headers_global: typing.Annotated[
-        dict[str, Header],
+        dict[str, Header] | None,
         pydantic.Field(
             alias='x-lapidary-headers-global',
             default_factory=dict,
         ),
-    ]
+    ] = None
     """Headers added to every request.
     Unlike with operation headers, the default value found in the schema is sent over the wire"""
 
@@ -192,4 +192,4 @@ class OpenAPI(OpenAPIBase):
             'Values in Responses declared in Operations override values in this one.',
             default=None,
         ),
-    ]
+    ] = None

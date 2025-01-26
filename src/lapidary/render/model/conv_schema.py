@@ -1,19 +1,17 @@
-import datetime as dt
-import decimal as dec
-import itertools
+from __future__ import annotations
+
 import logging
-import uuid
 from collections import defaultdict
-from collections.abc import Callable, Iterable, MutableMapping, Sequence
+from collections.abc import Iterable
+from types import NoneType
+from typing import Any
 
-import typing_extensions as typing
+from openapi_pydantic.v3.v3_1 import schema as schema31
 
-from .. import json_pointer, names
 from . import openapi, python
-from .refs import resolve_ref
+from .metamodel import MetaModel, resolve_type_name
+from .refs import resolve_ref, resolve_refs_recursive
 from .stack import Stack
-
-type ResolveRefFn[Target] = Callable[[openapi.Reference], tuple[Stack, Target]]
 
 logger = logging.getLogger(__name__)
 
@@ -22,190 +20,210 @@ class OpenApi30SchemaConverter:
     def __init__(self, root_package: python.ModulePath, source: openapi.OpenAPI) -> None:
         self.root_package = root_package
         self.source = source
-        self.schema_types: MutableMapping[Stack, tuple[python.SchemaClass, python.TypeHint]] = {}
+        self.type_models: set[Stack] = set()
+        self.all_models: dict[Stack, MetaModel] = {}
 
     @resolve_ref
-    def _process_schema_object(self, value: openapi.Schema, stack: Stack) -> python.TypeHint:
-        if stack in self.schema_types:
-            return self.schema_types[stack][1]
+    def process_schema(
+        self,
+        value: openapi.Schema | bool | None,
+        stack: Stack,
+    ) -> MetaModel | None:
+        if existing := self.all_models.get(stack):
+            return existing
 
-        name = value.lapidary_name or stack.top()
-        stack_props = stack.push('properties')
-        fields = (
-            [
-                self.process_property(
-                    prop_schema, stack_props.push(prop_name), prop_name, prop_name in (value.required or ())
-                )
-                for prop_name, prop_schema in value.properties.items()
-            ]
-            if value.properties
-            else []
+        if value is False or (isinstance(value, openapi.Schema) and value.enum and len(value.enum) == 0):
+            return None
+
+        model = MetaModel(
+            stack=stack.push('schema', stack.top()),
         )
 
-        type_hint = resolve_type_hint(str(self.root_package), stack.push('schema', name))
-        schema_class = python.SchemaClass(
-            class_name=names.maybe_mangle_name(name),
-            base_type=python.TypeHint.from_str('lapidary.runtime:ModelBase'),
-            allow_extra=value.additionalProperties is not False,
-            fields=fields,
-            docstr=value.description or None,
-        )
-        self.schema_types[stack] = schema_class, type_hint
-        return type_hint
+        if value in (True, None):
+            self.all_models[stack] = model
+            return model
 
-    @resolve_ref
-    def process_property(self, value: openapi.Schema, stack: Stack, prop_name: str, in_required: bool) -> python.Field:
-        name = names.maybe_mangle_name(prop_name)
-
-        typ = self.process_schema(value, stack)
-        if not in_required:
-            typ = python.union_of(typ, python.NONE)
-
-        field_props = {}
-        allowed_field_props = (
-            NUMERIC_CONSTRAINTS
-            if in_types(
-                typ,
-                (
-                    python.TypeHint.from_type(int),
-                    python.TypeHint.from_type(float),
-                    python.TypeHint.from_type(dec.Decimal),
-                    python.NONE,
-                ),
-            )
-            else None
-        )
-
-        # constraints should be processed and applied per type, but for now we only have a single Field annotation,
-        # and pydantic doesn't like float constraints for int fields.
-        is_int = in_types(typ, (python.TypeHint.from_type(int),))
-
-        for k in value.model_fields_set:
-            v = getattr(value, k)
-
-            if k == 'maximum':
-                field_prop = 'lt' if value.exclusiveMaximum else 'le'
-                field_props[field_prop] = int(v) if is_int else v
-                continue
-            if k == 'minimum':
-                field_prop = 'gt' if value.exclusiveMinimum else 'ge'
-                field_props[field_prop] = int(v) if is_int else v
-                continue
-            if k not in FIELD_PROPS:
-                continue
-
-            field_prop = FIELD_PROPS[k]
-            if allowed_field_props is not None and field_prop not in allowed_field_props:
-                logger.warning('Ignoring unsupported constraint (%s) for type %s', field_prop, typ)
-                continue
-
-            if isinstance(v, str):
-                if field_prop == 'pattern':
-                    field_props[field_prop] = f"r'{v}'"
-                else:
-                    field_props[field_prop] = f"'{v}'"
-            else:
-                field_props[field_prop] = v
-
-        if name != prop_name:
-            field_props['alias'] = f"'{prop_name}'"
-
-        required = in_required and not (value.readOnly or value.writeOnly)
-
-        return python.Field(
-            name=name,
-            annotation=python.Annotation(
-                type=typ,
-                field_props=field_props,
-            ),
-            required=required,
-        )
-
-    @resolve_ref
-    def process_schema(self, value: openapi.Schema, stack: Stack, required: bool = True) -> python.TypeHint:
         assert isinstance(value, openapi.Schema)
-        logger.debug('Process schema %s', stack)
+        for field_name in value.model_fields_set:
+            field_stack = stack.push(field_name)
+            try:
+                process = getattr(self, f'process_schema_{field_name}')
+                logger.debug('Processing property %s', field_stack)
+                process(getattr(value, field_name), field_stack, model, value)
+            except AttributeError:
+                logger.debug('Unsupported property %s', field_stack)
 
-        typ = self._process_schema(value, stack)
+        if model_ := model.normalize_model():
+            self.all_models[stack] = model_
+            return model_
+        return None
 
-        if value.nullable or not required or value.readOnly or value.writeOnly:
-            typ = python.union_of(typ, python.NONE)
+    def process_schema_title(self, value: str, _: Stack, model: MetaModel, _1: openapi.Schema) -> None:
+        model.title = value
 
-        return typ
+    def process_schema_description(self, value: str, _: Stack, model: MetaModel, _1: openapi.Schema) -> None:
+        model.description = value
 
-    def _get_one_of_type_hint(
-        self,
-        stack: Stack,
-        one_of: Iterable[openapi.Reference | openapi.Schema],
-    ) -> python.TypeHint:
-        return python.union_of(
-            *tuple(self.process_schema(sub_schema, stack.push(str(idx))) for idx, sub_schema in enumerate(one_of))
+    def process_schema_type(self, value: openapi.DataType, _: Stack, model: MetaModel, schema: openapi.Schema):
+        typ = {schema31.DataType[value.name]}
+        if schema.nullable:
+            typ.add(schema31.DataType.NULL)
+        model.type_ = model.type_.intersection(typ) if model.type_ else typ
+
+    def process_schema_nullable(self, value: openapi.DataType, _: Stack, model: MetaModel, _1: openapi.Schema) -> None:
+        pass
+
+    def process_schema_enum(self, value: list[Any], _: Stack, model: MetaModel, _1: openapi.Schema) -> None:
+        enum_types = set(PY_TYPE_TO_JSON_TYPE[type(enum_value)] for enum_value in value)
+
+        allowed_types = enum_types.intersection(model.type_) if model.type_ else enum_types
+        allowed_py_types = tuple(JSON_TYPE_TO_PY_TYPE[typ] for typ in allowed_types)
+        new_enum_values = {enum_value for enum_value in value if isinstance(enum_value, allowed_py_types)}
+
+        model.enum = new_enum_values
+        model.type_ = allowed_types
+
+    def process_schema_readOnly(self, value: bool, _, model: MetaModel, _1) -> None:
+        model.read_only = value
+
+    def process_schema_writeOnly(self, value: bool, _, model: MetaModel, _1) -> None:
+        model.write_only = value
+
+    def process_schema_maximum(self, value: float, _, model: MetaModel, schema: openapi.Schema) -> None:
+        if schema.exclusiveMaximum:
+            model.gt = value
+        else:
+            model.ge = value
+
+    def process_schema_exclusiveMaximum(self, *_):
+        pass
+
+    def process_schema_minimum(self, value: float, _, model: MetaModel, schema: openapi.Schema) -> None:
+        if schema.exclusiveMinimum:
+            model.lt = value
+        else:
+            model.le = value
+
+    def process_schema_exclusiveMinimum(self, *_):
+        pass
+
+    def process_schema_multipleOf(self, value: float, _, model: MetaModel, _1) -> None:
+        model.multiple_of = value
+
+    def process_schema_schema_format(self, value: str, _, model: MetaModel, _1) -> None:
+        model.format = value
+
+    def process_schema_pattern(self, value: str, _, model: MetaModel, _1) -> None:
+        model.pattern = value
+
+    def process_schema_maxLength(self, value: int, _, model: MetaModel, _1) -> None:
+        model.max_length = value
+
+    def process_schema_minLength(self, value: int, _, model: MetaModel, _1) -> None:
+        model.min_length = value
+
+    @resolve_ref
+    def process_schema_items(self, value: openapi.Schema, stack: Stack, model: MetaModel, _1) -> None:
+        model.items = self.process_type_schema(value, stack)
+
+    def process_schema_properties(self, value: dict[str, openapi.Schema], stack: Stack, model: MetaModel, _) -> None:
+        for name, sub_schema in value.items():
+            sub_stack = stack.push(name)
+            if isinstance(sub_schema, openapi.Reference):
+                sub_schema, path = resolve_refs_recursive(self.source, sub_schema)
+                sub_stack = Stack.from_str(path)
+
+            if prop_model := self.process_type_schema(sub_schema, sub_stack):
+                model.properties[name] = prop_model
+
+    def process_schema_additionalProperties(
+        self, value: openapi.Schema | bool, stack: Stack, model: MetaModel, _
+    ) -> None:
+        model.additional_props = self.process_type_schema(value, stack) or False
+
+    def process_schema_required(self, value: list[str], _, model: MetaModel, _1) -> None:
+        model.props_required = set(value)
+
+    def _process_subschemas(self, value: list[openapi.Schema], stack: Stack) -> list[MetaModel]:
+        return list(
+            filter(
+                None, [self.process_schema(item_schema, stack.push(str(idx))) for idx, item_schema in enumerate(value)]
+            )
         )
 
-    def _get_composite_type_hint(
-        self,
-        stack: Stack,
-        schemas: list[openapi.Schema | openapi.Reference],
-    ) -> python.TypeHint:
-        if len(schemas) != 1:
-            raise NotImplementedError(stack, 'Multiple component schemas (allOf, anyOf) are currently unsupported.')
+    def process_schema_oneOf(self, value: list[openapi.Schema], stack: Stack, model: MetaModel, _) -> None:
+        model.one_of = self._process_subschemas(value, stack)
 
-        return self.process_schema(schemas[0], stack)
+    def process_schema_anyOf(self, value: list[openapi.Schema], stack: Stack, model: MetaModel, _) -> None:
+        model.any_of = self._process_subschemas(value, stack)
 
-    def _process_schema(
-        self,
-        value: openapi.Schema,
-        stack: Stack,
-    ) -> python.TypeHint:
-        if value.anyOf:
-            return self._get_composite_type_hint(stack.push('anyOf'), value.anyOf)
-        elif value.oneOf:
-            return self._get_one_of_type_hint(stack.push('oneOf'), value.oneOf)
-        elif value.allOf:
-            return self._get_composite_type_hint(stack.push('allOf'), value.allOf)
-        elif value.schema_not:
-            raise NotImplementedError(stack.push('not'))
-        elif value.type == openapi.DataType.STRING and value.schema_format:
-            return self._process_string(value, stack)
-        elif value.type in PRIMITIVE_TYPES:
-            return python.TypeHint.from_type(PRIMITIVE_TYPES[value.type])
-        elif value.type == openapi.DataType.OBJECT:
-            return self._process_schema_object(value, stack)
-        elif value.type == openapi.DataType.ARRAY:
-            return python.list_of(self.process_schema(value.items or openapi.Schema(), stack.push('items')))
-        elif value.type is None:
-            return python.TypeHint.from_str('typing:Any')
-        else:
-            raise NotImplementedError(str(stack))
+    def process_schema_allOf(self, value: list[openapi.Schema], stack: Stack, model: MetaModel, _) -> None:
+        model.all_of = self._process_subschemas(value, stack)
 
-    def _process_string(self, value: openapi.Schema, _: Stack) -> python.TypeHint:
-        assert value.type == openapi.DataType.STRING
-        if value.schema_format:
-            if typ := FORMAT_ENCODERS.get((value.type, value.schema_format), None):
-                return python.TypeHint.from_type(typ)
-        return python.TypeHint.from_type(str)
+    def process_schema_xml(self, *_) -> None:
+        pass
+
+    def process_schema_example(self, *_) -> None:
+        pass
+
+    def process_schema_examples(self, *_) -> None:
+        pass
+
+    @resolve_ref
+    def process_type_schema(self, value: openapi.Schema | bool | None, stack: Stack) -> MetaModel | None:
+        """
+        Type schemas are all schemas that should generate types: schemas used directly in OpenAPI, object properties and array items.
+        Non-type schemas are schemas referenced in allOf, oneOf, anyOf and not.
+
+        Generated types may be either classes or type aliases.
+
+        :param value: OpenAPI Schema to process
+        :param stack: path within the OpenAPI, used to generate FQN
+        """
+        logger.debug('Processing schema %s', stack)
+        model = self.process_schema(value, stack)
+        if model is None:
+            return None
+
+        # if not required:
+        #     model |= NullModel()
+        self.type_models.add(stack)
+
+        return model
 
     @property
     def schema_modules(self) -> Iterable[python.SchemaModule]:
         modules: dict[python.ModulePath, list[python.SchemaClass]] = defaultdict(list)
-        for schema_class_type in self.schema_types.values():
-            schema_class, hint = schema_class_type
-            modules[python.ModulePath(hint.module, is_module=True)].append(schema_class)
+        for stack, model in self.all_models.items():
+            if stack not in self.type_models or model is None:
+                continue
+            types = list(model.as_types(str(self.root_package)))
+
+            if types:
+                modules[python.ModulePath(resolve_type_name(str(self.root_package), model.stack).typ.module)].extend(
+                    types
+                )
         return [
             python.SchemaModule(
                 path=module,
                 body=classes,
             )
             for module, classes in modules.items()
+            if len(classes)
         ]
 
 
-def in_types(typ: python.TypeHint, allowed: Iterable[python.TypeHint]) -> bool:
-    if typ.is_union():
-        return all(in_types(arg, allowed) for arg in typing.cast(python.GenericTypeHint, typ).args)
+JSON_TYPE_TO_PY_TYPE = {
+    schema31.DataType.STRING: str,
+    schema31.DataType.INTEGER: int,
+    schema31.DataType.BOOLEAN: bool,
+    schema31.DataType.NUMBER: float,
+    schema31.DataType.ARRAY: list,
+    schema31.DataType.OBJECT: dict,
+    schema31.DataType.NULL: NoneType,
+}
 
-    return typ in allowed
-
+PY_TYPE_TO_JSON_TYPE = {value: key for key, value in JSON_TYPE_TO_PY_TYPE.items()}
 
 PRIMITIVE_TYPES = {
     openapi.DataType.STRING: str,
@@ -213,38 +231,3 @@ PRIMITIVE_TYPES = {
     openapi.DataType.NUMBER: float,
     openapi.DataType.BOOLEAN: bool,
 }
-
-FORMAT_ENCODERS = {
-    (openapi.DataType.STRING, 'uuid'): uuid.UUID,
-    (openapi.DataType.STRING, 'date'): dt.date,
-    (openapi.DataType.STRING, 'date-time'): dt.datetime,
-    (openapi.DataType.STRING, 'time'): dt.time,
-    (openapi.DataType.STRING, 'decimal'): dec.Decimal,
-}
-
-FIELD_PROPS = {
-    'maxItems': 'max_length',
-    'maxLength': 'max_length',
-    'maxProperties': 'man_length',
-    'minItems': 'min_length',
-    'minLength': 'min_length',
-    'minProperties': 'min_length',
-    'multipleOf': 'multiple_of',
-    'pattern': 'pattern',
-}
-
-NUMERIC_CONSTRAINTS = {'ge', 'gt', 'le', 'lt', 'multiple_of'}
-
-
-def resolve_type_hint(root_package: str, pointer: str | Stack) -> python.TypeHint:
-    if isinstance(pointer, Stack):
-        parts: Sequence[str] = pointer.path[1:]
-    else:
-        parts = pointer.split('/')[1:]
-    module_name = '.'.join(
-        itertools.chain(
-            (root_package,), [names.maybe_mangle_name(json_pointer.decode_json_pointer(part)) for part in parts[:-1]]
-        )
-    )
-    top = names.maybe_mangle_name(parts[-1])
-    return python.TypeHint(module=module_name, name=top)

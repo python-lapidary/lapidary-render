@@ -3,8 +3,7 @@ from pathlib import Path
 import pytest
 import ruamel.yaml
 
-from lapidary.render import model
-from lapidary.render.model import openapi, python
+from lapidary.render.model import conv_openapi, openapi, python
 from lapidary.render.model.stack import Stack
 
 
@@ -17,7 +16,7 @@ def yaml():
 def test_process_security_schemes(yaml: ruamel.yaml.YAML, path: Path):
     document = openapi.OpenAPI.model_validate(yaml.load(path.read_text()))
 
-    converter = model.OpenApi30Converter(python.ModulePath('package', False), document, None)
+    converter = conv_openapi.OpenApi30Converter(python.ModulePath('package', False), document, None)
     for name, security_scheme in document.components.securitySchemes.items():
         converter.process_security_scheme(security_scheme, Stack(('#', 'components', 'securitySchemes', name)))
 

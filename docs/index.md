@@ -9,7 +9,11 @@ Lapidary-render is a code generator that creates client code from an OpenAPI doc
 
 - [x] The generator code should be simple.
 
-    Lapidary-render does most of the processing in Python, only leaving the rendering to Jinja templates.
+    Generator processes data in three stages
+
+    1. Enhance and transform OpenAPI to a structure more close resembling python model structure
+    2. Convert the enhanced OpenAPI to a metamodel
+    3. Convert the metamodel to a syntax tree
 
 - [x] Client code should be simple.
 
@@ -61,7 +65,7 @@ origin
 : URL of the OpenAPI document, used when document_path is missing, or when `servers` is not defined, or the first server URL is a relative path.
 
 extra_sources
-: list of additional source roots for manually written code. The files will be interpreted as templates, but non-template files will also work.
+: list of additional source roots for manually written python files.
 
 plugins
 : list of plugin classes. See [the section on plug-ins](/plugins)
