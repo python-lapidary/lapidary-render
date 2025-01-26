@@ -1,8 +1,10 @@
+import dataclasses as dc
 import typing
 from collections.abc import Iterable, Sequence
 from pathlib import PurePath
 
 
+@dc.dataclass
 class ModulePath:
     _SEP = '.'
 
