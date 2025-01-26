@@ -1,13 +1,13 @@
 import logging
+import typing
 from pathlib import Path
 
 import pytest
 import ruamel.yaml
+from openapi_pydantic.v3.v3_1 import schema as schema31
 
-from lapidary.render.model import OpenApi30Converter, openapi, python, stack
-from lapidary.render.model.conv_schema import OpenApi30SchemaConverter
-from lapidary.render.model.metamodel import MetaModel
-from lapidary.render.model.python import type_hint
+from lapidary.render import runtime
+from lapidary.render.model import conv_openapi, conv_schema, metamodel, openapi, python, stack
 
 logging.basicConfig()
 logging.getLogger('lapidary').setLevel(logging.DEBUG)
@@ -28,7 +28,7 @@ def doc_dummy() -> openapi.OpenAPI:
 
 
 def test_schema_str(document: openapi.OpenAPI) -> None:
-    converter = OpenApi30Converter(python.ModulePath('petstore', False), document, None)
+    converter = conv_openapi.OpenApi30Converter(python.ModulePath('petstore', False), document, None)
     operations: openapi.PathItem = document.paths.paths['/user/login']
 
     responses = converter.process_responses(
@@ -40,7 +40,7 @@ def test_schema_str(document: openapi.OpenAPI) -> None:
 
 
 def test_schema_array(document: openapi.OpenAPI) -> None:
-    converter = OpenApi30Converter(python.ModulePath('petstore', False), document, None)
+    converter = conv_openapi.OpenApi30Converter(python.ModulePath('petstore', False), document, None)
     operations: openapi.PathItem = document.paths.paths['/user/createWithList']
 
     request = converter.process_request_body(
@@ -55,7 +55,7 @@ def test_schema_array(document: openapi.OpenAPI) -> None:
 
 
 def test_property_schema(doc_dummy: openapi.OpenAPI) -> None:
-    converter = OpenApi30Converter(python.ModulePath('dummy', False), doc_dummy, None)
+    converter = conv_openapi.OpenApi30Converter(python.ModulePath('dummy', False), doc_dummy, None)
     operations: openapi.PathItem = doc_dummy.paths.paths['/test/']
 
     schema: MetaModel = converter.schema_converter.process_type_schema(
@@ -208,7 +208,7 @@ def test_process_anyof():
             ]
         ),
     )
-    converter = OpenApi30SchemaConverter(python.ModulePath('root'), doc)
+    converter = conv_schema.OpenApi30SchemaConverter(python.ModulePath('root'), doc)
     model = converter.process_type_schema(
         doc.components.schemas['myschema'], stack.Stack(('#', 'components', 'schemas', 'myschema'))
     )
@@ -217,7 +217,7 @@ def test_process_anyof():
     annotation = model.as_annotation('package')
 
     assert annotation == python.AnnotatedType(
-        type_hint._UNION,
+        python.type_hint._UNION,
         (
             python.AnnotatedType(python.NameRef.from_type(int), ge=20),
             python.AnnotatedType(python.NameRef('package.components.schemas.myschema.schema', 'myschema')),

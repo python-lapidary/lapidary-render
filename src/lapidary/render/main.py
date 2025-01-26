@@ -10,7 +10,7 @@ import ruamel.yaml
 
 from .config import Config, load_config
 from .load import document_handler_for, load_document
-from .model import OpenApi30Converter, openapi, python
+from .model import conv_openapi, openapi, python
 
 logger = logging.getLogger(__name__)
 
@@ -117,7 +117,7 @@ def prepare_python_model(oa_doc: Mapping, config: Config) -> python.ClientModel:
         show_pos=True,
     ) as pbar:
         logger.info('Prepare python model')
-        return OpenApi30Converter(
+        return conv_openapi.OpenApi30Converter(
             python.ModulePath(config.package),
             oa_model,
             str(config.origin) if config.origin else None,

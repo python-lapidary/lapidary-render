@@ -3,8 +3,7 @@ from pathlib import Path
 import pytest
 import ruamel.yaml
 
-from lapidary.render import model
-from lapidary.render.model import openapi, python
+from lapidary.render.model import conv_openapi, openapi, python
 from lapidary.render.model.stack import Stack
 
 yaml = ruamel.yaml.YAML(typ='safe')
@@ -23,6 +22,6 @@ def test_servers(document_path: Path, expected: str | None):
     doc_text = document_path.read_text()
     document = openapi.OpenAPI.model_validate(yaml.load(doc_text))
 
-    converter = model.OpenApi30Converter(python.ModulePath('package', False), document, None)
+    converter = conv_openapi.OpenApi30Converter(python.ModulePath('package', False), document, None)
     converter.process_servers(document.servers, Stack(('#', 'servers')))
     assert converter.target.client.body.init_method.base_url == expected
