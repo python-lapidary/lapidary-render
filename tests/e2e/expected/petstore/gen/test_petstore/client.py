@@ -9,12 +9,12 @@ __all__ = (
 import lapidary.runtime
 import pydantic
 import typing_extensions as typing
+import pydantic
 import test_petstore.components.schemas.ApiResponse.schema
 import test_petstore.components.schemas.Order.schema
 import test_petstore.components.schemas.Pet.schema
 import test_petstore.components.schemas.User.schema
 import test_petstore.paths.u_lpetu_lu_1zpetIdu_21.delete.parameters.meta
-import test_petstore.paths.u_lstoreu_linventory.get.responses.u_o00.content.applicationu_ljson.schema.schema
 import test_petstore.paths.u_luseru_llogin.get.responses.u_o00.headers
 import types
 
@@ -300,13 +300,19 @@ class ApiClient(lapidary.runtime.ClientBase):
         self: typing.Self,
     ) -> typing.Annotated[
             tuple[
-            test_petstore.paths.u_lstoreu_linventory.get.responses.u_o00.content.applicationu_ljson.schema.schema.schema,
+            dict[
+                str,
+                pydantic.JsonValue,
+            ],
             None,
         ],
             lapidary.runtime.Responses({
                 '200': lapidary.runtime.Response(
                     lapidary.runtime.Body({
-                        'application/json': test_petstore.paths.u_lstoreu_linventory.get.responses.u_o00.content.applicationu_ljson.schema.schema.schema,
+                        'application/json': dict[
+                            str,
+                            pydantic.JsonValue,
+                        ],
                     },),
                 ),
             },),

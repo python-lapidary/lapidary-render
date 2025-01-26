@@ -13,9 +13,9 @@ import annotated_types
 import datetime
 import test_dummy.components.requestBodies.dummy.content.applicationu_ljson.schema.schema
 import test_dummy.components.schemas.all.schema
+import test_dummy.components.schemas.schema1.schema
 import test_dummy.paths.u_linline_schema_propertiesu_l.get.responses.default.content.applicationu_ljson.schema.schema
 import test_dummy.paths.u_ltestu_l.get.parameters.meta
-import test_dummy.paths.u_ltestu_l.get.parameters.u_m.schema.schema
 import test_dummy.paths.u_ltestu_l.get.parameters.u_n.schema.schema
 import test_dummy.paths.u_ltestu_l.get.responses.default.headers
 import types
@@ -51,8 +51,8 @@ class ApiClient(lapidary.runtime.ClientBase):
                 int,
                 annotated_types.Ge(20,),
             ],
-            test_dummy.paths.u_ltestu_l.get.parameters.u_m.schema.schema.schema,
-            None,
+            test_dummy.components.schemas.all.schema.all,
+            test_dummy.components.schemas.schema1.schema.schema1,
         ],
             lapidary.runtime.Query('param1',),
         ],

@@ -4,7 +4,7 @@ from __future__ import annotations
 import lapidary.runtime
 import pydantic
 import typing_extensions as typing
-import test_dummy.components.schemas.all.properties.any.schema
+import pydantic
 import test_dummy.components.schemas.all.properties.u_0for.schema
 import types
 
@@ -12,7 +12,10 @@ import types
 class all(lapidary.runtime.ModelBase):
     
     any: typing.Union[
-            test_dummy.components.schemas.all.properties.any.schema.any,
+            dict[
+                str,
+                pydantic.JsonValue,
+            ],
             None,
         ] = None
     

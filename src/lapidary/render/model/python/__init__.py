@@ -41,7 +41,7 @@ from .module import (
     SecurityModule,
 )
 from .module_path import ModulePath
-from .type_hint import AnnotatedType, NameRef, NoneMetaType, list_of, union_of
+from .type_hint import AnnotatedType, NameRef, NoneMetaType, list_of, optional, union_of
 
 
 @dc.dataclass

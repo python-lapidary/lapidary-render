@@ -21,7 +21,7 @@ class OpenApi30SchemaConverter:
         self.root_package = root_package
         self.source = source
         self.type_models: set[Stack] = set()
-        self.all_models: dict[Stack, MetaModel | None] = {}
+        self.all_models: dict[Stack, MetaModel] = {}
 
     @resolve_ref
     def process_schema(
@@ -29,8 +29,8 @@ class OpenApi30SchemaConverter:
         value: openapi.Schema | bool | None,
         stack: Stack,
     ) -> MetaModel | None:
-        if model := self.all_models.get(stack):
-            return model
+        if existing := self.all_models.get(stack):
+            return existing
 
         if value is False or (isinstance(value, openapi.Schema) and value.enum and len(value.enum) == 0):
             return None
@@ -53,9 +53,10 @@ class OpenApi30SchemaConverter:
             except AttributeError:
                 logger.debug('Unsupported property %s', field_stack)
 
-        model = model.normalize_model()
-        self.all_models[stack] = model
-        return model
+        if model_ := model.normalize_model():
+            self.all_models[stack] = model_
+            return model_
+        return None
 
     def process_schema_title(self, value: str, _: Stack, model: MetaModel, _1: openapi.Schema) -> None:
         model.title = value
@@ -196,11 +197,11 @@ class OpenApi30SchemaConverter:
         for stack, model in self.all_models.items():
             if stack not in self.type_models or model is None:
                 continue
-            typ = model.as_type(str(self.root_package))
+            types = list(model.as_types(str(self.root_package)))
 
-            if typ:
-                modules[python.ModulePath(resolve_type_name(str(self.root_package), model.stack).typ.module)].append(
-                    typ
+            if types:
+                modules[python.ModulePath(resolve_type_name(str(self.root_package), model.stack).typ.module)].extend(
+                    types
                 )
         return [
             python.SchemaModule(

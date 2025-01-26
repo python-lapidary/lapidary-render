@@ -1,6 +1,5 @@
 from .model import python
 
-_MODULE_RUNTIME = 'lapidary.runtime'
-
-JsonValue = python.AnnotatedType(python.NameRef(_MODULE_RUNTIME, 'JSONValue'))
-ModelBase = python.NameRef(_MODULE_RUNTIME, 'ModelBase')
+JsonValue = python.AnnotatedType(python.NameRef('pydantic', 'JsonValue'))
+JsonObject = python.AnnotatedType(python.NameRef('builtins', 'dict'), (python.AnnotatedType.from_type(str), JsonValue))
+ModelBase = python.NameRef('lapidary.runtime', 'ModelBase')

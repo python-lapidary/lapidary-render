@@ -4,20 +4,40 @@ from __future__ import annotations
 import lapidary.runtime
 import pydantic
 import typing_extensions as typing
-import annotated_types
-import test_dummy.components.schemas.all.schema
-import test_dummy.components.schemas.schema1.schema
+import pydantic
+import test_dummy.components.schemas.all.properties.u_0for.schema
+import test_dummy.components.schemas.schema1.properties.prop1.schema
 import types
 
 
-class schema(lapidary.runtime.ModelBase):
+class schema1(lapidary.runtime.ModelBase):
     
-    model_anyone_of: typing.Union[
-            typing.Annotated[
-                int,
-                annotated_types.Ge(20,),
+    prop1: test_dummy.components.schemas.schema1.properties.prop1.schema.prop1
+    
+    model_config = pydantic.ConfigDict(extra='forbid',)
+
+
+class all(lapidary.runtime.ModelBase):
+    
+    any: typing.Union[
+            dict[
+                str,
+                pydantic.JsonValue,
             ],
-            test_dummy.components.schemas.all.schema.all,
-            test_dummy.components.schemas.schema1.schema.schema1,
             None,
+        ] = None
+    
+    u_0for: typing.Annotated[
+            test_dummy.components.schemas.all.properties.u_0for.schema.u_0for,
+            pydantic.Field(alias='for',),
         ]
+    
+    uu_1X0for: typing.Annotated[
+            typing.Union[
+            str,
+            None,
+        ],
+            pydantic.Field(alias='u_0for',),
+        ] = None
+    
+    model_config = pydantic.ConfigDict(extra='forbid',)

@@ -3,16 +3,17 @@ from __future__ import annotations
 import dataclasses as dc
 import itertools
 import operator
-from collections.abc import Callable, Collection, Container, Mapping
+from collections.abc import Callable, Iterable, Set
 from typing import Any, Self
 
 from openapi_pydantic.v3.v3_1 import schema as schema31
+from pydantic.alias_generators import to_pascal
 
-from .. import json_pointer, names
-from ..runtime import JsonValue, ModelBase
+from .. import json_pointer, names, runtime
 from . import python
-from .python import AnnotatedType
 from .stack import Stack
+
+SYNTH_ANYONE_PROP = 'model_anyone_of'
 
 
 def not_none_or[T](a: T | None, b: T | None, fn: Callable[[T, T], T]) -> T | None:
@@ -37,19 +38,38 @@ def same_or_raise[T](field: str) -> Callable[[T, T], T]:
     return _
 
 
+def _all_types() -> set[schema31.DataType]:
+    return {typ for typ in schema31.DataType if typ is not schema31.DataType.NULL}
+
+
+def diff_dicts(dict1, dict2):
+    # Keys unique to dict1
+    unique_to_dict1 = {key: dict1[key] for key in dict1 if key not in dict2 or dict1[key] != dict2[key]}
+
+    # Keys unique to dict2
+    unique_to_dict2 = {key: dict2[key] for key in dict2 if key not in dict1 or dict1[key] != dict2[key]}
+
+    return unique_to_dict1, unique_to_dict2
+
+
 @dc.dataclass(kw_only=True)
 class MetaModel:
+    """
+    Here we decide whether a schema transforms into a type annotation, class or both.
+    It's a class when schemas is object type, type annotation when it's non-object type, and both when it's both object and non-object.
+    """
+
     # used to generate package, module and class name
     stack: Stack
-
-    # if not required, join the python type in union with None and add default value None
-    required: bool = True
 
     title: str | None = None
     description: str | None = None
 
     type_: set[schema31.DataType] | None = None
     enum: set[Any] | None = None
+
+    # if not required, join the python type in union with None and add default value None
+    required: bool = True
     read_only: bool = False
     write_only: bool = False
 
@@ -66,7 +86,7 @@ class MetaModel:
 
     properties: dict[str, MetaModel] = dc.field(default_factory=dict)
     additional_props: MetaModel | bool = True
-    props_required: Container[str] = dc.field(default_factory=set)
+    props_required: Set[str] = dc.field(default_factory=set)
 
     items: MetaModel | None = None
 
@@ -76,14 +96,51 @@ class MetaModel:
 
     def normalize_model(self) -> MetaModel | None:
         if self.type_ is None:
-            self.type_ = {typ for typ in schema31.DataType if typ is not schema31.DataType.NULL}
+            self.type_ = _all_types()
 
         # merge allOf
         model: MetaModel | None = self
         for schema in self.all_of or ():
             if model is None:
-                break
+                return None
             model &= schema
+
+        assert model is not None
+        model.all_of = None
+
+        # push annotations down to anyOf and oneOf
+        model_no_any = dc.replace(model, any_of=None, one_of=None)
+        for sub_name, subc in (('any_of', model.any_of), ('one_of', model.one_of)):
+            if not subc:
+                continue
+            items = []
+            for idx, sub in enumerate(subc):
+                nsub = model_no_any.intersect(sub, Stack((*model.stack.path[:-1], f'{to_pascal(sub_name)}{idx}')))
+                if nsub is None:
+                    # ignore bottom types
+                    continue
+                if dc.replace(sub, description=None) == dc.replace(nsub, stack=sub.stack, description=None):
+                    # no change
+                    nsub = sub
+                items.append(nsub)
+            setattr(model, sub_name, items)
+
+        # merge oneOf with anyOf
+        # not strictly correct, but oneOf is rarely used in the proper way and doing it simplifies the output model
+        if self.one_of:
+            if self.any_of:
+                self.any_of = list(
+                    filter(
+                        None,
+                        [
+                            a.intersect(b, Stack((*model.stack.path[:-1], f'AnyOneOf{idx}')))
+                            for idx, (a, b) in enumerate(itertools.product(self.any_of, self.one_of))
+                        ],
+                    )
+                )
+            else:
+                self.any_of = self.one_of
+            self.one_of = None
 
         return model
 
@@ -96,33 +153,38 @@ class MetaModel:
         )
 
     def __and__(self, other) -> MetaModel | None:
+        if not isinstance(other, MetaModel | bool):
+            return NotImplemented
+        return self.intersect(other, self.stack)
+
+    def intersect(self, other: MetaModel | bool, stack: Stack) -> MetaModel | None:
         if other is None or other is False:
             return None
         if other is True:
             return self
-        if not isinstance(other, MetaModel):
-            return NotImplemented
+        assert isinstance(other, MetaModel)
 
-        model = dc.replace(self)
+        model = dc.replace(self, stack=stack)
 
         model.type_ = not_none_or(self.type_, other.type_, operator.and_)
 
         model.enum = not_none_or(self.enum, other.enum, operator.and_)
-        model.gt = not_none_or(self.gt, other.gt, min)
-        model.ge = not_none_or(self.ge, other.ge, min)
-        model.lt = not_none_or(self.lt, other.lt, max)
-        model.le = not_none_or(self.le, other.le, max)
+        model.gt = not_none_or(self.gt, other.gt, max)
+        model.ge = not_none_or(self.ge, other.ge, max)
+        model.lt = not_none_or(self.lt, other.lt, min)
+        model.le = not_none_or(self.le, other.le, min)
 
-        if isinstance(self.multiple_of, float) and isinstance(self.multiple_of, float):
+        if isinstance(self.multiple_of, float) and isinstance(other.multiple_of, float):
             raise NotImplementedError
         model.multiple_of = self.multiple_of or other.multiple_of
 
         model.min_length = not_none_or(self.min_length, other.min_length, max)
-        model.max_length = not_none_or(self.min_length, other.min_length, min)
+        model.max_length = not_none_or(self.max_length, other.max_length, min)
         model.pattern = not_none_or(self.pattern, other.pattern, same_or_raise('pattern'))
         model.format = not_none_or(self.format, other.format, same_or_raise('format'))
 
         model.properties = self._properties_and(other)
+        model.props_required = self.props_required | other.props_required
 
         if isinstance(self.additional_props, bool) and isinstance(other.additional_props, bool):
             model.additional_props = self.additional_props and other.additional_props
@@ -139,16 +201,12 @@ class MetaModel:
             )
             model.additional_props = self_schema & other_schema or False
 
+        # determine stack (resulting class name) based on the presence of properties in both models
+
         model.items = not_none_or(self.items, other.items, operator.and_)
 
-        # any_of: list[MetaModel] = dc.field(default_factory=list)
-        # one_of: list[MetaModel] = dc.field(default_factory=list)
-        # all_of: list[MetaModel] = dc.field(default_factory=list)
-        for sub_schema in other.all_of or ():
-            model_ = model & sub_schema
-            if model_ is None:
-                break
-            model = model_
+        for field in ('all_of', 'any_of', 'one_of'):
+            merge(model, other, field, operator.and_)
 
         # not_: MetaModel | None = None
 
@@ -190,54 +248,43 @@ class MetaModel:
 
         return new_properties
 
-    def as_type(self, root_package: str) -> python.SchemaClass | None:
+    def _is_any_obj(self) -> bool:
+        """True when this schema describes object without any properties or additional properties."""
         assert self.type_ is not None
-        if schema31.DataType.OBJECT not in self.type_:
-            return None
+        return (
+            schema31.DataType.OBJECT in self.type_
+            and not self.properties
+            and self.additional_props is True
+            and all(not sub.properties and sub.additional_props is True for sub in (self.any_of or ()))
+            and all(not sub.properties and sub.additional_props is True for sub in (self.one_of or ()))
+        )
 
+    def _as_type(self, package: str) -> python.SchemaClass | None:
+        """convert current schema model, excluding any sub-schemas"""
         # name = value.lapidary_name or stack.top()
         name = self.stack.top()  # TODO
         fields = [
-            model._as_class_field(root_package, name, name in self.props_required)
+            _as_class_field(
+                model.as_annotation(package, name in self.props_required), name, name in self.props_required
+            )
             for name, model in self.properties.items()
         ]
 
-        # synthetic fields for any_of / one_of
-
-        union_items: Collection[MetaModel] | None = not_none_or(
-            self.any_of,
-            self.one_of,
-            lambda any_of, one_of: list(
-                filter(None, [item_any & item_one for item_any, item_one in itertools.product(any_of, one_of)])
-            ),
-        )
-
-        if union_items:
-            fields.append(
-                python.AnnotatedVariable(
-                    name='model_anyone_of',
-                    typ=python.union_of(*(model.as_annotation(root_package) for model in union_items)),
-                    required=True,
-                    alias=None,
-                )
-            )
-
         return python.SchemaClass(
             name=names.maybe_mangle_name(name),
-            base_type=ModelBase,
+            base_type=runtime.ModelBase,
             allow_extra=self.additional_props is not False,
             fields=fields,
             docstr=self.description or None,
         )
 
-    def _as_class_field(self, root_package: str, name: str, required: bool) -> python.AnnotatedVariable:
-        python_name = names.maybe_mangle_name(name)
-        return python.AnnotatedVariable(
-            name=python_name,
-            typ=self.as_annotation(root_package, required),
-            alias=name if name != python_name else None,
-            required=required,
-        )
+    def as_types(self, root_package: str) -> Iterable[python.SchemaClass]:
+        if self.any_of:
+            for any_sub in self.any_of:
+                yield from any_sub.as_types(root_package)
+
+        elif self.type_ and schema31.DataType.OBJECT in self.type_ and not self._is_any_obj():
+            yield self._as_type(root_package)  # type: ignore[misc]
 
     def as_annotation(
         self, root_package: str, required: bool = True, include_object: bool = True
@@ -253,27 +300,14 @@ class MetaModel:
         :param include_object: if true and the model type includes schema, include the class FQN in the resulting type hint
         """
 
-        union_items = not_none_or(
-            self.any_of,
-            self.one_of,
-            lambda any_of, one_of: list(
-                filter(
-                    None,
-                    [
-                        set_multi(self._only_constraints(), item_any, item_one)
-                        for item_any, item_one in itertools.product(any_of, one_of)
-                    ],
-                )
-            ),
-        )
+        if not self._has_annotations():
+            return runtime.JsonValue
 
-        types: set[python.AnnotatedType] = set()
-        if union_items:
-            types = set(item.as_annotation(root_package, True, False) for item in union_items)
-            if include_object:
-                if any(schema31.DataType.OBJECT in item.type_ for item in union_items):  # type: ignore[operator]
-                    types.add(resolve_type_name(root_package, self.stack))
+        if self.any_of:
+            return python.union_of(*[t.as_annotation(root_package, required) for t in self.any_of])
+
         else:
+            types: set[python.AnnotatedType] = set()
             for schema_type in self.type_ or ():
                 if include_object is False and schema_type == schema31.DataType.OBJECT:
                     continue
@@ -281,7 +315,7 @@ class MetaModel:
                 match schema_type:
                     case schema31.DataType.STRING:
                         try:
-                            typ = AnnotatedType(FORMAT_ENCODERS[(schema_type, self.format)])  # type: ignore[index]
+                            typ = python.AnnotatedType(FORMAT_ENCODERS[(schema_type, self.format)])  # type: ignore[index]
                         except KeyError:
                             typ = self._as_str_anno()
                     case schema31.DataType.BOOLEAN:
@@ -293,10 +327,10 @@ class MetaModel:
                     case schema31.DataType.NULL:
                         typ = python.NoneMetaType
                     case schema31.DataType.OBJECT:
-                        typ = resolve_type_name(root_package, self.stack)
+                        typ = self._as_object_anno(root_package)
                     case schema31.DataType.ARRAY:
                         typ = python.list_of(
-                            self.items.as_annotation(root_package) if self.items else JsonValue,
+                            self.items.as_annotation(root_package) if self.items else runtime.JsonValue,
                         )
                     case _:
                         raise TypeError(schema_type)
@@ -320,14 +354,57 @@ class MetaModel:
 
     def _as_str_anno(self) -> python.AnnotatedType:
         str_constraints = {'max_length', 'min_length', 'pattern'}
-        constraints = {}
-        for key in str_constraints:
-            if (value := getattr(self, key)) is not None:
-                constraints[key] = value
+        constraints = {key: value for key in str_constraints if (value := getattr(self, key)) is not None}
         return python.AnnotatedType(
             python.NameRef('builtins', 'str'),
             **constraints,  # type: ignore[arg-type]
         )
+
+    def _as_object_anno(self, root_package: str) -> python.AnnotatedType:
+        if not self.properties and not (
+            any(sub.properties for sub in self.any_of or () if schema31.DataType.OBJECT in (sub.type_ or ()))
+            and any(sub.properties for sub in self.one_of or () if schema31.DataType.OBJECT in (sub.type_ or ()))
+        ):
+            return runtime.JsonObject
+        else:
+            return resolve_type_name(root_package, self.stack)
+
+    def _has_annotations(self) -> bool:
+        return (
+            any(
+                getattr(self, key) is not None
+                for key in (
+                    'enum',
+                    'gt',
+                    'ge',
+                    'lt',
+                    'le',
+                    'multiple_of',
+                    'max_length',
+                    'min_length',
+                    'pattern',
+                    'format',
+                    'items',
+                    'any_of',
+                    'one_of',
+                    'all_of',
+                )
+            )
+            or self.additional_props is not True
+            or bool(self.properties)
+            or bool(self.props_required)
+            or self.type_ != _all_types()
+        )
+
+
+def _as_class_field(anno: python.AnnotatedType, name: str, required: bool) -> python.AnnotatedVariable:
+    python_name = names.maybe_mangle_name(name)
+    return python.AnnotatedVariable(
+        name=python_name,
+        typ=anno,
+        alias=name if name != python_name else None,
+        required=required,
+    )
 
 
 def resolve_type_name(root_package: str, pointer: Stack) -> python.AnnotatedType:
@@ -353,3 +430,22 @@ def set_multi(model: MetaModel | None, *models: MetaModel) -> MetaModel | None:
     for item in models:
         result = not_none_or(result, item, operator.and_)
     return result
+
+
+def set_intersection[T](a: Set[T] | bool, b: Set[T] | bool) -> Set[T] | bool:
+    """
+    Variant of set intersection that considers True to mean a set with all possible elements and False an empty set.
+    """
+
+    if a is False or b is False:
+        return False
+    if a is True:
+        return b
+    if b is True:
+        return a
+    return a & b
+
+
+def merge(a, b, key: str, op: Callable) -> None:
+    val = not_none_or(getattr(a, key), getattr(b, key), op)
+    setattr(a, key, val)
