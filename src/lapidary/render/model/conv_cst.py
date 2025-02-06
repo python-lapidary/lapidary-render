@@ -709,7 +709,11 @@ def mk_imports(module: python.AbstractModule) -> Iterator[cst.SimpleStatementLin
         cst.SimpleStatementLine([cst.Import([cst.ImportAlias(mk_name('lapidary', 'runtime'))])], [cst.EmptyLine()]),
         cst.Import([cst.ImportAlias(cst.Name('pydantic'))]),
         cst.Import([cst.ImportAlias(cst.Name('typing_extensions'), cst.AsName(cst.Name('typing')))]),
-        *(mk_import(mod_name) for mod_name in module.imports),
+        *(
+            mk_import(mod_name)
+            for mod_name in module.imports
+            if mod_name not in ('pydantic', 'typing', 'lapidary.runtime')
+        ),
     ]
     return (cst.SimpleStatementLine([imp]) if not isinstance(imp, cst.SimpleStatementLine) else imp for imp in imports)
 
