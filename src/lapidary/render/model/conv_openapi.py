@@ -1,14 +1,15 @@
 import itertools
 import logging
+from collections import defaultdict
 from collections.abc import Callable, Iterable, Mapping, MutableMapping, Sequence
-from typing import Any, cast
+from typing import Any
 
 from mimeparse import parse_media_range
 
 from .. import json_pointer, names
-from . import openapi, python
+from . import metamodel, openapi, python
 from .conv_schema import OpenApi30SchemaConverter
-from .metamodel import resolve_type_name
+from .metamodel import MetaModel, resolve_type_name
 from .python import type_hint
 from .refs import resolve_ref
 from .stack import Stack
@@ -22,7 +23,6 @@ class OpenApi30Converter:
         root_package: python.ModulePath,
         source: openapi.OpenAPI,
         origin: str | None,
-        schema_converter: OpenApi30SchemaConverter | None = None,
         path_progress: Callable[[Any], None] | None = None,
     ):
         self.root_package = root_package
@@ -31,8 +31,6 @@ class OpenApi30Converter:
         self.source = source
         self._origin = origin
         self._path_progress = path_progress
-
-        self.schema_converter = schema_converter or OpenApi30SchemaConverter(self.root_package, source)
 
         self.target = python.ClientModel(
             client=python.ClientModule(
@@ -43,6 +41,12 @@ class OpenApi30Converter:
         )
 
         self._response_cache: MutableMapping[Stack, python.Response] = {}
+
+        self._models: MutableMapping[Stack, metamodel.MetaModel] = {}
+        """
+        Store all models directly referred by methods.
+        Indirectly referred must be accessible via the direct models.
+        """
 
     def process(self) -> python.ClientModel:
         stack = Stack()
@@ -59,8 +63,36 @@ class OpenApi30Converter:
             },
         )
 
-        self.target.model_modules.extend(self.schema_converter.schema_modules)
+        models: MutableMapping[Stack, python.SchemaClass] = {}
+        for model in self._models.values():
+            self._collect_schema_models(model, models)
+
+        modules: Mapping[python.ModulePath, list[python.SchemaClass]] = defaultdict(list)
+        for stack, class_ in models.items():
+            modules[python.ModulePath(resolve_type_name(str(self.root_package), stack).typ.module)].append(class_)
+
+        self.target.model_modules.extend(
+            (
+                python.SchemaModule(
+                    path=module_path,
+                    body=models,
+                )
+                for module_path, models in modules.items()
+            )
+        )
+
         return self.target
+
+    def _collect_schema_models(
+        self, model: metamodel.MetaModel, models: MutableMapping[Stack, python.SchemaClass]
+    ) -> None:
+        try:
+            if class_ := model.as_type(str(self.root_package)):
+                models[model.stack] = class_
+        except Exception:
+            raise
+        for submodel in model.dependencies():
+            self._collect_schema_models(submodel, models)
 
     def process_servers(self, value: list[openapi.Server] | None, stack: Stack) -> None:
         logger.debug('Process servers %s', stack)
@@ -108,13 +140,13 @@ class OpenApi30Converter:
         if value.param_schema and value.content:
             raise ValueError()
         if value.param_schema:
-            model = self.schema_converter.process_type_schema(value.param_schema, stack.push('schema'))
+            model = self._process_schema(value.param_schema, stack.push('schema'))
             assert model
             return model.as_annotation(str(self.root_package), value.required), None
         elif value.content:
             media_type, media_type_obj = next(iter(value.content.items()))
             # encoding = media_type_obj.encoding
-            model = self.schema_converter.process_type_schema(
+            model = self._process_schema(
                 media_type_obj.media_type_schema or openapi.Schema(), stack.push('content', media_type)
             )
             assert model
@@ -236,13 +268,19 @@ class OpenApi30Converter:
             mime_parsed = parse_media_range(mime)
             if mime_parsed[:2] != ('application', 'json'):
                 continue
-            model = self.schema_converter.process_type_schema(
-                media_type.media_type_schema or openapi.Schema(),
-                stack.push(mime, 'schema'),
-            )
+            model = self._process_schema(media_type.media_type_schema or openapi.Schema(), stack.push(mime, 'schema'))
             assert model
             types[mime] = model.as_annotation(str(self.root_package))
         return types
+
+    @resolve_ref
+    def _process_schema(self, value: openapi.Schema, stack: Stack) -> MetaModel | None:
+        if not (model := self._models.get(stack)):
+            converter = OpenApi30SchemaConverter(value, stack, self.root_package, self.source)
+            if (model := converter.process_schema()) is not None:
+                self._models[stack] = model
+
+        return model
 
     def process_operation(
         self,
@@ -355,7 +393,9 @@ class OpenApi30Converter:
         schemes_root = Stack(('#', 'components', 'securitySchemes'))
         for scheme_name, scopes in value.items():
             scheme_stack = schemes_root.push(scheme_name)
-            self.process_security_scheme(openapi.Reference(ref=str(scheme_stack)), scheme_stack)
+            self.process_security_scheme(
+                openapi.Reference[openapi.SecurityRequirement](ref=str(scheme_stack)), scheme_stack
+            )
         return value
 
     # need separate method to resolve references before calling a single-dispatched method
@@ -466,11 +506,6 @@ class OpenApi30Converter:
             )
         except KeyError:
             raise NotImplementedError(stack.push('scheme'), value.scheme) from None
-
-    def resolve_ref[Target](self, ref: openapi.Reference) -> tuple[Target, Stack]:
-        """Resolve reference to OpenAPI object and its direct path."""
-        value, pointer = self.source.resolve_ref(ref)
-        return cast(Target, value), Stack.from_str(pointer)
 
 
 def param_style(

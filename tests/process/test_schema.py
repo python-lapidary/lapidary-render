@@ -36,7 +36,6 @@ def test_schema_str(document: openapi.OpenAPI) -> None:
     )
 
     assert responses['200'].content['application/json'] == python.AnnotatedType(python.NameRef.from_type(str))
-    assert converter.schema_converter.schema_modules == []
 
 
 def test_schema_array(document: openapi.OpenAPI) -> None:
@@ -51,22 +50,42 @@ def test_schema_array(document: openapi.OpenAPI) -> None:
         python.AnnotatedType(python.NameRef(module='petstore.components.schemas.User.schema', name='User'))
     )
 
-    assert converter.schema_converter.schema_modules[0].body[0].name == 'User'
+    assert (
+        converter._models[
+            stack.Stack.from_str('#/paths/~1user~1createWithList/post/requestBody/content/application~1json/schema')
+        ].items.stack.top()
+        == 'User'
+    )
 
 
 def test_property_schema(doc_dummy: openapi.OpenAPI) -> None:
     converter = conv_openapi.OpenApi30Converter(python.ModulePath('dummy', False), doc_dummy, None)
     operations: openapi.PathItem = doc_dummy.paths.paths['/test/']
 
-    schema: metamodel.MetaModel = converter.schema_converter.process_type_schema(
-        operations.get.parameters[1].param_schema,
-        stack.Stack.from_str('#/paths/~1test~1/get/parameters/1/schema'),
+    schema: metamodel.MetaModel = converter._process_schema(
+        operations.get.parameters[1].param_schema, stack.Stack.from_str('#/paths/~1test~1/get/parameters/1/schema')
     )
+    assert schema is not None
 
     assert schema.as_annotation('dummy') == python.AnnotatedType(
         python.NameRef('dummy.paths.u_ltestu_l.get.parameters.u_n.schema.schema', 'schema')
     )
-    print(list(schema.as_types('package')))
+    assert schema.as_type('package') == python.SchemaClass(
+        name='schema',
+        base_type=python.NameRef(module='lapidary.runtime', name='ModelBase'),
+        allow_extra=False,
+        fields=[
+            python.AnnotatedVariable(
+                name='prop1',
+                typ=python.AnnotatedType(
+                    typ=python.NameRef(module='datetime', name='date'),
+                    generic_args=(),
+                ),
+                required=True,
+                alias=None,
+            )
+        ],
+    )
 
 
 def test_int_one_of():
@@ -88,12 +107,21 @@ def test_int_one_of():
             }
         ),
     )
-    converter = conv_schema.OpenApi30SchemaConverter(python.ModulePath('root'), doc)
-    model = converter.process_schema(
-        doc.components.schemas['myschema'], stack.Stack(('#', 'components', 'schemas', 'myschema'))
+    converter = conv_schema.OpenApi30SchemaConverter(
+        doc.components.schemas['myschema'],
+        stack.Stack(('#', 'components', 'schemas', 'myschema')),
+        python.ModulePath('root'),
+        doc,
     )
-    print(model)
-    print(model.as_annotation('root'))
+    model = converter.process_schema()
+
+    assert model.as_annotation('root') == python.AnnotatedType(
+        typ=python.NameRef(module='typing', name='Union'),
+        generic_args=(
+            python.AnnotatedType(typ=python.NameRef(module='builtins', name='int'), ge=10),
+            python.AnnotatedType(typ=python.NameRef(module='builtins', name='int'), le=20),
+        ),
+    )
 
 
 @pytest.mark.skip('Not implemented')
@@ -123,16 +151,17 @@ def test_int_one_of_recurrent():
             }
         ),
     )
-    converter = conv_schema.OpenApi30SchemaConverter(python.ModulePath('root'), doc)
-    model = converter.process_type_schema(
+    converter = conv_schema.OpenApi30SchemaConverter(
         doc.components.schemas['myschema'],
         stack.Stack(('#', 'components', 'schemas', 'myschema')),
+        python.ModulePath('root'),
+        doc,
     )
+    model = converter.process_schema()
     from pprint import pprint
 
     pprint(model)
     pprint(model.as_annotation('root'))
-    pprint(converter.schema_modules)
 
 
 def mk_schemas_doc(title: str, **schemas: openapi.Schema) -> openapi.OpenAPI:
@@ -154,15 +183,34 @@ def test_one_of_mix():
             oneOf=[
                 openapi.Schema(maximum=10),
                 openapi.Schema(minimum=20),
-                openapi.Schema(maxLength=10),
             ],
+            maxLength=10,
+            multipleOf=2,
         ),
     )
-    converter = conv_schema.OpenApi30SchemaConverter(python.ModulePath('root'), doc)
-    model = converter.process_schema(
-        doc.components.schemas['myschema'], stack.Stack(('#', 'components', 'schemas', 'myschema'))
+    converter = conv_schema.OpenApi30SchemaConverter(
+        doc.components.schemas['myschema'],
+        stack.Stack(('#', 'components', 'schemas', 'myschema')),
+        python.ModulePath('root'),
+        doc,
     )
-    print(model)
+    model = converter.process_schema()
+    anno = model.as_annotation('root')
+    assert anno == python.AnnotatedType(
+        typ=python.NameRef(module='typing', name='Union'),
+        generic_args=(
+            python.AnnotatedType(
+                typ=python.NameRef(module='builtins', name='int'),
+                ge=10,
+                multiple_of=2,
+            ),
+            python.AnnotatedType(
+                typ=python.NameRef(module='builtins', name='int'),
+                le=20,
+                multiple_of=2,
+            ),
+        ),
+    )
 
 
 def test_enum_limits_type():
@@ -172,9 +220,11 @@ def test_enum_limits_type():
             enum=[True, False, 'FileNotFound'],
         ),
     )
-    converter = conv_schema.OpenApi30SchemaConverter(python.ModulePath('root'), doc)
     stack_ = stack.Stack(('#', 'components', 'schemas', 'myschema'))
-    model = converter.process_schema(doc.components.schemas['myschema'], stack_)
+    converter = conv_schema.OpenApi30SchemaConverter(
+        doc.components.schemas['myschema'], stack_, python.ModulePath('root'), doc
+    )
+    model = converter.process_schema()
     assert model == metamodel.MetaModel(
         stack=stack_.push('schema', 'myschema'),
         type_={schema31.DataType.BOOLEAN, schema31.DataType.STRING},
@@ -211,10 +261,13 @@ def test_process_anyof_objects():
             ]
         ),
     )
-    converter = conv_schema.OpenApi30SchemaConverter(python.ModulePath('root'), doc)
-    model = converter.process_type_schema(
-        doc.components.schemas['myschema'], stack.Stack(('#', 'components', 'schemas', 'myschema'))
+    converter = conv_schema.OpenApi30SchemaConverter(
+        doc.components.schemas['myschema'],
+        stack.Stack(('#', 'components', 'schemas', 'myschema')),
+        python.ModulePath('root'),
+        doc,
     )
+    model = converter.process_schema()
 
     # check normalized model
     assert model == metamodel.MetaModel(
@@ -262,7 +315,7 @@ def test_process_anyof_objects():
         ),
     )
 
-    assert list(model.as_types('root')) == [
+    assert [t for sub in model.dependencies() if (t := sub.as_type('root')) is not None] == [
         python.SchemaClass(
             'object1',
             runtime.ModelBase,
@@ -305,10 +358,13 @@ def test_process_default_object():
             type=openapi.DataType.OBJECT,
         ),
     )
-    converter = conv_schema.OpenApi30SchemaConverter(python.ModulePath('root'), doc)
-    model = converter.process_type_schema(
-        doc.components.schemas['obj'], stack.Stack(('#', 'components', 'schemas', 'myschema'))
+    converter = conv_schema.OpenApi30SchemaConverter(
+        doc.components.schemas['obj'],
+        stack.Stack(('#', 'components', 'schemas', 'myschema')),
+        python.ModulePath('root'),
+        doc,
     )
+    model = converter.process_schema()
     assert model.as_annotation('package') == runtime.JsonObject
 
 
@@ -317,12 +373,15 @@ def test_process_default_schema():
         'test enums',
         obj=openapi.Schema(),
     )
-    converter = conv_schema.OpenApi30SchemaConverter(python.ModulePath('root'), doc)
-    model = converter.process_type_schema(
-        doc.components.schemas['obj'], stack.Stack(('#', 'components', 'schemas', 'myschema'))
+    converter = conv_schema.OpenApi30SchemaConverter(
+        doc.components.schemas['obj'],
+        stack.Stack(('#', 'components', 'schemas', 'myschema')),
+        python.ModulePath('root'),
+        doc,
     )
+    model = converter.process_schema()
     assert model is not None
-    assert list(model.as_types('package')) == []
+    assert model.as_type('package') is None
     assert model.as_annotation('package') == runtime.JsonValue
 
 
@@ -347,25 +406,27 @@ def test_process_union_object_int():
             ]
         ),
     )
-    converter = conv_schema.OpenApi30SchemaConverter(python.ModulePath('root'), doc)
-    model = converter.process_type_schema(
-        doc.components.schemas['union'], stack.Stack(('#', 'components', 'schemas', 'union'))
+    converter = conv_schema.OpenApi30SchemaConverter(
+        doc.components.schemas['union'],
+        stack.Stack(('#', 'components', 'schemas', 'union')),
+        python.ModulePath('root'),
+        doc,
     )
-    assert list(model.as_types('package')) == [
-        python.SchemaClass(
-            'schema1',
-            python.NameRef('lapidary.runtime', 'ModelBase'),
-            True,
-            fields=[
-                python.AnnotatedVariable(
-                    'prop1',
-                    python.AnnotatedType.from_type(str),
-                    True,
-                    None,
-                )
-            ],
-        )
-    ]
+    model = converter.process_schema()
+    assert [t for sub in model.dependencies() if (t := sub.as_type('package')) is not None][0] == python.SchemaClass(
+        'schema1',
+        python.NameRef('lapidary.runtime', 'ModelBase'),
+        True,
+        fields=[
+            python.AnnotatedVariable(
+                'prop1',
+                python.AnnotatedType.from_type(str),
+                True,
+                None,
+            )
+        ],
+    )
+
     assert model.as_annotation('package') == python.AnnotatedType(
         python.NameRef('typing', 'Union'),
         (

@@ -73,6 +73,8 @@ CONSTRAINTS: Mapping[str, NameRef] = {
     'le': NameRef('annotated_types', 'Le'),
     'gt': NameRef('annotated_types', 'Gt'),
     'ge': NameRef('annotated_types', 'Ge'),
+    'max_length': NameRef('annotated_types', 'MaxLen'),
+    'min_length': NameRef('annotated_types', 'MinLen'),
     'multiple_of': NameRef('annotated_types', 'MultipleOf'),
 }
 

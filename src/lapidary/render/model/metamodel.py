@@ -13,8 +13,6 @@ from .. import json_pointer, names, runtime
 from . import python
 from .stack import Stack
 
-SYNTH_ANYONE_PROP = 'model_anyone_of'
-
 
 def not_none_or[T](a: T | None, b: T | None, fn: Callable[[T, T], T]) -> T | None:
     """
@@ -278,13 +276,22 @@ class MetaModel:
             docstr=self.description or None,
         )
 
-    def as_types(self, root_package: str) -> Iterable[python.SchemaClass]:
-        if self.any_of:
-            for any_sub in self.any_of:
-                yield from any_sub.as_types(root_package)
+    def as_type(self, root_package: str) -> python.SchemaClass | None:
+        if not self.any_of and self.type_ and schema31.DataType.OBJECT in self.type_ and not self._is_any_obj():
+            return self._as_type(root_package)  # type: ignore[misc]
+        return None
 
-        elif self.type_ and schema31.DataType.OBJECT in self.type_ and not self._is_any_obj():
-            yield self._as_type(root_package)  # type: ignore[misc]
+    def dependencies(self) -> Iterable[MetaModel]:
+        yield from self.any_of or ()
+        if self.items is not None:
+            yield self.items
+        for sub in (self.properties or {}).values():
+            yield sub
+            yield from sub.dependencies()
+
+        # TODO support additional properties
+        # if self.additional_props:
+        #     yield self.additional_props
 
     def as_annotation(
         self, root_package: str, required: bool = True, include_object: bool = True

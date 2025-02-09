@@ -4,7 +4,6 @@ from __future__ import annotations
 import lapidary.runtime
 import pydantic
 import typing_extensions as typing
-import pydantic
 import test_dummy.components.schemas.all.properties.u_0for.schema
 import types
 

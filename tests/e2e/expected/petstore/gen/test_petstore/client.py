@@ -9,7 +9,6 @@ __all__ = (
 import lapidary.runtime
 import pydantic
 import typing_extensions as typing
-import pydantic
 import test_petstore.components.schemas.ApiResponse.schema
 import test_petstore.components.schemas.Order.schema
 import test_petstore.components.schemas.Pet.schema

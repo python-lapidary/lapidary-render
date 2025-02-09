@@ -4,11 +4,16 @@ from __future__ import annotations
 import lapidary.runtime
 import pydantic
 import typing_extensions as typing
+import annotated_types
 
 
 class prop2(lapidary.runtime.ModelBase):
     
-    key: str
+    key: typing.Annotated[
+            str,
+            annotated_types.MaxLen(10,),
+            annotated_types.MinLen(5,),
+        ]
     
     nonu_lalpha: typing.Annotated[
             str,
