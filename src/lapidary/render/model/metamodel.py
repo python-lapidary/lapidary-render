@@ -3,7 +3,7 @@ from __future__ import annotations
 import dataclasses as dc
 import itertools
 import operator
-from collections.abc import Callable, Iterable, Set
+from collections.abc import Callable, Container, Iterable, Set
 from typing import Any, Self
 
 from openapi_pydantic.v3.v3_1 import schema as schema31
@@ -93,6 +93,22 @@ class MetaModel:
     all_of: list[MetaModel] | None = None
 
     def normalize_model(self) -> MetaModel | None:
+        # if this doesn't have any assertions and only a single sub-schema, return that sub-schema
+        if len(self.any_of or ()) + len(self.one_of or ()) + len(self.all_of or ()) == 1:
+            if self.any_of:
+                candidate = self.any_of[0]
+            elif self.one_of:
+                candidate = self.one_of[0]
+            elif self.all_of:
+                candidate = self.all_of[0]
+            else:
+                raise ValueError
+
+            if self._only_constraints() == MetaModel(stack=self.stack) or self._only_constraints() == MetaModel(
+                stack=self.stack, type_=candidate.type_
+            ):
+                return candidate
+
         if self.type_ is None:
             self.type_ = _all_types()
 
@@ -117,7 +133,7 @@ class MetaModel:
                 if nsub is None:
                     # ignore bottom types
                     continue
-                if dc.replace(sub, description=None) == dc.replace(nsub, stack=sub.stack, description=None):
+                if sub._comparable() == nsub._comparable():
                     # no change
                     nsub = sub
                 items.append(nsub)
@@ -376,7 +392,7 @@ class MetaModel:
         else:
             return resolve_type_name(root_package, self.stack)
 
-    def _has_annotations(self) -> bool:
+    def _has_annotations(self, excluding: Container[str] = ()) -> bool:
         return (
             any(
                 getattr(self, key) is not None
@@ -396,12 +412,17 @@ class MetaModel:
                     'one_of',
                     'all_of',
                 )
+                if key not in excluding
             )
             or self.additional_props is not True
             or bool(self.properties)
             or bool(self.props_required)
             or self.type_ != _all_types()
         )
+
+    def _comparable(self) -> Self:
+        """Return a copy without anotations, useful for comparing."""
+        return dc.replace(self, description=None, title=None, stack=Stack())
 
 
 def _as_class_field(anno: python.AnnotatedType, name: str, required: bool) -> python.AnnotatedVariable:
