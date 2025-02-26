@@ -5,6 +5,5 @@ docs_dir: ../docs
 
 nav:
 - index.md
-- plugins.md
 - openapi.md
 - json-schema.md

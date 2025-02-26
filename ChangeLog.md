@@ -8,14 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [Unreleased]
 
-### Added
+### Removed
 
-- Support for OpenAPI plugins.
-- Support for extra sources.
+- Support for JSONPatch
 
 ### Changed
 
-- JSON Patch support is now a plugin.
 - Breaking: openapi directory is now `${source root}/openapi`
 
 

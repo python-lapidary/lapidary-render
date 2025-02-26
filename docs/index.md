@@ -67,7 +67,4 @@ origin
 extra_sources
 : list of additional source roots for manually written python files.
 
-plugins
-: list of plugin classes. See [the section on plug-ins](/plugins)
-
 At least one of `document_path` and `origin` is required. Saving OpenAPI document in the project is recommended for repeatable builds.

@@ -1,51 +1,22 @@
 import abc
-import importlib.machinery
-import importlib.util
 import logging
-from collections.abc import Mapping, MutableSequence, Sequence
-from typing import cast
+from collections.abc import Mapping
 
 import anyio
 import httpx
 import ruamel.yaml
 
 from .config import Config
-from .plugins import ProcessorPlugin, sys_path_manager
 
 logger = logging.getLogger(__name__)
 
 
 async def load_document(root: anyio.Path, config: Config) -> Mapping:
     logger.info('Load OpenAPI document')
-    spec_dict: dict = cast(dict, await load_parse(root, config.document_path))
 
-    if config.plugins:
-        spec_dict = await apply_processor_plugins(spec_dict, config, root)
-
-    return spec_dict
-
-
-async def apply_processor_plugins(descr_dict: dict, config: Config, project_root: anyio.Path) -> dict:
-    processor_classes: MutableSequence[type[ProcessorPlugin]] = []
-    with sys_path_manager(str(project_root / 'plugins')):
-        for plugin_path in config.plugins:
-            module_name, class_name = plugin_path.split(':')
-            processor_classes.append(getattr(importlib.import_module(module_name), class_name))
-
-    for factory in processor_classes:
-        processor = factory()
-        descr_dict = await processor.process_mapping(descr_dict, config, project_root)
-
-    return descr_dict
-
-
-async def load_parse(root: anyio.Path, path: str | anyio.Path) -> Mapping | Sequence:
-    text = await document_handler_for(root, path).load()
-    return parse(text)
-
-
-def parse(text: str) -> Mapping:
     yaml = ruamel.yaml.YAML(typ='safe')
+
+    text = await document_handler_for(root, config.document_path).load()
     return yaml.load(text)
 
 

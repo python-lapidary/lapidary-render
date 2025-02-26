@@ -9,10 +9,11 @@ PYPROJ_TOML = 'pyproject.toml'
 
 class Config(pydantic.BaseModel):
     document_path: str | None = None
+    """URL or path relative to ./openapi/"""
     extra_sources: Sequence[str] = ()
     origin: pydantic.AnyHttpUrl | None = None
+    """Origin URL in case"""
     package: str
-    plugins: Sequence[str] = ()
 
 
 async def load_config(project_root: anyio.Path) -> Config:
