@@ -1,4 +1,4 @@
-from openapi_pydantic.v3.v3_0 import DataType
+from openapi_pydantic.v3.v3_1 import DataType
 
 from lapidary.render.model.metamodel import MetaModel
 from lapidary.render.model.stack import Stack
