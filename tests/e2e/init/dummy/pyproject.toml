@@ -16,9 +16,6 @@ packages = [
 python = "^3.9"
 lapidary = {path="../../../../../lapidary"}
 
-[tool.poetry.group.dev.dependencies]
-lapidary-render = {path="../../../..", python="^3.12"}
-
 [tool.lapidary]
 document_path = "dummy.yaml"
 package = "test_dummy"

@@ -18,8 +18,8 @@ jobs:
     - name: Install Poetry
       uses: packetcoders/action-setup-cache-python-poetry@main
       with:
-        python-version: 3.12
-        poetry-version: 1.8.3
+        python-version: 3.13
+        poetry-version: 2.1.1
     - name: Mint token
       id: mint
       uses: tschm/token-mint-action@v1.0.3

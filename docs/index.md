@@ -31,7 +31,7 @@ I recommend installing via `pipx`:
 
 `pipx install lapidary-render`
 
-Note that lapidary-render requires Python 3.12
+Note that lapidary-render requires Python 3.13
 
 ## Usage
 
