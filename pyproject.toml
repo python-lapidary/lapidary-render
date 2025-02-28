@@ -2,15 +2,13 @@
 build-backend = "poetry.core.masonry.api"
 requires = ["poetry-core>=1.0.0"]
 
-[tool.poetry]
-authors = ["Raphael Krupinski <rafalkrupinski@users.noreply.github.com>"]
+[project]
+authors = [{ name = "Raphael Krupinski", email = "rafalkrupinski@users.noreply.github.com" }]
 description = "Python async OpenAPI client library generator"
 license = "AGPL-3.0"
 name = "lapidary-render"
 version = "0.11.1"
-packages = [{ include = "lapidary", from = "src" }]
-readme = 'Readme.md'
-repository = 'https://github.com/python-lapidary/lapidary'
+readme = "Readme.md"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Environment :: Console",
@@ -27,7 +25,11 @@ keywords = [
     "Code Generator",
     "OpenAPI Tools",
 ]
-homepage = "https://lapidary.dev/"
+requires-python = "~=3.13"
+dynamic=["dependencies"]
+
+[tool.poetry]
+packages = [{ include = "lapidary", from = "src" }]
 
 [tool.poetry.dependencies]
 python = "^3.13"
@@ -41,7 +43,11 @@ python-mimeparse = ">=1.6,<3.0"
 ruamel-yaml = "^0.18"
 tomli-w = "^1"
 
-[tool.poetry.scripts]
+[project.urls]
+Homepage = "https://lapidary.dev/"
+Repository = "https://github.com/python-lapidary/lapidary-render"
+
+[project.scripts]
 lapidary = "lapidary.render:app"
 
 [tool.poetry.group.dev.dependencies]
