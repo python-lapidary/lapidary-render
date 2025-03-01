@@ -31,7 +31,7 @@ async def init_project(
     document_handler = document_handler_for(anyio.Path(), document_path)
 
     if save_document:
-        document_root = anyio.Path('src/openapi')
+        document_root = anyio.Path('lapidary/openapi')
         target_dir = project_root / document_root
         await target_dir.mkdir(parents=True)
         file_name = await document_handler.save_to(target_dir)
@@ -87,8 +87,7 @@ async def render_project(project_root: anyio.Path) -> None:
 
         await update_project(
             model.modules,
-            project_root / config.extra_sources[0] if config.extra_sources else None,
-            project_root / 'gen',
+            project_root / 'src',
             config.package,
             progress,
         )

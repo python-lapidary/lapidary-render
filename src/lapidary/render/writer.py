@@ -1,6 +1,6 @@
 import logging
-import shutil
-from collections.abc import Callable, Iterable, Sequence
+from collections.abc import Callable, Iterable
+from pathlib import PurePath
 
 import anyio
 import asyncclick
@@ -32,13 +32,13 @@ def mk_module(module: python.AbstractModule) -> cst.Module | None:
 
 async def update_project(
     modules: Iterable[python.AbstractModule],
-    src_root: anyio.Path | None,
     target_root: anyio.Path,
     root_package: str,
     update_progress: Callable[[python.AbstractModule], None],
 ):
     await target_root.mkdir(parents=True, exist_ok=True)
     written: list[anyio.Path] = []
+    package_extras = PurePath(root_package) / 'extras'
     for module in modules:
         update_progress(module)
         cst_module = mk_module(module)
@@ -57,25 +57,18 @@ async def update_project(
     await (target_root / root_package / 'py.typed').write_text('', newline='')
     written.append(anyio.Path(root_package, 'py.typed'))
 
-    if src_root:
-
-        def cp(src: str, names: list[str]) -> Sequence[str]:
-            local_src = anyio.Path(src)
-            written.extend((local_src / name).relative_to(src_root) for name in names)
-            return ()
-
-        shutil.copytree(src_root, target_root, ignore=cp, dirs_exist_ok=True)
-
     with asyncclick.progressbar(length=0, label='Removing stale files') as bar:
         async for parent, dirs, files in target_root.walk(False):
+            package = parent.relative_to(target_root)
             files_ = set(files)
-            for existing in files:
-                path = (parent / existing).relative_to(target_root)
+            if package != package_extras:
+                for existing in files:
+                    path = (parent / existing).relative_to(target_root)
 
-                if path not in written:
-                    bar.update(1, str(path))
-                    files_.remove(existing)
-                    await (parent / existing).unlink()
+                    if path not in written:
+                        bar.update(1, str(path))
+                        files_.remove(existing)
+                        await (parent / existing).unlink()
             if not files_ and not dirs:
                 bar.update(1, str(parent))
                 await parent.rmdir()

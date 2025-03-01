@@ -9,7 +9,7 @@ version = "0.1.0"
 authors = []
 license = ""
 packages = [
-    { include = 'test_dummy', from = "gen" },
+    { include = 'test_dummy', from = "src" },
 ]
 
 [tool.poetry.dependencies]
@@ -17,5 +17,5 @@ python = "^3.9"
 lapidary = {path="../../../../../lapidary"}
 
 [tool.lapidary]
-document_path = "dummy.yaml"
+document_path = "lapidary/openapi/dummy.yaml"
 package = "test_dummy"

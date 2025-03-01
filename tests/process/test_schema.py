@@ -17,13 +17,13 @@ yaml = ruamel.yaml.YAML(typ='safe')
 
 @pytest.fixture
 def document() -> openapi.OpenAPI:
-    doc_text = (Path(__file__).parent.parent / 'e2e/init/petstore/src/openapi/openapi.yaml').read_text()
+    doc_text = (Path(__file__).parent.parent / 'e2e/init/petstore/lapidary/openapi/openapi.yaml').read_text()
     return openapi.OpenAPI.model_validate(yaml.load(doc_text))
 
 
 @pytest.fixture
 def doc_dummy() -> openapi.OpenAPI:
-    doc_text = (Path(__file__).parent.parent / 'e2e/init/dummy/dummy.yaml').read_text()
+    doc_text = (Path(__file__).parent.parent / 'e2e/init/dummy/lapidary/openapi/dummy.yaml').read_text()
     return openapi.OpenAPI.model_validate(yaml.load(doc_text))
 
 

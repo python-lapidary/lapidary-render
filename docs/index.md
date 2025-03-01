@@ -49,7 +49,7 @@ Initializes a project directory with a `pyproject.toml` file and optionally stor
 
 Renders the client code in the project root. The default project root is the current directory.
 
-All python files are generated in the `PROJECT_ROOT/gen` directory.
+All python files are generated in the `PROJECT_ROOT/src` directory.
 
 ## Configuration
 
@@ -64,7 +64,8 @@ document_path
 origin
 : URL of the OpenAPI document, used when document_path is missing, or when `servers` is not defined, or the first server URL is a relative path.
 
-extra_sources
-: list of additional source roots for manually written python files.
-
 At least one of `document_path` and `origin` is required. Saving OpenAPI document in the project is recommended for repeatable builds.
+
+## Extra python files
+
+Any additional python files can be put in a sub-package `extras` (${project_root}/src/${package}/extras).

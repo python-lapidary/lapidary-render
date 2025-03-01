@@ -9,7 +9,7 @@ version = "0.1.0"
 authors = []
 license = ""
 packages = [
-    { include = 'test_petstore', from = "gen" },
+    { include = 'test_petstore', from = "src" },
 ]
 
 [tool.poetry.dependencies]
@@ -17,6 +17,6 @@ python = "^3.9"
 lapidary = {path = "../../../../../lapidary", develop = true}
 
 [tool.lapidary]
-document_path = "src/openapi/openapi.yaml"
+document_path = "lapidary/openapi/openapi.yaml"
 origin = "https://petstore3.swagger.io/api/v3/openapi.json"
 package = "test_petstore"
