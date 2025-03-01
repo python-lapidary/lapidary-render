@@ -68,7 +68,7 @@ class FileDocumentHandler(DocumentHandler[anyio.Path]):
 class HttpDocumentHandler(DocumentHandler[str]):
     def __init__(self, path: str) -> None:
         super().__init__(path)
-        self._client = httpx.AsyncClient()
+        self._client = httpx.AsyncClient(timeout=30.0)
         self._cache: str | None = None
 
     async def load(self) -> str:
@@ -84,7 +84,7 @@ class HttpDocumentHandler(DocumentHandler[str]):
 
         parsed = urlparse(self._path)
         _, name = split(parsed.path)
-        return name
+        return name or 'openapi.yaml'
 
     async def save_to(self, target: anyio.Path) -> str:
         text = await self.load()
