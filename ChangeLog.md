@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [Unreleased]
 
+[0.12.0] - 2025-03-01
 ### Added
 
 - Create .gitignore during `init`.
@@ -213,7 +214,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Generate classes for schemas under components/schemas
 - Generate partial client class with methods based on /paths/*/*
 
-[Unreleased]: https://github.com/python-lapidary/lapidary-render/compare/v0.11.1...HEAD
+[Unreleased]: https://github.com/python-lapidary/lapidary-render/compare/v0.12.0...HEAD
+[0.12.0]: https://github.com/python-lapidary/lapidary-render/compare/v0.11.1...v0.12.0
 [0.11.1]: https://github.com/python-lapidary/lapidary-render/compare/v0.11.0...v0.11.1
 [0.11.0]: https://github.com/python-lapidary/lapidary-render/compare/v0.10.1...v0.11.0
 [0.10.1]: https://github.com/python-lapidary/lapidary-render/compare/v0.10.0...v0.10.1
