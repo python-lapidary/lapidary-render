@@ -49,7 +49,7 @@ class ApiClient(lapidary.runtime.ClientBase):
             typing.Union[
             typing.Annotated[
                 int,
-                annotated_types.Ge(20,),
+                annotated_types.Le(20,),
             ],
             test_dummy.components.schemas.all.schema.all,
             test_dummy.components.schemas.schema1.schema.schema1,

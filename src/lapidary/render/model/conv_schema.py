@@ -94,9 +94,9 @@ class OpenApi30SchemaConverter:
     def process_schema_maximum(self, value: float, _) -> None:
         assert isinstance(self.schema, openapi.Schema)
         if self.schema.exclusiveMaximum:
-            self.model.gt = value
+            self.model.lt = value
         else:
-            self.model.ge = value
+            self.model.le = value
 
     def process_schema_exclusiveMaximum(self, *_):
         pass
@@ -104,9 +104,9 @@ class OpenApi30SchemaConverter:
     def process_schema_minimum(self, value: float, _) -> None:
         assert isinstance(self.schema, openapi.Schema)
         if self.schema.exclusiveMinimum:
-            self.model.lt = value
+            self.model.gt = value
         else:
-            self.model.le = value
+            self.model.ge = value
 
     def process_schema_exclusiveMinimum(self, *_):
         pass

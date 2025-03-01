@@ -118,8 +118,8 @@ def test_int_one_of():
     assert model.as_annotation('root') == python.AnnotatedType(
         typ=python.NameRef(module='typing', name='Union'),
         generic_args=(
-            python.AnnotatedType(typ=python.NameRef(module='builtins', name='int'), ge=10),
-            python.AnnotatedType(typ=python.NameRef(module='builtins', name='int'), le=20),
+            python.AnnotatedType(typ=python.NameRef(module='builtins', name='int'), ge=20),
+            python.AnnotatedType(typ=python.NameRef(module='builtins', name='int'), le=10),
         ),
     )
 
@@ -201,12 +201,12 @@ def test_one_of_mix():
         generic_args=(
             python.AnnotatedType(
                 typ=python.NameRef(module='builtins', name='int'),
-                ge=10,
+                ge=20,
                 multiple_of=2,
             ),
             python.AnnotatedType(
                 typ=python.NameRef(module='builtins', name='int'),
-                le=20,
+                le=10,
                 multiple_of=2,
             ),
         ),
@@ -301,7 +301,7 @@ def test_process_anyof_objects():
             metamodel.MetaModel(
                 stack=stack.Stack(('#', 'components', 'schemas', 'myschema', 'schema', 'AnyOf2')),
                 type_={schema31.DataType.INTEGER},
-                ge=20.0,
+                le=20.0,
             ),
         ],
     )
@@ -309,7 +309,7 @@ def test_process_anyof_objects():
     assert model.as_annotation('package') == python.AnnotatedType(
         python.type_hint._UNION,
         (
-            python.AnnotatedType(python.NameRef.from_type(int), ge=20),
+            python.AnnotatedType(python.NameRef.from_type(int), le=20),
             python.AnnotatedType(python.NameRef('package.components.schemas.object1.schema', 'object1')),
             python.AnnotatedType(python.NameRef('package.components.schemas.object2.schema', 'object2')),
         ),
