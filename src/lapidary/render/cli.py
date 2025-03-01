@@ -1,18 +1,19 @@
-import logging
 import sys
 from pathlib import Path
 
 import anyio
 import asyncclick as click
 
-logger = logging.getLogger(__name__)
-logging.getLogger().setLevel(logging.DEBUG)
-
 
 @click.group()
 @click.version_option(package_name='lapidary.render', prog_name='lapidary')
-def app() -> None:
-    pass
+@click.option('--verbose', is_flag=True, help='Enable debug logs.', default=False)
+def app(verbose: bool) -> None:
+    if verbose:
+        import logging
+
+        logging.basicConfig()
+        logging.getLogger('lapidary').setLevel(logging.DEBUG)
 
 
 @app.command()
