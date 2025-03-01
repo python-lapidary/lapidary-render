@@ -8,13 +8,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [Unreleased]
 
-### Removed
+### Added
 
-- Support for JSONPatch
+- Create .gitignore during `init`.
+- Added support for anyOf, allOf and partial support for oneOf (treated as anyOf).
 
 ### Changed
 
-- Breaking: openapi directory is now `${source root}/openapi`
+- Default openapi directory is now `${source root}/lapidary/openapi`.
+
+### Removed
+
+- Removed development dependency on lapidary-render from generated projects
+- Removed support for JSON Patch.
 
 
 ## [0.11.1] - 2024-08-15
@@ -208,11 +214,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Generate partial client class with methods based on /paths/*/*
 
 [Unreleased]: https://github.com/python-lapidary/lapidary-render/compare/v0.11.1...HEAD
-[0.10.1]: https://github.com/python-lapidary/lapidary-render/compare/v0.11.0...v0.11.1
-[0.10.1]: https://github.com/python-lapidary/lapidary-render/compare/v0.10.1...v0.11.0
+[0.11.1]: https://github.com/python-lapidary/lapidary-render/compare/v0.11.0...v0.11.1
+[0.11.0]: https://github.com/python-lapidary/lapidary-render/compare/v0.10.1...v0.11.0
 [0.10.1]: https://github.com/python-lapidary/lapidary-render/compare/v0.10.0...v0.10.1
 [0.10.0]: https://github.com/python-lapidary/lapidary-render/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/python-lapidary/lapidary-render/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/python-lapidary/lapidary-render/compare/v0.7.3...v0.8.0
 [0.7.3]: https://github.com/python-lapidary/lapidary-render/compare/v0.7.1...v0.7.3
-[0.7.1]: https://github.com/python-lapidary/lapidary-render/releases/tag/v0.7.1
+[0.7.1]: https://github.com/python-lapidary/lapidary-render/compare/v0.6.1...v0.7.1
+[0.6.0]: https://github.com/python-lapidary/lapidary-render/compare/v0.6.0...v0.6.1
