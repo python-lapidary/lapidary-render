@@ -16,29 +16,29 @@ OpenAPI compatibility
     - ✅ `schemas`:
         - 🗓️ `title`: planned as part of class docstr
         - `type`
-            - 🗓️ [no value]: planned as primitive JSON-compatible object.
-            - ✅ `object`: implemented as pydantic models
+            - ✅ [no value]: implemented as `pydantic.JsonValue`
+              - ⚠️ caveat: it which includes `None`
+            - ✅ `object`: implemented as pydantic model
             - ✅ `array`: implemented as list
             - ✅ `string`, `integer`, `number`, `boolean`: implemented as `str`, `int`, `float` and `bool`
-        - 🗓️ `format`: planned, including custom formats
-        - ✅ assertion keywords: as supported by pydantic
-        - ⚠️ `allOf`: needs improvement
+        - ⚠️ `format`: Implemented for string types: `uuid`, `date`, `date-time`, `time` and `decimal`
+        - ✅ assertion keywords: as supported by [annotated-types](https://github.com/annotated-types/annotated-types)
+        - ✅ `allOf`: implemented
         - ✅ `anyOf`: implemented as union
         - ⚠️ `oneOf`: treated as `anyOf` and implemented as `Union`
-        - 🗓️ `not`: planned for objects
+        - 🗓️ `not`: planned
         - ✅ `required`: non-required properties are turned to `Union[None, $type]`
         - `additionalProperties`:
-            - ✅ boolean: supported as pydantic `extra: 'allow'` or `'forbid'`
-            - 🗓️ schema: planned as a `Mapping` field
-        - 🗓️ `patternProperties`: planned as `Mapping` field
+          - ✅ boolean: supported as pydantic `extra: 'allow'` or `'forbid'`
+          - 🗓️ schema: planned as either a `Mapping` type or a `__pydantic_extra__` field
         - 🔍 `enum`: ignored; might be implemented for simple types as `Literal`
         - 📄 `description`: planned as part of docstr
         - ✅ `default`: if present, the property type turned to `Union[None, $type]` and has default value `None`
-            - 🔍 caveat: default values are not to be sent between Web API client and server, instead they are implied by the receiving side. Lapidary could potentially implement generating default values for some cases but they don't necessary need to validate against the schema.
+          - 🔍 caveat: default values are not to be sent between Web API client and server, instead they are implied by the receiving side. Lapidary could potentially implement generating default values for some cases but they don't necessary need to validate against the schema.
         - ✅ `nullable`: if true, the property type is turned to `Union[None, $type]`
         - ✅ `readOnly` & `writeOnly`: if either is true, the property type is turned to `Union[None, $type]` and has default value `None`; planned as part of docstr
             - ⚠️ caveat: readOnly properties are only to be sent to API server, and writeOnly only to be received by the client. A property might be both required one way, and invalid the other way, which could not be directly represented in Python, except with two or three classes for every schema.
-        - ❌ `discriminator`: ignored
+        - 📄 `discriminator`: planed for use with pydantic discriminated unions
         - 🔍 `example`: might be used as part of docstr
         - 🗓️ `externalDocs`: planned as part of docstr
         - 🗓️ `deprecated`: planned
@@ -58,7 +58,7 @@ OpenAPI compatibility
     - ⚠️ `securitySchemes`: implemented with httpx_auth
         - ❌ `refreshUrl`: not supported
     - 🗓️ `links`: planned
-    - ❌ `callbacks`: not planned
+    - 🗓️ `callbacks`: only planning to generate models from referenced schemas
 - `paths`: 🗓️ planned as keys in a TypedDict
     - operations: ✅ mapped to operation methods
         - `operationId`: ✅ used as method name
@@ -74,7 +74,4 @@ OpenAPI compatibility
             - ⚠️ `style`: partially implemented
             - 🗓️ `allowReserved`: planned
             - ✅ `schema`: implemented
-            - 🔍 `example` & examples: considered
-            - 🔧 `x-lapidary-name`: name of a parameter in the python
-- 🔧 `x-lapidary-responses-global`: responses that might come from any operation
-- 🔧 `x-lapidary-headers-global`: headers accepted by any operation
+            - 🔍 `example` & `examples`: considered

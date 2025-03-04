@@ -32,6 +32,8 @@ Simplified, JSON Schemas can be transformed to python model with the following f
 
         dict | list | float | int | str | bool
 
+2. pydantic provides type `JsonValue` type that reflects the type of any JSON data, except it also includes None for compatibility with JSON Schema.
+
 
 ## Type-specific constraints
 
@@ -86,7 +88,8 @@ That means most constraints can be processed separately, which is useful when th
 
 1. If `enum` is in `anyOf` sub-schemas, the values are summed as sets.
 
-1. If `enum` is in `oneOf` sub-schemas, only the values that occur once can be validated.
+1. If `enum` is in `oneOf` sub-schemas, only the values that occur once can be validated
+    (not implemented, since Lapidary treats as just another anyOf).
 
 
 ## `enum` as `Literal`
@@ -199,8 +202,8 @@ The problem with this solution is that the name changes when keys or any value c
     =>
 
         Union[
-            Annotated[int, Field(ge=10)],
-            Annotated[int, Field(le=20)],
+            Annotated[int, Field(le=10)],
+            Annotated[int, Field(ge=20)],
         ]
 
 1. The above is different than this, which is a bottom type (no object can validate against it, since no number can be greater than 20 _and_ smaller than 10):
@@ -903,6 +906,67 @@ Alice:
 ```python
 class Alice:
     prop1: Annotated[int, Le(20)]
+```
+
+# Generic types
+
+1. JSON Schema only supports generic arrays and maps:
+
+```yaml
+sequence:
+  type: array
+  items:
+    type: string
+map:
+  type: object
+  additionalProperties:
+    type: number
+```
+
+=>
+
+```python
+sequence: list[str]
+map: dict[float]
+```
+
+There's no way of directly representing a generic python class:
+
+```python
+class Envelope[T]:
+    id: uuid.UUID
+    payload: T
+
+
+class Customer:
+    ...
+
+
+data: Envelope[Customer]
+```
+
+can only be represented as concretised schemas:
+
+```yaml
+
+Customer:
+   type: object
+
+Envelope:
+   type: object
+   properties:
+      id:
+         type: string
+         format: uuid
+      payload:
+         type: object
+
+CustomerEnvelope:
+   allOf:
+   - $ref: '#/schemas/Envelope'
+   - properties:
+        payload:
+           $ref: '#/schemas/Customer'
 ```
 
 # References
