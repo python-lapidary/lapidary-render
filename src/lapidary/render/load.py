@@ -4,7 +4,6 @@ from collections.abc import Mapping
 from pathlib import Path
 
 import httpx
-import ruamel.yaml
 
 from .config import Config
 
@@ -12,9 +11,9 @@ logger = logging.getLogger(__name__)
 
 
 def load_document(root: Path, config: Config) -> Mapping:
-    logger.info('Load OpenAPI document')
+    from .yaml import yaml
 
-    yaml = ruamel.yaml.YAML(typ='safe')
+    logger.info('Load OpenAPI document')
 
     text = document_handler_for(root, config.document_path).load()
     return yaml.load(text)

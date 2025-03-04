@@ -1,19 +1,14 @@
 from pathlib import Path
 
 import pytest
-import ruamel.yaml
 
 from lapidary.render.model import conv_openapi, openapi, python
 from lapidary.render.model.stack import Stack
-
-
-@pytest.fixture()
-def yaml():
-    return ruamel.yaml.YAML(typ='safe')
+from lapidary.render.yaml import yaml
 
 
 @pytest.mark.parametrize('path', (Path(__file__).parent / 'security_schemes').glob('*'))
-def test_process_security_schemes(yaml: ruamel.yaml.YAML, path: Path):
+def test_process_security_schemes(path: Path):
     document = openapi.OpenAPI.model_validate(yaml.load(path.read_text()))
 
     converter = conv_openapi.OpenApi30Converter(python.ModulePath('package', False), document, None)

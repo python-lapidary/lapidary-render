@@ -5,11 +5,11 @@ from typing import TextIO
 
 import click
 import pydantic
-import ruamel.yaml
 
 from .config import Config, load_config
 from .load import document_handler_for, load_document
 from .model import conv_openapi, openapi, python
+from .yaml import yaml
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +58,6 @@ def init_project(
         package=package_name,
     )
 
-    yaml = ruamel.yaml.YAML(typ='safe')
     document = yaml.load(document_handler.load())
 
     init_project(project_root, config, document)
@@ -95,7 +94,6 @@ def render_project(project_root: Path) -> None:
 def dump_model(project_root: Path, process: bool, output: TextIO):
     config = load_config(project_root)
     oa_doc = load_document(project_root, config)
-    yaml = ruamel.yaml.YAML(typ='safe')
 
     if not process:
         yaml.dump(oa_doc, output)

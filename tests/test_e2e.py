@@ -3,15 +3,8 @@ from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
-import ruamel.yaml
 
 from lapidary.render.main import render_project
-
-
-@pytest.fixture()
-def yaml():
-    return ruamel.yaml.YAML(typ='safe')
-
 
 e2e_root = Path(__file__).parent / 'e2e'
 e2e_tests = [path.name for path in (e2e_root / 'init').iterdir() if path.is_dir()]
@@ -22,7 +15,7 @@ e2e_tests = [path.name for path in (e2e_root / 'init').iterdir() if path.is_dir(
     e2e_tests,
     ids=e2e_tests,
 )
-def test_generate(yaml: ruamel.yaml.YAML, project_name: Path, tmp_path: Path) -> None:
+def test_generate(project_name: Path, tmp_path: Path) -> None:
     init_root = e2e_root / 'init' / project_name
     project_root = tmp_path / 'project'
 

@@ -3,16 +3,14 @@ import typing
 from pathlib import Path
 
 import pytest
-import ruamel.yaml
 from openapi_pydantic.v3.v3_1 import schema as schema31
 
 from lapidary.render import runtime
 from lapidary.render.model import conv_openapi, conv_schema, metamodel, openapi, python, stack
+from lapidary.render.yaml import yaml
 
 logging.basicConfig()
 logging.getLogger('lapidary').setLevel(logging.DEBUG)
-
-yaml = ruamel.yaml.YAML(typ='safe')
 
 
 @pytest.fixture

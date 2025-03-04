@@ -1,12 +1,10 @@
 from pathlib import Path
 
 import pytest
-import ruamel.yaml
 
 from lapidary.render.model import conv_openapi, openapi, python
 from lapidary.render.model.stack import Stack
-
-yaml = ruamel.yaml.YAML(typ='safe')
+from lapidary.render.yaml import yaml
 
 yaml_home = Path(__file__).parent / 'servers'
 test_files = [
