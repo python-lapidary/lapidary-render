@@ -45,7 +45,6 @@ tomli-w = "^1"
 
 [project.urls]
 Homepage = "https://lapidary.dev/"
-Repository = "https://github.com/python-lapidary/lapidary-render"
 
 [project.scripts]
 lapidary = "lapidary.render:app"
