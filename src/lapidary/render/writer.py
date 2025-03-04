@@ -1,9 +1,8 @@
 import logging
 from collections.abc import Callable, Iterable
-from pathlib import PurePath
+from pathlib import Path, PurePath
 
-import anyio
-import asyncclick
+import click
 import libcst as cst
 
 from .config import Config
@@ -30,14 +29,14 @@ def mk_module(module: python.AbstractModule) -> cst.Module | None:
             raise TypeError(type(module))
 
 
-async def update_project(
+def update_project(
     modules: Iterable[python.AbstractModule],
-    target_root: anyio.Path,
+    target_root: Path,
     root_package: str,
     update_progress: Callable[[python.AbstractModule], None],
 ):
-    await target_root.mkdir(parents=True, exist_ok=True)
-    written: list[anyio.Path] = []
+    target_root.mkdir(parents=True, exist_ok=True)
+    written: list[Path] = []
     package_extras = PurePath(root_package) / 'extras'
     for module in modules:
         update_progress(module)
@@ -46,19 +45,19 @@ async def update_project(
             continue
         path = module.path.to_path()
         full_path = target_root / path.with_suffix('.py')
-        await full_path.parent.mkdir(parents=True, exist_ok=True)
-        await full_path.write_text(cst_module.code)
+        full_path.parent.mkdir(parents=True, exist_ok=True)
+        full_path.write_text(cst_module.code)
         written.append(full_path.relative_to(target_root))
 
-    root_module_path = anyio.Path(root_package) / '__init__.py'
-    await (target_root / root_module_path).write_text(conv_cst.MODULE_ROOT.code)
+    root_module_path = Path(root_package) / '__init__.py'
+    (target_root / root_module_path).write_text(conv_cst.MODULE_ROOT.code)
     written.append(root_module_path)
 
-    await (target_root / root_package / 'py.typed').write_text('', newline='')
-    written.append(anyio.Path(root_package, 'py.typed'))
+    (target_root / root_package / 'py.typed').write_text('', newline='')
+    written.append(Path(root_package, 'py.typed'))
 
-    with asyncclick.progressbar(length=0, label='Removing stale files') as bar:
-        async for parent, dirs, files in target_root.walk(False):
+    with click.progressbar(length=0, label='Removing stale files') as bar:
+        for parent, dirs, files in target_root.walk(False):
             package = parent.relative_to(target_root)
             files_ = set(files)
             if package != package_extras:
@@ -68,10 +67,10 @@ async def update_project(
                     if path not in written:
                         bar.update(1, str(path))
                         files_.remove(existing)
-                        await (parent / existing).unlink()
+                        (parent / existing).unlink()
             if not files_ and not dirs:
                 bar.update(1, str(parent))
-                await parent.rmdir()
+                parent.rmdir()
 
 
 GITIGNORE_LINES = (
@@ -80,17 +79,17 @@ GITIGNORE_LINES = (
 )
 
 
-async def write_gitignore(project_root: anyio.Path):
-    async with await anyio.open_file(project_root / '.gitignore', 'w') as f:
-        await f.writelines(GITIGNORE_LINES)
+def write_gitignore(project_root: Path):
+    with open(project_root / '.gitignore', 'w') as f:
+        f.writelines(GITIGNORE_LINES)
 
 
-async def write_pyproject(project_root: anyio.Path, title: str, config: Config):
+def write_pyproject(project_root: Path, title: str, config: Config):
     import tomli_w
 
     from .pyproject import mk_pyproject_toml
 
-    await (project_root / 'pyproject.toml').write_text(
+    (project_root / 'pyproject.toml').write_text(
         f"""# This file was generated but won't be updated automatically and may be edited manually.
 
 {tomli_w.dumps(mk_pyproject_toml(title, config))}
@@ -98,7 +97,7 @@ async def write_pyproject(project_root: anyio.Path, title: str, config: Config):
     )
 
 
-async def init_project(project_root: anyio.Path, config: Config, raw_document: dict):
-    await project_root.mkdir(parents=True, exist_ok=True)
-    await write_pyproject(project_root, raw_document['info']['title'], config)
-    await write_gitignore(project_root)
+def init_project(project_root: Path, config: Config, raw_document: dict):
+    project_root.mkdir(parents=True, exist_ok=True)
+    write_pyproject(project_root, raw_document['info']['title'], config)
+    write_gitignore(project_root)

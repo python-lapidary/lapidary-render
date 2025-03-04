@@ -1,8 +1,7 @@
 import sys
 from pathlib import Path
 
-import anyio
-import asyncclick as click
+import click
 
 
 @click.group()
@@ -18,12 +17,12 @@ def app(verbose: bool) -> None:
 
 @app.command()
 @click.argument('document')
-@click.argument('project_root')
+@click.argument('project_root', type=click.Path(path_type=Path, exists=False, file_okay=False, dir_okay=True))
 @click.argument('package_name')
 @click.option('--save/--no-save', help='Copy the document in the project', default=False)
-async def init(
+def init(
     document: str,
-    project_root: str,
+    project_root: Path,
     package_name: str,
     save: bool = False,
 ):
@@ -39,29 +38,33 @@ async def init(
     from .main import init_project
 
     try:
-        await init_project(document, anyio.Path(project_root), package_name, save)
+        init_project(document, project_root, package_name, save)
     except FileExistsError:
         raise click.ClickException('Target exists')
 
 
 @app.command()
-@click.argument('project_root', type=click.Path(exists=True, file_okay=False, dir_okay=True), default='.')
-async def render(
+@click.argument(
+    'project_root', type=click.Path(path_type=Path, exists=True, file_okay=False, dir_okay=True), default='.'
+)
+def render(
     project_root: Path = Path(),
 ) -> None:
     """Generate Python code"""
     from .main import render_project
 
-    await render_project(anyio.Path(project_root))
+    render_project(project_root)
 
 
 @app.command(hidden=True)
-@click.argument('project_root', type=click.Path(exists=True, file_okay=False, dir_okay=True), default='.')
+@click.argument(
+    'project_root', type=click.Path(path_type=Path, exists=True, file_okay=False, dir_okay=True), default='.'
+)
 @click.option('--process', is_flag=True, help='Output processed python model', default=False)
-async def dump_model(
+def dump_model(
     project_root: Path = Path(),
     process: bool = False,
 ) -> None:
     from .main import dump_model as dump_model_
 
-    await dump_model_(anyio.Path(project_root), process, sys.stdout)
+    dump_model_(project_root, process, sys.stdout)

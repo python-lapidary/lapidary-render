@@ -1,7 +1,7 @@
 from collections.abc import Callable, Iterable, Iterator, Sequence
 from typing import cast
 
-import asyncclick
+import click
 import libcst as cst
 
 from . import openapi, python
@@ -460,7 +460,7 @@ def mk_operation_method(operation: python.OperationFunction) -> cst.FunctionDef:
 
 def mk_client_module(module: python.ClientModule) -> cst.Module:
     body = [mk_client_init_fn(module.body.init_method)]
-    with asyncclick.progressbar(module.body.methods, label='Rendering operations', show_eta=True) as bar:
+    with click.progressbar(module.body.methods, label='Rendering operations', show_eta=True) as bar:
         for operation in module.body.methods:
             bar.update(1, operation)
             body.append(mk_operation_method(operation))
