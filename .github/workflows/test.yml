@@ -22,4 +22,4 @@ jobs:
     - name: Install project
       run: poetry install
     - name: Run pytest
-      run: poetry run pytest
+      run: poetry run pytest -s
