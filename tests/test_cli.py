@@ -1,6 +1,5 @@
 from pathlib import Path
 
-import pytest
 from click.testing import CliRunner
 
 from lapidary.render.config import load_config
@@ -54,4 +53,4 @@ def test_init_url_saves_origin(tmp_path: Path) -> None:
 
     config = load_config(output)
     assert str(config.origin) == source
-    assert config.document_path is None
+    assert config.document_path == 'lapidary/openapi/openapi.json'

@@ -18,7 +18,7 @@ def init_project(
     document_path: str,
     project_root: Path,
     package_name: str,
-    save_document: bool,
+    save_document: bool | None,
 ) -> None:
     """Create project directory and pyproject file, download or copy the OpenAPI document"""
 
@@ -28,6 +28,10 @@ def init_project(
     from .writer import init_project
 
     document_handler = document_handler_for(Path(), document_path)
+
+    if save_document is None and document_handler.is_url:
+        # default is save if document is remote
+        save_document = True
 
     if save_document:
         document_root = Path('lapidary/openapi')
@@ -49,7 +53,7 @@ def init_project(
             else:
                 config_document_path = document_path
         else:
-            config_document_path = None
+            config_document_path = document_path
 
     config = Config(
         # if path is not URL and not saving the file

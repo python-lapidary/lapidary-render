@@ -19,12 +19,16 @@ def app(verbose: bool) -> None:
 @click.argument('document')
 @click.argument('project_root', type=click.Path(path_type=Path, exists=False, file_okay=False, dir_okay=True))
 @click.argument('package_name')
-@click.option('--save/--no-save', help='Copy the document in the project', default=False)
+@click.option(
+    '--save/--no-save',
+    help="Copy the document in the project. The default is to save if it's a remote path",
+    default=None,
+)
 def init(
     document: str,
     project_root: Path,
     package_name: str,
-    save: bool = False,
+    save: bool | None,
 ):
     """Initialize a new project.
 
