@@ -1,0 +1,2334 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Declarative Web API client generator for python">
+      
+      
+      
+        <link rel="canonical" href="https://lapidary.github.io/lapidary-render/json-schema/">
+      
+      
+        <link rel="prev" href="../openapi/">
+      
+      
+      
+      <link rel="icon" href="../assets/logo.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.20">
+    
+    
+      
+        <title>JSONSchema - Lapidary Render</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.e53b48f4.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_markdown_exec_pyodide.css">
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#json-schema" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Lapidary Render" class="md-header__button md-logo" aria-label="Lapidary Render" data-md-component="logo">
+      
+  <img src="../assets/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Lapidary Render
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              JSONSchema
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m14.3 16-.7-2h-3.2l-.7 2H7.8L11 7h2l3.2 9zM20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12zm-9.15 3.96h2.3L12 9z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="lime"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/python-lapidary/lapidary-render" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    python-lapidary/lapidary-render
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../openapi/" class="md-tabs__link">
+          
+  
+  
+  Conversion
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Lapidary Render" class="md-nav__button md-logo" aria-label="Lapidary Render" data-md-component="logo">
+      
+  <img src="../assets/logo.svg" alt="logo">
+
+    </a>
+    Lapidary Render
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/python-lapidary/lapidary-render" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    python-lapidary/lapidary-render
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    Conversion
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Conversion
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../openapi/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    OpenAPI
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    JSONSchema
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    JSONSchema
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#json-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      JSON Schema
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#set-theory" class="md-nav__link">
+    <span class="md-ellipsis">
+      Set theory
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#type" class="md-nav__link">
+    <span class="md-ellipsis">
+      type
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="type">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#type-specific-constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      Type-specific constraints
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nullable" class="md-nav__link">
+    <span class="md-ellipsis">
+      nullable
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#enum" class="md-nav__link">
+    <span class="md-ellipsis">
+      enum
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="enum">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#enum-as-literal" class="md-nav__link">
+    <span class="md-ellipsis">
+      enum as Literal
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#enum-as-enumenum" class="md-nav__link">
+    <span class="md-ellipsis">
+      enum as enum.Enum
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#non-scalar-enum-values" class="md-nav__link">
+    <span class="md-ellipsis">
+      Non-scalar enum values
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scalar-constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      Scalar constraints
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#object-constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      Object constraints
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Object constraints">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#additionalproperties" class="md-nav__link">
+    <span class="md-ellipsis">
+      additionalProperties
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#writeonly-readonly-and-non-required-properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      writeOnly, readOnly and non-required properties
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#arrays" class="md-nav__link">
+    <span class="md-ellipsis">
+      arrays
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#anyof" class="md-nav__link">
+    <span class="md-ellipsis">
+      anyOf
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#oneof" class="md-nav__link">
+    <span class="md-ellipsis">
+      oneOf
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#allof" class="md-nav__link">
+    <span class="md-ellipsis">
+      allOf
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="allOf">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#allof-and-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      allOf and type
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="allOf and type">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#allof-and-nullable" class="md-nav__link">
+    <span class="md-ellipsis">
+      allOf and nullable
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#allof-and-enum" class="md-nav__link">
+    <span class="md-ellipsis">
+      allOf and enum
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#allof-and-scalar-constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      allOf and scalar constraints
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#allof-and-object-constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      allOf and object constraints
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#allof-and-array-constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      allOf and array constraints
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nested-allof" class="md-nav__link">
+    <span class="md-ellipsis">
+      Nested allOf
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#allof-and-oneof-or-anyof" class="md-nav__link">
+    <span class="md-ellipsis">
+      allOf and (oneOf or anyOf)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#not" class="md-nav__link">
+    <span class="md-ellipsis">
+      not
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#type-and-other-keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      type and other keywords
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="type and other keywords">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#type-and-enum" class="md-nav__link">
+    <span class="md-ellipsis">
+      type and enum
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nullable-types-and-enum" class="md-nav__link">
+    <span class="md-ellipsis">
+      nullable types and enum
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#type-and-constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      type and constraints
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#type-and-anyof-or-oneof" class="md-nav__link">
+    <span class="md-ellipsis">
+      type and anyOf or oneOf
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#type-object-and-other-keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      type: object and other keywords
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="type: object and other keywords">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#object-and-oneofanyof" class="md-nav__link">
+    <span class="md-ellipsis">
+      object and oneOf/anyOf
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="object and oneOf/anyOf">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#type-object-allof-and-circular-references" class="md-nav__link">
+    <span class="md-ellipsis">
+      type: object, allOf and circular references
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#type-object-oneofanyof-and-allof" class="md-nav__link">
+    <span class="md-ellipsis">
+      type: object, oneOf/anyOf and allOf
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conflicting-schemas" class="md-nav__link">
+    <span class="md-ellipsis">
+      Conflicting schemas
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#annotations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Annotations
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#generic-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Generic types
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#json-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      JSON Schema
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#set-theory" class="md-nav__link">
+    <span class="md-ellipsis">
+      Set theory
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#type" class="md-nav__link">
+    <span class="md-ellipsis">
+      type
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="type">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#type-specific-constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      Type-specific constraints
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nullable" class="md-nav__link">
+    <span class="md-ellipsis">
+      nullable
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#enum" class="md-nav__link">
+    <span class="md-ellipsis">
+      enum
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="enum">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#enum-as-literal" class="md-nav__link">
+    <span class="md-ellipsis">
+      enum as Literal
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#enum-as-enumenum" class="md-nav__link">
+    <span class="md-ellipsis">
+      enum as enum.Enum
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#non-scalar-enum-values" class="md-nav__link">
+    <span class="md-ellipsis">
+      Non-scalar enum values
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scalar-constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      Scalar constraints
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#object-constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      Object constraints
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Object constraints">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#additionalproperties" class="md-nav__link">
+    <span class="md-ellipsis">
+      additionalProperties
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#writeonly-readonly-and-non-required-properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      writeOnly, readOnly and non-required properties
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#arrays" class="md-nav__link">
+    <span class="md-ellipsis">
+      arrays
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#anyof" class="md-nav__link">
+    <span class="md-ellipsis">
+      anyOf
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#oneof" class="md-nav__link">
+    <span class="md-ellipsis">
+      oneOf
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#allof" class="md-nav__link">
+    <span class="md-ellipsis">
+      allOf
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="allOf">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#allof-and-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      allOf and type
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="allOf and type">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#allof-and-nullable" class="md-nav__link">
+    <span class="md-ellipsis">
+      allOf and nullable
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#allof-and-enum" class="md-nav__link">
+    <span class="md-ellipsis">
+      allOf and enum
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#allof-and-scalar-constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      allOf and scalar constraints
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#allof-and-object-constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      allOf and object constraints
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#allof-and-array-constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      allOf and array constraints
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nested-allof" class="md-nav__link">
+    <span class="md-ellipsis">
+      Nested allOf
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#allof-and-oneof-or-anyof" class="md-nav__link">
+    <span class="md-ellipsis">
+      allOf and (oneOf or anyOf)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#not" class="md-nav__link">
+    <span class="md-ellipsis">
+      not
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#type-and-other-keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      type and other keywords
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="type and other keywords">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#type-and-enum" class="md-nav__link">
+    <span class="md-ellipsis">
+      type and enum
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nullable-types-and-enum" class="md-nav__link">
+    <span class="md-ellipsis">
+      nullable types and enum
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#type-and-constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      type and constraints
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#type-and-anyof-or-oneof" class="md-nav__link">
+    <span class="md-ellipsis">
+      type and anyOf or oneOf
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#type-object-and-other-keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      type: object and other keywords
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="type: object and other keywords">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#object-and-oneofanyof" class="md-nav__link">
+    <span class="md-ellipsis">
+      object and oneOf/anyOf
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="object and oneOf/anyOf">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#type-object-allof-and-circular-references" class="md-nav__link">
+    <span class="md-ellipsis">
+      type: object, allOf and circular references
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#type-object-oneofanyof-and-allof" class="md-nav__link">
+    <span class="md-ellipsis">
+      type: object, oneOf/anyOf and allOf
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conflicting-schemas" class="md-nav__link">
+    <span class="md-ellipsis">
+      Conflicting schemas
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#annotations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Annotations
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#generic-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Generic types
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+    
+      
+    
+    <a href="https://github.com/python-lapidary/lapidary-render/raw/master/docs/json-schema.md" title="View source of this page" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 18c.56 0 1 .44 1 1s-.44 1-1 1-1-.44-1-1 .44-1 1-1m0-3c-2.73 0-5.06 1.66-6 4 .94 2.34 3.27 4 6 4s5.06-1.66 6-4c-.94-2.34-3.27-4-6-4m0 6.5a2.5 2.5 0 0 1-2.5-2.5 2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5M9.27 20H6V4h7v5h5v4.07c.7.08 1.36.25 2 .49V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.5a8.2 8.2 0 0 1-1.23-2"/></svg>
+    </a>
+  
+
+
+  <h1>JSONSchema</h1>
+
+<h2 id="json-schema">JSON Schema<a class="headerlink" href="#json-schema" title="Permanent link">¤</a></h2>
+<p>Representing JSON Schema as python types, aiming at producing types that can express no less values than the corresponding schema can validate.
+Another goal is to keep models as backwards compatible as much as possible, when the schema changes in a compatible way.</p>
+<p>The examples below use YAML notation of JSON Schema version draft-wright-json-schema-00.</p>
+<p>Python examples use python 3.10 (PEP 604) type hints syntax.</p>
+<h2 id="set-theory">Set theory<a class="headerlink" href="#set-theory" title="Permanent link">¤</a></h2>
+<p>JSON is a data format representing a limited collection of basic data types.</p>
+<p>JSON Schema is language representing a set of constraints applicable to JSON, where empty schema means any JSON value, and set theory can be used to manipulate it.</p>
+<p>Python model types, while able to represent the same basic types as JSON, describe what can be stored in memory, where empty model represents no data, which is the inversion of how JSON Schema describes values.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>By default, object instances in python are just dictionaries with OOP syntax, but IDEs and type checking tools treat them more akin to C structs - if a field is not declared, it's not there.</p>
+</div>
+<p>Simplified, JSON Schemas can be transformed to python model with the following formula</p>
+<p><code>python model = any JSON type - declared JSON Schema constraints</code></p>
+<h2 id="type"><code>type</code><a class="headerlink" href="#type" title="Permanent link">¤</a></h2>
+<ol>
+<li>
+<p>Since Schema object validates any JSON value, let's consider it a Union type:</p>
+<pre><code>{}
+</code></pre>
+<p>=&gt;</p>
+<pre><code>dict | list | float | int | str | bool
+</code></pre>
+</li>
+<li>
+<p>pydantic provides type <code>JsonValue</code> type that reflects the type of any JSON data, except it also includes None for compatibility with JSON Schema.</p>
+</li>
+</ol>
+<h3 id="type-specific-constraints">Type-specific constraints<a class="headerlink" href="#type-specific-constraints" title="Permanent link">¤</a></h3>
+<p>Most of the constraints are type-specific (they apply only to values of a single type).</p>
+<p>The exceptions are:</p>
+<ul>
+<li>nullable: extend types by type <code>null</code>, but only if type is specified in that schema</li>
+<li>enum: only allow values specified in the list</li>
+<li>numeric constraints for types <code>number</code> and <code>integer</code>, to both of which the numeric constraints apply.</li>
+</ul>
+<p>That means most constraints can be processed separately, which is useful when they occur together with <code>allOf</code>, <code>oneOf</code>, <code>allOf</code> and <code>not</code>.</p>
+<h3 id="nullable">nullable<a class="headerlink" href="#nullable" title="Permanent link">¤</a></h3>
+<ol>
+<li>
+<p>When <code>type</code> is present and <code>nullable</code> is <code>true</code>, the allowed types are extended with <code>null</code>. Three cases are possible</p>
+<ol>
+<li>
+<p>any type but null</p>
+<pre><code>{}
+</code></pre>
+</li>
+<li>
+<p>single type</p>
+<pre><code>type: integer
+</code></pre>
+<p>=&gt;</p>
+<pre><code>int
+</code></pre>
+</li>
+<li>
+<p>single type or null</p>
+<pre><code>type: integer
+nullable: true
+</code></pre>
+<p>=&gt;</p>
+<pre><code>int | None
+</code></pre>
+</li>
+</ol>
+</li>
+<li>
+<p>Any combination of types is possible with <code>anyOf</code>/<code>oneOf</code>.</p>
+<pre><code>anyOf:
+-   type: string
+-   type: integer
+    nullable: true
+</code></pre>
+<p>=&gt;</p>
+<pre><code>str | int | None
+</code></pre>
+</li>
+</ol>
+<h2 id="enum"><code>enum</code><a class="headerlink" href="#enum" title="Permanent link">¤</a></h2>
+<ol>
+<li>
+<p>If <code>enum</code> is in <code>anyOf</code> sub-schemas, the values are summed as sets.</p>
+</li>
+<li>
+<p>If <code>enum</code> is in <code>oneOf</code> sub-schemas, only the values that occur once can be validated
+    (not implemented, since Lapidary treats as just another anyOf).</p>
+</li>
+</ol>
+<h3 id="enum-as-literal"><code>enum</code> as <code>Literal</code><a class="headerlink" href="#enum-as-literal" title="Permanent link">¤</a></h3>
+<ol>
+<li>
+<p>Scalar <code>enum</code> could be translated literally</p>
+<pre><code>enum:
+- true
+- false
+- FileNotFound
+</code></pre>
+<p>=&gt;</p>
+<pre><code>Literal[True, False, 'FileNotFound']
+</code></pre>
+<p>or grouped by type:</p>
+<pre><code>Union[
+    Literal[true, False],
+    StrLiteral['FileNotFound'],
+]
+</code></pre>
+</li>
+</ol>
+<h3 id="enum-as-enumenum"><code>enum</code> as <code>enum.Enum</code><a class="headerlink" href="#enum-as-enumenum" title="Permanent link">¤</a></h3>
+<ol>
+<li>
+<p>Both scalar and non-scalar literals could be translated as python enums, but that would require names</p>
+<pre><code>type: object
+enum:
+- key: value
+</code></pre>
+<p>=&gt;</p>
+<pre><code>class ${schema}Enum(Enum):
+    elem${idx} = $schema(key='value')
+</code></pre>
+<p>This solution could introduce unintentional breaking changes when simply changing order of enum elements, unless enum elements were named with some extension keyword.</p>
+<p>It would work for scalar values</p>
+<pre><code>enum:
+- true
+- false
+- FileNotFound
+</code></pre>
+<p>=&gt;</p>
+<pre><code>class ${schema}Enum(Enum):
+    value_true = True
+    value_false = False
+    value_FileNotFound = 'FileNotFound'
+</code></pre>
+</li>
+</ol>
+<h3 id="non-scalar-enum-values">Non-scalar enum values<a class="headerlink" href="#non-scalar-enum-values" title="Permanent link">¤</a></h3>
+<p>Non-scalar enum values don't have natural names, but a hash of stringified value could be used.</p>
+<p>Also creating an arbitrary number of objects, that might never be used will be expensive and wasteful, so factory methods could be used:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">enum</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w">   </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">LoL</span>
+<span class="w">    </span><span class="nt">slug</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">league-of-legends</span>
+</code></pre></div>
+<p>=&gt;</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">value_5d9b08cdd67689d128f7c30f885f273c</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">CurrentVideogame</span><span class="p">(</span>
+        <span class="nb">id</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="s1">&#39;LoL&#39;</span><span class="p">,</span>
+        <span class="n">slug</span><span class="o">=</span><span class="s1">&#39;league-of-legends&#39;</span><span class="p">,</span>
+    <span class="p">)</span>
+</code></pre></div>
+<p>The problem with this solution is that the name changes when keys or any value changes, which may or may not be desirable from the user-developer perspective.</p>
+<h2 id="scalar-constraints">Scalar constraints<a class="headerlink" href="#scalar-constraints" title="Permanent link">¤</a></h2>
+<ol>
+<li>
+<p>Constraint keywords can be grouped by type (both numeric types together) and processed as such.</p>
+<pre><code>maximum: 10
+maxLength: 10
+anyOf:
+- type: string
+- type: integer
+</code></pre>
+<p>=&gt;</p>
+<pre><code>anyOf:
+- type: string
+  maxLength: 10
+- type: integer
+  maximum: 10
+</code></pre>
+<p>=&gt;</p>
+<pre><code>Union[
+    Annotated[str, Field(max_length=10)],
+    Annotated[int, Field(ge=10)]
+]
+</code></pre>
+</li>
+<li>
+<p>There might be more than one element for a given type:</p>
+<pre><code>anyOf:
+- type: integer
+  maximum: 10
+- type: integer
+  minimum: 20
+</code></pre>
+<p>=&gt;</p>
+<pre><code>Union[
+    Annotated[int, Field(le=10)],
+    Annotated[int, Field(ge=20)],
+]
+</code></pre>
+</li>
+<li>
+<p>The above is different than this, which is a bottom type (no object can validate against it, since no number can be greater than 20 <em>and</em> smaller than 10):</p>
+<pre><code>type: integer
+maximum: 10
+minimum: 20
+</code></pre>
+</li>
+<li>
+<p>As somewhat a special case, this schema is alright:</p>
+<pre><code>maximum: 10
+minimum: 20
+</code></pre>
+<p>=&gt;</p>
+<pre><code>str | bool | dict | list
+</code></pre>
+</li>
+<li>
+<p>allOf applies the most restrictive set of constraints.</p>
+<pre><code>allOf:
+- maximum: 10
+- maximum: 20
+</code></pre>
+<p>=&gt;</p>
+<pre><code>maximum: 10
+</code></pre>
+</li>
+</ol>
+<h2 id="object-constraints">Object constraints<a class="headerlink" href="#object-constraints" title="Permanent link">¤</a></h2>
+<ol>
+<li>
+<p>JSON type <code>object</code> could be mapped to <code>dict</code> or, with some limitations to <code>TypedDict</code> or a model in one of data modelling libraries like dataclasses, pydantic msgspec, etc. Here the choice falls on pydantic, which seems the most featured.</p>
+</li>
+<li>
+<p>In the most trivial (from python's perspective) case properties can be translated to instance fields in a model class:</p>
+<pre><code>additionalProperties: false
+properties:
+  name:
+    type: string
+  required:
+  - name
+</code></pre>
+<p>=&gt;</p>
+<pre><code>class $name(BaseModel):
+  name: string
+</code></pre>
+</li>
+<li>
+<p>In case of empty schema, it's impossible to say anything about it's possible contents.</p>
+<p>It could be mapped as <code>dict</code> but then adding a property would cause an incompatible change in the python code. Instead, it can be translated to empty model class with <code>extra = 'allow'</code></p>
+<pre><code>{}
+</code></pre>
+<p>=&gt;</p>
+<pre><code>class $name(BaseModel):
+    model_config = pydantic.ConfigDict(
+        extra='allow'
+    )
+</code></pre>
+<p>The problem with this form is that there's no way to know what to do with the extra object values.
+Since an empty schema has the default:</p>
+<pre><code>additionalProperties: true
+</code></pre>
+<p>which is the same as</p>
+<pre><code>additionalProperties: {}
+</code></pre>
+<p>which means such a definition is indefinitely recursive. We could model it as a simple dict (in union with other types) or a common model class</p>
+<pre><code>class AnyObject(BaseModel):
+    model_config = pydantic.ConfigDict(
+        extra='allow'
+    )
+</code></pre>
+<p>but in either case adding a property (particularly a non-required property, which is a compatible change) leads to an incompatible change in the python model.</p>
+</li>
+</ol>
+<h3 id="additionalproperties"><code>additionalProperties</code><a class="headerlink" href="#additionalproperties" title="Permanent link">¤</a></h3>
+<p>The value is processed as a JSON Schema.</p>
+<ol>
+<li>
+<p><code>true</code></p>
+<p>Allows extra fields of any type. See above.</p>
+</li>
+<li>
+<p><code>false</code></p>
+<p>Forbids extra fields</p>
+<pre><code>class $name(BaseModel):
+    model_config = pydantic.ConfigDict(
+        extra='forbid'
+    )
+</code></pre>
+</li>
+<li>
+<p>A schema definition.</p>
+<p>Allows extra fields and, if a non-empty schema is used, generate type:</p>
+<pre><code>type: object
+additionalProperties:
+    type: int
+</code></pre>
+<p>=&gt;</p>
+<pre><code>class $name(BaseModel):
+    model_config = pydantic.ConfigDict(
+        extra='allow'
+    )
+
+    __extra__: dict[str, int]
+</code></pre>
+</li>
+</ol>
+<h3 id="writeonly-readonly-and-non-required-properties">writeOnly, readOnly and non-required properties<a class="headerlink" href="#writeonly-readonly-and-non-required-properties" title="Permanent link">¤</a></h3>
+<p>Non-required means the same as optional in English, but <code>Optional</code> is a type in python, so avoiding it for clarity.</p>
+<p><code>writeOnly</code> and <code>readOnly</code> apply to schemas that are used in other schemas' properties.
+When one of the keywords is used, the property that schema describes only applies when the value is sent to or received from (respectively) the server, and should not be transferred in the other way.</p>
+<p>One option to implement it would be a class hierarchy - parent class with all properties, child class for request model and one for response model. This would get complicated with nested properties.</p>
+<p>Non-required properties are properties not listed in <code>required</code> list of the containing schema.</p>
+<p>writeOnly, readOnly and non-required can be made optional fields in python, even though readOnly and writeOnly properties may be required.</p>
+<p><div class="highlight"><pre><span></span><code><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">object</span>
+<span class="nt">properties</span><span class="p">:</span>
+<span class="w">   </span><span class="nt">alpha</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span>
+<span class="w">      </span><span class="nt">readOnly</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">   </span><span class="nt">beta</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span>
+<span class="w">      </span><span class="nt">writeOnly</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">   </span><span class="nt">gamma</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span>
+<span class="w">   </span><span class="nt">required</span><span class="p">:</span>
+<span class="w">   </span><span class="p p-Indicator">-</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">alpha</span>
+<span class="w">   </span><span class="p p-Indicator">-</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">beta</span>
+</code></pre></div>
+=&gt;</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="err">$</span><span class="nc">name</span><span class="p">:</span>
+    <span class="n">alpha</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># required in client response</span>
+    <span class="n">beta</span><span class="p">:</span>  <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># required in client request</span>
+    <span class="n">gamma</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># not required</span>
+</code></pre></div>
+<h2 id="arrays"><code>array</code>s<a class="headerlink" href="#arrays" title="Permanent link">¤</a></h2>
+<p>Two keywords describe arrays</p>
+<h2 id="anyof"><code>anyOf</code><a class="headerlink" href="#anyof" title="Permanent link">¤</a></h2>
+<p>When <code>anyOf</code> keyword is used, the instance validates as long as it validates against one of sub-schemas, while the validation results against other children schemas are ignored.</p>
+<p>For example, scalar constraints can be transformed to <code>Union</code> type</p>
+<pre><code>    type: integer
+    oneOf:
+    - maximum: 10
+    - minimum: 20
+
+=&gt;
+
+    Union[
+        Annotated[int, Field(ge=10)],
+        Annotated[int, Field(le=20)],
+    ]
+</code></pre>
+<h2 id="oneof"><code>oneOf</code><a class="headerlink" href="#oneof" title="Permanent link">¤</a></h2>
+<ol>
+<li>
+<p>Per the specification <code>oneOf</code> keyword validates when the value validates against exactly one child schema.</p>
+<p>In practice it's not the case, and <code>oneOf</code> is used as type union, typically with disjoint sub-schemas, but sometimes erroneously with overlapping ones.</p>
+<p>For this reason it could be processed just like <code>anyOf</code>, although separately: values must validate against one of <code>oneOf</code> children <em>and</em> one of <code>anyOf</code> children.</p>
+</li>
+<li>
+<p>With only <code>type</code> constraint, <code>anyOf</code> and <code>oneOf</code> are equivalent, since any value can be of only one type:</p>
+<pre><code>oneOf:
+- type: integer
+- type: string
+
+anyOf:
+- type: integer
+- type: string
+</code></pre>
+<p>=&gt;</p>
+<pre><code>int | str
+</code></pre>
+</li>
+<li>
+<p>With more than one constraint for the same <code>type</code>, interpreting them (also for python) gets more complex</p>
+<pre><code>type: integer
+oneOf:
+- maximum: 20
+- minimum: 10
+</code></pre>
+<p>is equivalent to:</p>
+<pre><code>type: integer
+oneOf:
+- allOf:
+  - maximum: 20
+  # not minimum: 10
+  - maximum: 10
+    exclusiveMaximum: true
+- allOf:
+  - minimum: 10
+  # not maximum: 20
+  - minimum: 20
+    exclusiveMinimum: true
+</code></pre>
+<p>Since 10 &lt; 20, it reduces to:</p>
+<pre><code>type: integer
+oneOf:
+# matches minimum: 10 but not maximum: 20
+- minimum: 20
+  exclusiveMinimum: true
+# matches maximum: 20 but not minimum: 10
+- maximum: 10
+  exclusiveMaximum: true
+</code></pre>
+</li>
+</ol>
+<h2 id="allof"><code>allOf</code><a class="headerlink" href="#allof" title="Permanent link">¤</a></h2>
+<ol>
+<li>
+<p>When processing <code>allOf</code> in schema, the goal is generating a schema that can be directly represented as a python model.</p>
+<p>The original schema must be replaced by a simplified equivalent.</p>
+</li>
+<li>
+<p>When <code>allOf</code> keyword is used, a value must validate against the schema that contains it as well as all children schemas in <code>allOf</code>.</p>
+<p>All schemas are of equal priority, and conflicting use of keywords makes it invalid for translating to a python model type.</p>
+<ol>
+<li>
+<p>The constraints in the top schema could be pushed down under <code>allOf</code> to get a homogenous <code>allOf</code> schema:</p>
+<pre><code>type: integer
+allOf:
+-   minimum: 10
+-   multipleOf: 2
+</code></pre>
+<p>=&gt;</p>
+<pre><code>allOf:
+-   type: integer
+-   minimum: 10
+-   multipleOf: 2
+</code></pre>
+</li>
+<li>
+<p>Constraints in <code>allOf</code> can be also pulled up to the top schema</p>
+<pre><code>allOf:
+-   type: integer
+-   minimum: 10
+-   multipleOf: 2
+</code></pre>
+<p>=&gt;</p>
+<pre><code>type: integer
+minimum: 10
+multipleOf: 2
+</code></pre>
+<p>Constraint keywords behave differently when used with <code>allOf</code>. For example the most restrictive constraint win in case of scalar constraints, enums use set intersection
+but <code>oneOf</code> elements are deep-merged.</p>
+</li>
+</ol>
+<p>Because it doesn't matter whether constraints are in the parent schema or pushed down to a sub-schema, the paper assumes that constraints are pushed down to simplify the language.</p>
+</li>
+<li>
+<p>When <code>allOf</code> contains more than two sub-schemas, they can be processed sequentially</p>
+<pre><code>schema1 &amp; schema2 &amp; schema3 = (schema1 &amp; schema2) &amp; schema3
+</code></pre>
+</li>
+</ol>
+<h3 id="allof-and-type"><code>allOf</code> and <code>type</code><a class="headerlink" href="#allof-and-type" title="Permanent link">¤</a></h3>
+<p><code>allOf</code> applies a set intersection to <code>type</code></p>
+<pre><code># implied type: $any
+allOf:
+- type: integer
+</code></pre>
+<p>=&gt;</p>
+<pre><code>type: integer
+maximum: 20
+</code></pre>
+<p>This is a bottom type:</p>
+<pre><code>allOf:
+- integer
+- string
+</code></pre>
+<h4 id="allof-and-nullable"><code>allOf</code> and <code>nullable</code><a class="headerlink" href="#allof-and-nullable" title="Permanent link">¤</a></h4>
+<p><code>null</code> value validates against a schema with defined <code>type</code> and <code>nullable: true</code>.</p>
+<p>Since <code>nullable</code> keyword applies only when <code>type</code> is defined, the <code>nullable</code> is <code>true</code> only when the type defined in that sub-schema is included in the resulting type <em>and</em> that type is defined in every sub-schema.</p>
+<div class="highlight"><pre><span></span><code><span class="nt">allOf</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w">   </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span>
+<span class="w">    </span><span class="nt">nullable</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+<span class="p p-Indicator">-</span><span class="w">   </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span>
+<span class="w">    </span><span class="nt">nullable</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+</code></pre></div>
+<h3 id="allof-and-enum"><code>allOf</code> and <code>enum</code><a class="headerlink" href="#allof-and-enum" title="Permanent link">¤</a></h3>
+<p>If <code>enum</code> is in <code>allOf</code> sub-schemas, the output value is a set intersection of <code>enum</code> in all sub-schemas that have one.</p>
+<h3 id="allof-and-scalar-constraints"><code>allOf</code> and scalar constraints<a class="headerlink" href="#allof-and-scalar-constraints" title="Permanent link">¤</a></h3>
+<ol>
+<li>When keywords don't repeat between sub-schemas, they can be simply merged..</li>
+<li>When the same keyword is used more than once, the more constraining value wins.</li>
+<li>When merging <code>maximum</code> and <code>minimum</code> values, <code>exclusiveMinimum</code> and <code>exclusiveMaximum</code> must be considered. If the keyword (<code>minmum</code> or <code>maximum</code>) has the same value, the one with <code>exclusive*: true</code> is more constraining.</li>
+</ol>
+<h3 id="allof-and-object-constraints"><code>allOf</code> and <code>object</code> constraints<a class="headerlink" href="#allof-and-object-constraints" title="Permanent link">¤</a></h3>
+<ol>
+<li>
+<p>Determining named properties:</p>
+<ol>
+<li>Take all property names from all sub-schemas.</li>
+<li>If there are sub-schemas with <code>additionalProperties: false</code>, discard property names that match one of their property names.</li>
+</ol>
+</li>
+<li>
+<p>Determining named property schemas</p>
+<p>For each named property the resulting schema is calculated by merging</p>
+<ul>
+<li>named property schemas from all sub-schemas with that property, and</li>
+<li><code>additionalProperties</code> schemas from all sub-schemas that don't have the named property.</li>
+</ul>
+</li>
+</ol>
+<h3 id="allof-and-array-constraints"><code>allOf</code> and <code>array</code> constraints<a class="headerlink" href="#allof-and-array-constraints" title="Permanent link">¤</a></h3>
+<ol>
+<li><code>additionalItems</code> is not supported in OpenAPI 3.0</li>
+<li>
+<p><code>items</code> schemas are merged as if they were direct children of <code>allOf</code>.</p>
+<pre><code>allOf:
+-   type: array
+    items:
+        maxLength: 10
+-   type: array
+    items:
+        maxLength: 20
+</code></pre>
+<p>=&gt;</p>
+<pre><code>type: array
+items:
+    allOf:
+    -   maxLength: 10
+    -   maxLength: 20
+</code></pre>
+<p>=&gt;</p>
+<pre><code>type: array
+items:
+    maxLength: 10
+</code></pre>
+</li>
+</ol>
+<h3 id="nested-allof">Nested <code>allOf</code><a class="headerlink" href="#nested-allof" title="Permanent link">¤</a></h3>
+<p>Since schemas can be pushed down and pulled up around <code>allOf</code>, sub-schemas of nested <code>allOf</code> pulled up which results in flattening the schema.</p>
+<pre><code>allOf:
+-   allOf:
+    -   type: integer
+    -   minimum: 10
+-   multipleOf: 2
+</code></pre>
+<p>=&gt;</p>
+<pre><code>allOf:
+-   type: integer
+-   minimum: 10
+-   multipleOf: 2
+</code></pre>
+<h3 id="allof-and-oneof-or-anyof"><code>allOf</code> and (<code>oneOf</code> or <code>anyOf</code>)<a class="headerlink" href="#allof-and-oneof-or-anyof" title="Permanent link">¤</a></h3>
+<p>When <code>oneOf</code> and/or <code>anyOf</code> keywords are present, the validated value must match one of sub-schemas of <code>anyOf</code> <em>and</em> one of sub-schemas of <code>oneOf</code>.
+A python model must be generated for each combination of constraints, meaning the schema needs to be a cartesian product of:</p>
+<ul>
+<li>the entire schema that's not part of <code>oneOf</code>/<code>anyOf</code></li>
+<li>sub-schemas under <code>oneOf</code> of each <code>allOf</code> sub-schemas</li>
+<li>sub-schemas under <code>anyOf</code> of each <code>allOf</code> sub-schemas</li>
+</ul>
+<h2 id="not"><code>not</code><a class="headerlink" href="#not" title="Permanent link">¤</a></h2>
+<ol>
+<li>
+<p>The keyword can be interpreted as a reversal or, in some cases removal of constraints, depending on the constraint.</p>
+<pre><code>not:
+    minimum: 10
+</code></pre>
+<p>=&gt;</p>
+<pre><code>maximum: 20
+exclusiveMaximum: true
+</code></pre>
+</li>
+<li>
+<p>It can be used to exclude a set or a range of values:</p>
+<pre><code>maximum: 65535
+minimum: 1
+not:
+    maximum: 65534
+    minimum: 65534
+type: integer
+</code></pre>
+<p>=&gt;</p>
+<pre><code>type: integer
+oneOf:
+-   minimum: 1
+    maximum: 65535
+-   minimum: 65534
+    maximum: 65534
+</code></pre>
+<p>=&gt;</p>
+<pre><code>Union[
+    Annotated[int, Field(ge=1, le=65533)],
+    Annotated[int, Field(ge=65535, le=65535)],
+]
+</code></pre>
+<p>Note: this is the only use of <code>not</code> I could find in apis.guru catalogue.</p>
+</li>
+</ol>
+<h2 id="type-and-other-keywords"><code>type</code> and other keywords<a class="headerlink" href="#type-and-other-keywords" title="Permanent link">¤</a></h2>
+<h3 id="type-and-enum"><code>type</code> and <code>enum</code><a class="headerlink" href="#type-and-enum" title="Permanent link">¤</a></h3>
+<p>When <code>enum</code> and <code>type</code> are both used, any value present in <code>enum</code> but whose type is not present in <code>type</code> wouldn't validate.
+Similarly, any value of allowed type, but absent from enum wouldn't validate.</p>
+<p>Therefore <code>enum</code> keyword determines allowed types, and it's a set intersection of the two.</p>
+<h3 id="nullable-types-and-enum"><code>nullable</code> types and <code>enum</code><a class="headerlink" href="#nullable-types-and-enum" title="Permanent link">¤</a></h3>
+<p>When <code>enum</code> is defined and contains a <code>null</code> value, schema must also declare <code>type</code> and <code>nullable: true</code>.</p>
+<p>Otherwise <code>null</code> value doesn't validate against the default <code>type</code> or default <code>nullable</code></p>
+<h3 id="type-and-constraints"><code>type</code> and constraints<a class="headerlink" href="#type-and-constraints" title="Permanent link">¤</a></h3>
+<p>If <code>type</code> is defined, constraints for types not listed are discarded.</p>
+<p>The default <code>type</code> value (not defined) means all types are valid and all constraints are considered.</p>
+<h3 id="type-and-anyof-or-oneof"><code>type</code> and <code>anyOf</code> or <code>oneOf</code><a class="headerlink" href="#type-and-anyof-or-oneof" title="Permanent link">¤</a></h3>
+<ol>
+<li>
+<p>When evaluating <code>type</code> with either <code>oneOf</code> or <code>anyOf</code>, the two are equivalent, since no JSON value can be of more than one type</p>
+<pre><code>anyOf:
+- type: integer
+- type: string
+</code></pre>
+<p>or</p>
+<pre><code>oneOf:
+- type: integer
+- type: string
+</code></pre>
+<p>=&gt;</p>
+<pre><code>int | str
+</code></pre>
+</li>
+</ol>
+<h2 id="type-object-and-other-keywords"><code>type: object</code> and other keywords<a class="headerlink" href="#type-object-and-other-keywords" title="Permanent link">¤</a></h2>
+<h3 id="object-and-oneofanyof"><code>object</code> and <code>oneOf</code>/<code>anyOf</code><a class="headerlink" href="#object-and-oneofanyof" title="Permanent link">¤</a></h3>
+<p>The properties declared directly in the schema are always present (even if nullable, but excluding <code>writeOnly</code>/<code>readOnly</code>),
+but properties on <code>oneOf</code>/<code>anyOf</code> sub-schemas form optional groups, one of which must be present (even if elements of the group may be themselves optional).</p>
+<p>This suggests two possible solutions:
+1. Create a class for each combination of properties. When OpenAPI properties or parameters are translated to python, represent such schema as a Union type.
+1. Create a class for every element of <code>anyOf</code>/<code>oneOf</code> (use cartesian product if both are present) and add a synthetic Union field in the class representing the parent schema.</p>
+<p>Creating a parent class from the parent schema seems to only complicate things when both parent and sub-schemas define the same property.</p>
+<ol>
+<li>
+<p>Creating a <code>Union</code> type</p>
+<p>All constraints in the parent schema can be pushed down to <code>allOf</code>/<code>oneOf</code> so that it describes a <code>Union</code> type</p>
+<pre><code>components:
+    schemas:
+        mySchema:
+            type: object
+            properties
+                myProp:
+                    anyOf:
+                    -   type: string
+                    -   $ref: '#components/schemas/mySchema'
+</code></pre>
+<p>=&gt;</p>
+<pre><code>components:
+    schemas:
+        mySchema:
+            type: object
+            properties
+                myProp:
+                    anyOf:
+                    -   type: string
+                    -   $ref: mySchema
+</code></pre>
+<p>=&gt;</p>
+<pre><code>class mySchema:
+    myProp: str | mySchema
+</code></pre>
+</li>
+</ol>
+<h4 id="type-object-allof-and-circular-references"><code>type: object</code>, <code>allOf</code> and circular references<a class="headerlink" href="#type-object-allof-and-circular-references" title="Permanent link">¤</a></h4>
+<p>JSON Schema specification section 7 on <code>$ref</code> warns against scenario like this:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">Alice</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">properties</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">myProp1</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span>
+<span class="w">    </span><span class="nt">allOf</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w">   </span><span class="c1">#/Bob</span>
+<span class="nt">Bob</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">properties</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">myProp2</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span>
+<span class="w">    </span><span class="nt">allOf</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w">   </span><span class="c1">#/Alice</span>
+</code></pre></div>
+<p>Actually oth schemas could be represented as the same class:</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Schema</span><span class="p">:</span>
+    <span class="n">myProp1</span><span class="p">:</span> <span class="nb">str</span><span class="o">|</span><span class="kc">None</span>
+    <span class="n">myProp2</span><span class="p">:</span> <span class="nb">str</span><span class="o">|</span><span class="kc">None</span>
+</code></pre></div>
+<p>Instance of Schema class will validate against both schemas</p>
+<h4 id="type-object-oneofanyof-and-allof"><code>type: object</code>, <code>oneOf</code>/<code>anyOf</code> and <code>allOf</code><a class="headerlink" href="#type-object-oneofanyof-and-allof" title="Permanent link">¤</a></h4>
+<p>Sub-schemas in <code>allOf/oneOf</code> and <code>allOf/anyOf</code> must validate separately and cannot be merged.</p>
+<pre><code>type: object
+properties:
+    alpha:
+        type: integer
+additionalProperties: false
+required:
+-   alpha
+allOf:
+-   oneOf:
+    -   properties:
+            alpha:
+                multipleOf: 2
+    -   properties:
+            alpha:
+                multipleOf: 3
+-   oneOf:
+    -   properties
+            alpha:
+                maximum: 20
+    -   properties:
+            alpha:
+                minimum: 10
+</code></pre>
+<p>Objects that validate would need validate against one of sub0schemas in the first child <em>and</em> one of sub-schemas in the second child.
+In this case the object would need a <code>int</code> field named 'alpha' that can be either divisible by 2 <em>or</em> 3 and at the same time either less or equal 10 or more or equal to 20.</p>
+<p>This really describes four possibilities:</p>
+<ol>
+<li>divisible by 2 and less or equal 20</li>
+<li>divisible by 2 and more or equal 10</li>
+<li>divisible by 3 and less or equal 20</li>
+<li>divisible by 3 and more or equal 10</li>
+</ol>
+<p>We can see wee need to restructure the schema by applying cartesian product and merging the inner allOf sub-schemas:</p>
+<pre><code>type: object
+properties:
+    alpha:
+        type: integer
+additionalProperties: false
+required:
+-   alpha
+oneOf:
+-   properties:
+        alpha:
+            multipleOf: 2
+            maximum: 20
+-   properties:
+        alpha:
+            multipleOf: 2
+            minimum: 10
+-   properties:
+        alpha:
+            multipleOf: 3
+            maximum: 20
+-   properties:
+        alpha:
+            multipleOf: 3
+            minimum: 10
+</code></pre>
+<p>Also, properties get deep-merged:</p>
+<pre><code>type: object
+properties:
+    alpha:
+        type: integer
+additionalProperties: false
+required:
+-   alpha
+properties:
+    alpha:
+        oneOf:
+        -   multipleOf: 2
+            maximum: 20
+        -   multipleOf: 2
+            minimum: 10
+        -   multipleOf: 3
+            maximum: 20
+        -   multipleOf: 3
+            minimum: 10
+</code></pre>
+<p>Now we can see a simple python class like this:</p>
+<pre><code>class $name:
+    alpha: Union[
+        Annotated[int, Field()]
+        Annotated[int, Field()]
+        Annotated[int, Field()]
+        Annotated[int, Field()]
+    ]
+</code></pre>
+<h2 id="conflicting-schemas">Conflicting schemas<a class="headerlink" href="#conflicting-schemas" title="Permanent link">¤</a></h2>
+<ol>
+<li>
+<p>There are many ways of declaring schemas that no value could validate. Such schemas aren't invalid, but the part describing a single type the the keywords apply to, must be discarded.</p>
+<pre><code>minimum: 20
+maximum: 10
+</code></pre>
+<p>=&gt;</p>
+<pre><code>oneOf:
+-   type: boolean
+-   type: string
+-   type: object
+-   type: array
+</code></pre>
+<p>but this schema never validates, so can't be translated to a type:</p>
+<pre><code>type: integer
+minimum: 20
+maximum: 10
+</code></pre>
+</li>
+<li>
+<p>Conflicting enum values</p>
+<p><code>enum</code> keyword applies to all types so a conflict here makes the schema impossible to translate into a type:`</p>
+<pre><code>allOf:
+-   enum: ["red"]
+-   enum: ["green"]
+</code></pre>
+</li>
+</ol>
+<h2 id="annotations">Annotations<a class="headerlink" href="#annotations" title="Permanent link">¤</a></h2>
+<p>Schemas could produce annotations (type hints) and python types or type aliases (type aliases are not currently implemented).</p>
+<p>Whenever a schema is <em>used</em>, in an object property, or in case of OpenAPI, operation parameter, request or response body, in python an annotation is used.</p>
+<div class="highlight"><pre><span></span><code><span class="nt">Alice</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">properties</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">bob</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">object</span>
+<span class="w">            </span><span class="nt">properties</span><span class="p">:</span>
+<span class="w">                </span><span class="nt">prop1</span><span class="p">:</span>
+<span class="w">                    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">str</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Alice</span><span class="p">(</span><span class="n">ModelBase</span><span class="p">):</span>
+    <span class="n">bob</span><span class="p">:</span> <span class="n">bob</span>
+</code></pre></div>
+<p>But in order for <code>bob</code> to be valid, it also needs to be defined:</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">bob</span>
+    <span class="n">prop1</span><span class="p">:</span> <span class="nb">str</span>
+</code></pre></div>
+<p>Scalar schemas could produce type aliases, but currently are used inline.</p>
+<div class="highlight"><pre><span></span><code><span class="nt">Alice</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">object</span>
+<span class="w">    </span><span class="nt">properties</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">prop1</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">integer</span>
+<span class="w">            </span><span class="nt">maximum</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Alice</span><span class="p">:</span>
+    <span class="n">prop1</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Le</span><span class="p">(</span><span class="mi">20</span><span class="p">)]</span>
+</code></pre></div>
+<h2 id="generic-types">Generic types<a class="headerlink" href="#generic-types" title="Permanent link">¤</a></h2>
+<ol>
+<li>JSON Schema only supports generic arrays and maps:</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="nt">sequence</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">array</span>
+<span class="w">  </span><span class="nt">items</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span>
+<span class="nt">map</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">object</span>
+<span class="w">  </span><span class="nt">additionalProperties</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">number</span>
+</code></pre></div>
+<p>=&gt;</p>
+<div class="highlight"><pre><span></span><code><span class="n">sequence</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+<span class="nb">map</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
+</code></pre></div>
+<p>There's no way of directly representing a generic python class:</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Envelope</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
+    <span class="nb">id</span><span class="p">:</span> <span class="n">uuid</span><span class="o">.</span><span class="n">UUID</span>
+    <span class="n">payload</span><span class="p">:</span> <span class="n">T</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Customer</span><span class="p">:</span>
+    <span class="o">...</span>
+
+
+<span class="n">data</span><span class="p">:</span> <span class="n">Envelope</span><span class="p">[</span><span class="n">Customer</span><span class="p">]</span>
+</code></pre></div>
+<p>can only be represented as concretised schemas:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">Customer</span><span class="p">:</span>
+<span class="w">   </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">object</span>
+
+<span class="nt">Envelope</span><span class="p">:</span>
+<span class="w">   </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">object</span>
+<span class="w">   </span><span class="nt">properties</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">id</span><span class="p">:</span>
+<span class="w">         </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span>
+<span class="w">         </span><span class="nt">format</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">uuid</span>
+<span class="w">      </span><span class="nt">payload</span><span class="p">:</span>
+<span class="w">         </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">object</span>
+
+<span class="nt">CustomerEnvelope</span><span class="p">:</span>
+<span class="w">   </span><span class="nt">allOf</span><span class="p">:</span>
+<span class="w">   </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">$ref</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;#/schemas/Envelope&#39;</span>
+<span class="w">   </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">properties</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">payload</span><span class="p">:</span>
+<span class="w">           </span><span class="nt">$ref</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;#/schemas/Customer&#39;</span>
+</code></pre></div>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">¤</a></h2>
+<ol>
+<li><a href="https://apis.guru/">https://apis.guru/</a> - a directory of OpenAPI/swagger descriptions.</li>
+<li><a href="https://www.learnjsonschema.com/2019-09/">https://www.learnjsonschema.com/2019-09/</a> - an extended explanation of JSON Schema keywords. Wrong version, but close enough.</li>
+</ol>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../openapi/" class="md-footer__link md-footer__link--prev" aria-label="Previous: OpenAPI">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                OpenAPI
+              </div>
+            </div>
+          </a>
+        
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2022-2025 Rafał Krupiński
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/rafalkrupinski" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+    
+    
+      
+    
+    
+    
+      
+      
+    
+    <a href="https://101010.pl/@mattesilver" target="_blank" rel="noopener me" title="101010.pl" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M433 179.1c0-97.2-63.7-125.7-63.7-125.7-62.5-28.7-228.6-28.4-290.5 0 0 0-63.7 28.5-63.7 125.7 0 115.7-6.6 259.4 105.6 289.1 40.5 10.7 75.3 13 103.3 11.4 50.8-2.8 79.3-18.1 79.3-18.1l-1.7-36.9s-36.3 11.4-77.1 10.1c-40.4-1.4-83-4.4-89.6-54-.6-4.6-.9-9.3-.9-13.9 85.6 20.9 158.7 9.1 178.7 6.7 56.1-6.7 105-41.3 111.2-72.9 9.8-49.8 9-121.5 9-121.5zm-75.1 125.2h-46.6V190.1c0-49.7-64-51.6-64 6.9v62.5H201V197c0-58.5-64-56.6-64-6.9v114.2H90.3c0-122.1-5.2-147.9 18.4-175 25.9-28.9 79.8-30.8 103.8 6.1l11.6 19.5 11.6-19.5c24.1-37.1 78.1-34.8 103.8-6.1 23.7 27.3 18.4 53 18.4 175"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://pypi.org/project/lapidary-render/" target="_blank" rel="noopener" title="pypi.org" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.8 200.5c-7.7-30.9-22.3-54.2-53.4-54.2h-40.1v47.4c0 36.8-31.2 67.8-66.8 67.8H172.7c-29.2 0-53.4 25-53.4 54.3v101.8c0 29 25.2 46 53.4 54.3 33.8 9.9 66.3 11.7 106.8 0 26.9-7.8 53.4-23.5 53.4-54.3v-40.7H226.2v-13.6h160.2c31.1 0 42.6-21.7 53.4-54.2 11.2-33.5 10.7-65.7 0-108.6M286.2 444.7a20.4 20.4 0 1 1 0-40.7 20.4 20.4 0 1 1 0 40.7M167.8 248.1h106.8c29.7 0 53.4-24.5 53.4-54.3V91.9c0-29-24.4-50.7-53.4-55.6-35.8-5.9-74.7-5.6-106.8.1-45.2 8-53.4 24.7-53.4 55.6v40.7h106.9v13.6h-147c-31.1 0-58.3 18.7-66.8 54.2-9.8 40.7-10.2 66.1 0 108.6 7.6 31.6 25.7 54.2 56.8 54.2H101v-48.8c0-35.3 30.5-66.4 66.8-66.4m-6.6-183.4a20.4 20.4 0 1 1 0 40.8 20.4 20.4 0 1 1 0-40.8"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "..", "features": ["announce.dismiss", "content.action.view", "content.code.annotate", "content.code.copy", "content.tooltips", "navigation.footer", "navigation.instant.preview", "navigation.path", "navigation.sections", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "search.highlight", "search.suggest", "toc.follow"], "search": "../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.f55a23d4.min.js"></script>
+      
+        <script src="../assets/_markdown_exec_pyodide.js"></script>
+      
+    
+  </body>
+</html>
