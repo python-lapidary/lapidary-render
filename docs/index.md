@@ -1,4 +1,7 @@
-# Lapidary Render
+---
+hide:
+- navigation
+---
 ## Synopsis
 
 Lapidary-render is a code generator that creates client code from an OpenAPI document.

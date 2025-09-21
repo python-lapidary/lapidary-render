@@ -1,4 +1,4 @@
-# JSON Schema
+## JSON Schema
 
 Representing JSON Schema as python types, aiming at producing types that can express no less values than the corresponding schema can validate.
 Another goal is to keep models as backwards compatible as much as possible, when the schema changes in a compatible way.
@@ -7,7 +7,7 @@ The examples below use YAML notation of JSON Schema version draft-wright-json-sc
 
 Python examples use python 3.10 (PEP 604) type hints syntax.
 
-# Set theory
+## Set theory
 
 JSON is a data format representing a limited collection of basic data types.
 
@@ -22,7 +22,7 @@ Simplified, JSON Schemas can be transformed to python model with the following f
 
 `python model = any JSON type - declared JSON Schema constraints`
 
-# `type`
+## `type`
 
 1. Since Schema object validates any JSON value, let's consider it a Union type:
 
@@ -35,7 +35,7 @@ Simplified, JSON Schemas can be transformed to python model with the following f
 2. pydantic provides type `JsonValue` type that reflects the type of any JSON data, except it also includes None for compatibility with JSON Schema.
 
 
-## Type-specific constraints
+### Type-specific constraints
 
 Most of the constraints are type-specific (they apply only to values of a single type).
 
@@ -47,7 +47,7 @@ The exceptions are:
 
 That means most constraints can be processed separately, which is useful when they occur together with `allOf`, `oneOf`, `allOf` and `not`.
 
-# nullable
+### nullable
 
 1. When `type` is present and `nullable` is `true`, the allowed types are extended with `null`. Three cases are possible
 
@@ -84,7 +84,7 @@ That means most constraints can be processed separately, which is useful when th
         str | int | None
 
 
-# `enum`
+## `enum`
 
 1. If `enum` is in `anyOf` sub-schemas, the values are summed as sets.
 
@@ -92,7 +92,7 @@ That means most constraints can be processed separately, which is useful when th
     (not implemented, since Lapidary treats as just another anyOf).
 
 
-## `enum` as `Literal`
+### `enum` as `Literal`
 
 1. Scalar `enum` could be translated literally
 
@@ -112,7 +112,7 @@ That means most constraints can be processed separately, which is useful when th
             StrLiteral['FileNotFound'],
         ]
 
-## `enum` as `enum.Enum`
+### `enum` as `enum.Enum`
 
 1. Both scalar and non-scalar literals could be translated as python enums, but that would require names
 
@@ -141,7 +141,7 @@ That means most constraints can be processed separately, which is useful when th
             value_false = False
             value_FileNotFound = 'FileNotFound'
 
-## Non-scalar enum values
+### Non-scalar enum values
 
 Non-scalar enum values don't have natural names, but a hash of stringified value could be used.
 
@@ -167,7 +167,7 @@ def value_5d9b08cdd67689d128f7c30f885f273c():
 
 The problem with this solution is that the name changes when keys or any value changes, which may or may not be desirable from the user-developer perspective.
 
-# Scalar constraints
+## Scalar constraints
 
 1. Constraint keywords can be grouped by type (both numeric types together) and processed as such.
 
@@ -232,7 +232,7 @@ The problem with this solution is that the name changes when keys or any value c
         maximum: 10
 
 
-# Object constraints
+## Object constraints
 
 1. JSON type `object` could be mapped to `dict` or, with some limitations to `TypedDict` or a model in one of data modelling libraries like dataclasses, pydantic msgspec, etc. Here the choice falls on pydantic, which seems the most featured.
 
@@ -281,7 +281,7 @@ The problem with this solution is that the name changes when keys or any value c
 
     but in either case adding a property (particularly a non-required property, which is a compatible change) leads to an incompatible change in the python model.
 
-## `additionalProperties`
+### `additionalProperties`
 
 The value is processed as a JSON Schema.
 
@@ -316,7 +316,7 @@ The value is processed as a JSON Schema.
             __extra__: dict[str, int]
 
 
-## writeOnly, readOnly and non-required properties
+### writeOnly, readOnly and non-required properties
 
 Non-required means the same as optional in English, but `Optional` is a type in python, so avoiding it for clarity.
 
@@ -353,11 +353,11 @@ class $name:
     gamma: str | None = None  # not required
 ```
 
-# `array`s
+## `array`s
 
 Two keywords describe arrays
 
-# `anyOf`
+## `anyOf`
 
 When `anyOf` keyword is used, the instance validates as long as it validates against one of sub-schemas, while the validation results against other children schemas are ignored.
 
@@ -375,7 +375,7 @@ For example, scalar constraints can be transformed to `Union` type
             Annotated[int, Field(le=20)],
         ]
 
-# `oneOf`
+## `oneOf`
 
 1. Per the specification `oneOf` keyword validates when the value validates against exactly one child schema.
 
@@ -431,7 +431,7 @@ For example, scalar constraints can be transformed to `Union` type
         - maximum: 10
           exclusiveMaximum: true
 
-# `allOf`
+## `allOf`
 
 1. When processing `allOf` in schema, the goal is generating a schema that can be directly represented as a python model.
 
@@ -477,7 +477,7 @@ For example, scalar constraints can be transformed to `Union` type
 
         schema1 & schema2 & schema3 = (schema1 & schema2) & schema3
 
-## `allOf` and `type`
+### `allOf` and `type`
 
 `allOf` applies a set intersection to `type`
 
@@ -496,7 +496,7 @@ This is a bottom type:
     - integer
     - string
 
-### `allOf` and `nullable`
+#### `allOf` and `nullable`
 
 `null` value validates against a schema with defined `type` and `nullable: true`.
 
@@ -512,17 +512,17 @@ allOf:
     ...
 ```
 
-## `allOf` and `enum`
+### `allOf` and `enum`
 
 If `enum` is in `allOf` sub-schemas, the output value is a set intersection of `enum` in all sub-schemas that have one.
 
-## `allOf` and scalar constraints
+### `allOf` and scalar constraints
 
 1. When keywords don't repeat between sub-schemas, they can be simply merged..
 1. When the same keyword is used more than once, the more constraining value wins.
 1. When merging `maximum` and `minimum` values, `exclusiveMinimum` and `exclusiveMaximum` must be considered. If the keyword (`minmum` or `maximum`) has the same value, the one with `exclusive*: true` is more constraining.
 
-## `allOf` and `object` constraints
+### `allOf` and `object` constraints
 
 1. Determining named properties:
 
@@ -536,7 +536,7 @@ If `enum` is in `allOf` sub-schemas, the output value is a set intersection of `
       - named property schemas from all sub-schemas with that property, and
       - `additionalProperties` schemas from all sub-schemas that don't have the named property.
 
-## `allOf` and `array` constraints
+### `allOf` and `array` constraints
 
 1. `additionalItems` is not supported in OpenAPI 3.0
 1. `items` schemas are merged as if they were direct children of `allOf`.
@@ -563,7 +563,7 @@ If `enum` is in `allOf` sub-schemas, the output value is a set intersection of `
         items:
             maxLength: 10
 
-## Nested `allOf`
+### Nested `allOf`
 
 Since schemas can be pushed down and pulled up around `allOf`, sub-schemas of nested `allOf` pulled up which results in flattening the schema.
 
@@ -580,7 +580,7 @@ Since schemas can be pushed down and pulled up around `allOf`, sub-schemas of ne
     -   minimum: 10
     -   multipleOf: 2
 
-## `allOf` and (`oneOf` or `anyOf`)
+### `allOf` and (`oneOf` or `anyOf`)
 
 When `oneOf` and/or `anyOf` keywords are present, the validated value must match one of sub-schemas of `anyOf` _and_ one of sub-schemas of `oneOf`.
 A python model must be generated for each combination of constraints, meaning the schema needs to be a cartesian product of:
@@ -589,7 +589,7 @@ A python model must be generated for each combination of constraints, meaning th
 - sub-schemas under `oneOf` of each `allOf` sub-schemas
 - sub-schemas under `anyOf` of each `allOf` sub-schemas
 
-# `not`
+## `not`
 
 1. The keyword can be interpreted as a reversal or, in some cases removal of constraints, depending on the constraint.
 
@@ -628,27 +628,27 @@ A python model must be generated for each combination of constraints, meaning th
 
     Note: this is the only use of `not` I could find in apis.guru catalogue.
 
-# `type` and other keywords
-## `type` and `enum`
+## `type` and other keywords
+### `type` and `enum`
 
 When `enum` and `type` are both used, any value present in `enum` but whose type is not present in `type` wouldn't validate.
 Similarly, any value of allowed type, but absent from enum wouldn't validate.
 
 Therefore `enum` keyword determines allowed types, and it's a set intersection of the two.
 
-## `nullable` types and `enum`
+### `nullable` types and `enum`
 
 When `enum` is defined and contains a `null` value, schema must also declare `type` and `nullable: true`.
 
 Otherwise `null` value doesn't validate against the default `type` or default `nullable`
 
-## `type` and constraints
+### `type` and constraints
 
 If `type` is defined, constraints for types not listed are discarded.
 
 The default `type` value (not defined) means all types are valid and all constraints are considered.
 
-## `type` and `anyOf` or `oneOf`
+### `type` and `anyOf` or `oneOf`
 
 1. When evaluating `type` with either `oneOf` or `anyOf`, the two are equivalent, since no JSON value can be of more than one type
 
@@ -666,8 +666,8 @@ The default `type` value (not defined) means all types are valid and all constra
         int | str
 
 
-# `type: object` and other keywords
-## `object` and `oneOf`/`anyOf`
+## `type: object` and other keywords
+### `object` and `oneOf`/`anyOf`
 
 The properties declared directly in the schema are always present (even if nullable, but excluding `writeOnly`/`readOnly`),
 but properties on `oneOf`/`anyOf` sub-schemas form optional groups, one of which must be present (even if elements of the group may be themselves optional).
@@ -710,7 +710,7 @@ Creating a parent class from the parent schema seems to only complicate things w
         class mySchema:
             myProp: str | mySchema
 
-### `type: object`, `allOf` and circular references
+#### `type: object`, `allOf` and circular references
 
 JSON Schema specification section 7 on `$ref` warns against scenario like this:
 
@@ -739,7 +739,7 @@ class Schema:
 
 Instance of Schema class will validate against both schemas
 
-### `type: object`, `oneOf`/`anyOf` and `allOf`
+#### `type: object`, `oneOf`/`anyOf` and `allOf`
 
 Sub-schemas in `allOf/oneOf` and `allOf/anyOf` must validate separately and cannot be merged.
 
@@ -834,7 +834,7 @@ Now we can see a simple python class like this:
             Annotated[int, Field()]
         ]
 
-# Conflicting schemas
+## Conflicting schemas
 
 1. There are many ways of declaring schemas that no value could validate. Such schemas aren't invalid, but the part describing a single type the the keywords apply to, must be discarded.
 
@@ -863,7 +863,7 @@ Now we can see a simple python class like this:
         -   enum: ["red"]
         -   enum: ["green"]
 
-# Annotations
+## Annotations
 
 Schemas could produce annotations (type hints) and python types or type aliases (type aliases are not currently implemented).
 
@@ -908,7 +908,7 @@ class Alice:
     prop1: Annotated[int, Le(20)]
 ```
 
-# Generic types
+## Generic types
 
 1. JSON Schema only supports generic arrays and maps:
 
@@ -969,7 +969,7 @@ CustomerEnvelope:
            $ref: '#/schemas/Customer'
 ```
 
-# References
+## References
 
 1. https://apis.guru/ - a directory of OpenAPI/swagger descriptions.
 1. https://www.learnjsonschema.com/2019-09/ - an extended explanation of JSON Schema keywords. Wrong version, but close enough.
