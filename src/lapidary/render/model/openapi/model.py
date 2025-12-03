@@ -180,7 +180,7 @@ class OpenAPI(OpenAPIBase):
             alias='x-lapidary-headers-global',
             default_factory=dict,
         ),
-    ] = None
+    ]
     """Headers added to every request.
     Unlike with operation headers, the default value found in the schema is sent over the wire"""
 
@@ -190,6 +190,5 @@ class OpenAPI(OpenAPIBase):
             alias='x-lapidary-responses-global',
             description='Common Responses, added to every operation. '
             'Values in Responses declared in Operations override values in this one.',
-            default=None,
         ),
     ] = None
