@@ -8,17 +8,17 @@ import types
 
 
 class ApiResponse(lapidary.runtime.ModelBase):
-
+    
     code: typing.Union[
             int,
             None,
         ] = None
-
+    
     type: typing.Union[
             str,
             None,
         ] = None
-
+    
     message: typing.Union[
             str,
             None,

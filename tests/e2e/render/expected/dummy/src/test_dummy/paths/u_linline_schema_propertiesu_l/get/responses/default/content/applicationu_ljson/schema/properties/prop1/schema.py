@@ -7,7 +7,7 @@ import typing_extensions as typing
 
 
 class prop1(lapidary.runtime.ModelBase):
-
+    
     prop2: str
-
+    
     model_config = pydantic.ConfigDict(extra='forbid',)

@@ -8,16 +8,16 @@ import annotated_types
 
 
 class prop2(lapidary.runtime.ModelBase):
-
+    
     key: typing.Annotated[
             str,
             annotated_types.MaxLen(10,),
             annotated_types.MinLen(5,),
         ]
-
+    
     nonu_lalpha: typing.Annotated[
             str,
             pydantic.Field(alias='non/alpha',),
         ]
-
+    
     model_config = pydantic.ConfigDict(extra='forbid',)

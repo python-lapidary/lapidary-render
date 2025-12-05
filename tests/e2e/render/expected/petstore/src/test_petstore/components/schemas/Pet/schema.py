@@ -10,26 +10,26 @@ import types
 
 
 class Pet(lapidary.runtime.ModelBase):
-
+    
     id: typing.Union[
             int,
             None,
         ] = None
-
+    
     name: str
-
+    
     category: typing.Union[
             test_petstore.components.schemas.Category.schema.Category,
             None,
         ] = None
-
+    
     photoUrls: list[str,]
-
+    
     tags: typing.Union[
             list[test_petstore.components.schemas.Tag.schema.Tag,],
             None,
         ] = None
-
+    
     status: typing.Union[
             str,
             None,

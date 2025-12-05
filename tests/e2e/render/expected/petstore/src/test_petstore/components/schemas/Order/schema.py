@@ -9,32 +9,32 @@ import types
 
 
 class Order(lapidary.runtime.ModelBase):
-
+    
     id: typing.Union[
             int,
             None,
         ] = None
-
+    
     petId: typing.Union[
             int,
             None,
         ] = None
-
+    
     quantity: typing.Union[
             int,
             None,
         ] = None
-
+    
     shipDate: typing.Union[
             datetime.datetime,
             None,
         ] = None
-
+    
     status: typing.Union[
             str,
             None,
         ] = None
-
+    
     complete: typing.Union[
             bool,
             None,

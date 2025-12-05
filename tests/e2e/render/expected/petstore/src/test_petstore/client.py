@@ -19,7 +19,7 @@ import types
 
 
 class ApiClient(lapidary.runtime.ClientBase):
-
+    
     def __init__(
         self,
         *, base_url: str = 'https://petstore3.swagger.io/v3',
@@ -29,7 +29,7 @@ class ApiClient(lapidary.runtime.ClientBase):
             base_url=base_url,
             **kwargs,
         )
-
+    
     @lapidary.runtime.post(
         '/pet',
         security=({'petstore_auth': ('write:pets', 'read:pets')},),
@@ -59,7 +59,7 @@ class ApiClient(lapidary.runtime.ClientBase):
             },),
         ]:
         pass
-
+    
     @lapidary.runtime.put(
         '/pet',
         security=({'petstore_auth': ('write:pets', 'read:pets')},),
@@ -95,7 +95,7 @@ class ApiClient(lapidary.runtime.ClientBase):
             },),
         ]:
         pass
-
+    
     @lapidary.runtime.get(
         '/pet/findByStatus',
         security=({'petstore_auth': ('write:pets', 'read:pets')},),
@@ -129,7 +129,7 @@ class ApiClient(lapidary.runtime.ClientBase):
             },),
         ]:
         pass
-
+    
     @lapidary.runtime.get(
         '/pet/findByTags',
         security=({'petstore_auth': ('write:pets', 'read:pets')},),
@@ -163,7 +163,7 @@ class ApiClient(lapidary.runtime.ClientBase):
             },),
         ]:
         pass
-
+    
     @lapidary.runtime.get(
         '/pet/{petId}',
         security=(
@@ -197,7 +197,7 @@ class ApiClient(lapidary.runtime.ClientBase):
             },),
         ]:
         pass
-
+    
     @lapidary.runtime.post(
         '/pet/{petId}',
         security=({'petstore_auth': ('write:pets', 'read:pets')},),
@@ -231,7 +231,7 @@ class ApiClient(lapidary.runtime.ClientBase):
             },),
         ]:
         pass
-
+    
     @lapidary.runtime.delete(
         '/pet/{petId}',
         security=({'petstore_auth': ('write:pets', 'read:pets')},),
@@ -258,7 +258,7 @@ class ApiClient(lapidary.runtime.ClientBase):
             },),
         ]:
         pass
-
+    
     @lapidary.runtime.post(
         '/pet/{petId}/uploadImage',
         security=({'petstore_auth': ('write:pets', 'read:pets')},),
@@ -290,7 +290,7 @@ class ApiClient(lapidary.runtime.ClientBase):
             },),
         ]:
         pass
-
+    
     @lapidary.runtime.get(
         '/store/inventory',
         security=({'api_key': ()},),
@@ -317,7 +317,7 @@ class ApiClient(lapidary.runtime.ClientBase):
             },),
         ]:
         pass
-
+    
     @lapidary.runtime.post('/store/order',)
     async def placeOrder(
         self: typing.Self,
@@ -344,7 +344,7 @@ class ApiClient(lapidary.runtime.ClientBase):
             },),
         ]:
         pass
-
+    
     @lapidary.runtime.get('/store/order/{orderId}',)
     async def getOrderById(
         self: typing.Self,
@@ -372,7 +372,7 @@ class ApiClient(lapidary.runtime.ClientBase):
             },),
         ]:
         pass
-
+    
     @lapidary.runtime.delete('/store/order/{orderId}',)
     async def deleteOrder(
         self: typing.Self,
@@ -392,7 +392,7 @@ class ApiClient(lapidary.runtime.ClientBase):
             },),
         ]:
         pass
-
+    
     @lapidary.runtime.post('/user',)
     async def createUser(
         self: typing.Self,
@@ -416,7 +416,7 @@ class ApiClient(lapidary.runtime.ClientBase):
             },),
         ]:
         pass
-
+    
     @lapidary.runtime.post('/user/createWithList',)
     async def createUsersWithListInput(
         self: typing.Self,
@@ -449,7 +449,7 @@ class ApiClient(lapidary.runtime.ClientBase):
             },),
         ]:
         pass
-
+    
     @lapidary.runtime.get('/user/login',)
     async def loginUser(
         self: typing.Self,
@@ -485,7 +485,7 @@ class ApiClient(lapidary.runtime.ClientBase):
             },),
         ]:
         pass
-
+    
     @lapidary.runtime.get('/user/logout',)
     async def logoutUser(
         self: typing.Self,
@@ -501,7 +501,7 @@ class ApiClient(lapidary.runtime.ClientBase):
             },),
         ]:
         pass
-
+    
     @lapidary.runtime.get('/user/{username}',)
     async def getUserByName(
         self: typing.Self,
@@ -529,7 +529,7 @@ class ApiClient(lapidary.runtime.ClientBase):
             },),
         ]:
         pass
-
+    
     @lapidary.runtime.put('/user/{username}',)
     async def updateUser(
         self: typing.Self,
@@ -555,7 +555,7 @@ class ApiClient(lapidary.runtime.ClientBase):
             },),
         ]:
         pass
-
+    
     @lapidary.runtime.delete('/user/{username}',)
     async def deleteUser(
         self: typing.Self,

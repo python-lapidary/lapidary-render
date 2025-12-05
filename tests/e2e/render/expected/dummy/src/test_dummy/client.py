@@ -22,7 +22,7 @@ import types
 
 
 class ApiClient(lapidary.runtime.ClientBase):
-
+    
     def __init__(
         self,
         *, base_url: str = '/',
@@ -41,7 +41,7 @@ class ApiClient(lapidary.runtime.ClientBase):
             base_url=base_url,
             **kwargs,
         )
-
+    
     @lapidary.runtime.get('/test/',)
     async def test_op(
         self: typing.Self,
@@ -103,7 +103,7 @@ class ApiClient(lapidary.runtime.ClientBase):
             },),
         ]:
         pass
-
+    
     @lapidary.runtime.get('/inline_schema_properties/',)
     async def inline_schema_properties(
         self: typing.Self,
@@ -121,7 +121,7 @@ class ApiClient(lapidary.runtime.ClientBase):
             },),
         ]:
         pass
-
+    
     @lapidary.runtime.get(
         '/custom-security',
         security=({'oauth': ('read',)},),
@@ -142,7 +142,7 @@ class ApiClient(lapidary.runtime.ClientBase):
             },),
         ]:
         pass
-
+    
     @lapidary.runtime.get(
         '/insecure',
         security=(),

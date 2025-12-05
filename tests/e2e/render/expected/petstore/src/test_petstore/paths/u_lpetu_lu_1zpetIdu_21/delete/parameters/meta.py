@@ -8,7 +8,7 @@ import types
 
 
 class RequestMetadata(pydantic.BaseModel):
-
+    
     api_key_h: typing.Annotated[
             typing.Union[
             str,

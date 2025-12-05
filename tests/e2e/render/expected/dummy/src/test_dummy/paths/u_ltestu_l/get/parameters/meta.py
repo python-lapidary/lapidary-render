@@ -8,7 +8,7 @@ import types
 
 
 class RequestMetadata(pydantic.BaseModel):
-
+    
     param1_h: typing.Annotated[
             typing.Union[
             str,
@@ -16,7 +16,7 @@ class RequestMetadata(pydantic.BaseModel):
         ],
             lapidary.runtime.Header('param1',),
         ] = None
-
+    
     param4_c: typing.Annotated[
             typing.Union[
             list[str,],

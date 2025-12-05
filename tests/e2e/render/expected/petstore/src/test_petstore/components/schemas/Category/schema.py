@@ -8,12 +8,12 @@ import types
 
 
 class Category(lapidary.runtime.ModelBase):
-
+    
     id: typing.Union[
             int,
             None,
         ] = None
-
+    
     name: typing.Union[
             str,
             None,
