@@ -6,10 +6,28 @@ Lapidary-render is a program that generates Python Web API clients from OpenAPI 
 
 ## Why
 
-OpenAPI is a machine readable description of Web APIs. A large subset of it is very well suited for automatic translation to a client code.
+It's a good practice to encapsulate Web API client code in functions or classes and methods,
+
+If the Web API exposes an OpenAPI document, you can reduce the manual effort by generating the client code.
 
 ## How
 
-Lapidary render uses [Jinja](https://jinja.palletsprojects.com/) to generate client code, but most of the translation from OpenAPI to python is implemented in python itself. This makes it easier to read and maintain the generator itself.
+Install Lapiary-render, for example with pipx
 
-Instead of generating large pieces of code that convert data and call http libraries, Lapidary generates code that uses [Lapidary runtime library](https://github.com/python-lapidary/lapidary). It's also a way to greatly simplify the code, at the expense of small runtime overhead related to processing method signatures.
+```shell
+pipx install lapidary-render
+```
+
+Start your project
+
+```shell
+lapidary init --save https://example.com/openapi.json project_dir my_api_client
+```
+
+Generate code:
+```shell
+cd project_dir
+lapidary render
+```
+
+Check the [documentation](https://lapidary.dev/lapidary-render/) for more details.
