@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 from collections.abc import Mapping
 from pathlib import Path, PurePath
@@ -8,7 +10,7 @@ import pydantic
 
 from .config import Config, load_config
 from .load import document_handler_for, load_document
-from .model import conv_openapi, openapi, python
+from .model import python
 from .yaml import yaml
 
 logger = logging.getLogger(__name__)
@@ -109,6 +111,8 @@ def dump_model(project_root: Path, process: bool, output: TextIO):
 
 
 def prepare_python_model(oa_doc: Mapping, config: Config) -> python.ClientModel:
+    from .model import conv_openapi, openapi
+
     oa_model = openapi.OpenAPI.model_validate(oa_doc)
     with click.progressbar(
         length=len(oa_model.paths.paths),

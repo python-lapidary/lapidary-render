@@ -4,7 +4,7 @@ from click.testing import CliRunner
 
 from lapidary.render.config import load_config
 
-source = Path(__file__).relative_to(Path.cwd()).parent / 'e2e/init/petstore/lapidary/openapi/openapi.yaml'
+source = Path(__file__).relative_to(Path.cwd()).parent / 'e2e/render/initial/petstore/lapidary/openapi/openapi.yaml'
 
 
 def test_init_save_copies_document(monkeypatch, tmp_path: Path) -> None:

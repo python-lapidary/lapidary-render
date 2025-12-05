@@ -15,13 +15,13 @@ logging.getLogger('lapidary').setLevel(logging.DEBUG)
 
 @pytest.fixture
 def document() -> openapi.OpenAPI:
-    doc_text = (Path(__file__).parent.parent / 'e2e/init/petstore/lapidary/openapi/openapi.yaml').read_text()
+    doc_text = (Path(__file__).parent.parent / 'e2e/render/initial/petstore/lapidary/openapi/openapi.yaml').read_text()
     return openapi.OpenAPI.model_validate(yaml.load(doc_text))
 
 
 @pytest.fixture
 def doc_dummy() -> openapi.OpenAPI:
-    doc_text = (Path(__file__).parent.parent / 'e2e/init/dummy/lapidary/openapi/dummy.yaml').read_text()
+    doc_text = (Path(__file__).parent.parent / 'e2e/render/initial/dummy/lapidary/openapi/dummy.yaml').read_text()
     return openapi.OpenAPI.model_validate(yaml.load(doc_text))
 
 

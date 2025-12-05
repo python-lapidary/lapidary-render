@@ -73,15 +73,12 @@ def update_project(
                 parent.rmdir()
 
 
-GITIGNORE_LINES = (
-    '/dist/',
-    '__pycache__',
-)
-
-
 def write_gitignore(project_root: Path):
-    with open(project_root / '.gitignore', 'w') as f:
-        f.writelines(GITIGNORE_LINES)
+    (project_root / '.gitignore').write_text(
+        """/dist/
+__pycache__
+"""
+    )
 
 
 def write_pyproject(project_root: Path, title: str, config: Config):
@@ -92,8 +89,7 @@ def write_pyproject(project_root: Path, title: str, config: Config):
     (project_root / 'pyproject.toml').write_text(
         f"""# This file was generated but won't be updated automatically and may be edited manually.
 
-{tomli_w.dumps(mk_pyproject_toml(title, config))}
-"""
+{tomli_w.dumps(mk_pyproject_toml(title, config))}"""
     )
 
 

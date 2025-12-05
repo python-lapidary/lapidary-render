@@ -17,11 +17,11 @@ def mk_pyproject_toml(
                 packages=[
                     {
                         'include': config.package,
-                        'from': 'gen',
+                        'from': 'src',
                     }
                 ],
                 dependencies={
-                    'python': '3.9',
+                    'python': '^3.9',
                     'lapidary': '^0.12.0',
                 },
             ),

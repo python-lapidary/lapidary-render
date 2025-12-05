@@ -1,0 +1,267 @@
+openapi: 3.0.2
+info:
+  title: dummy
+  description: 'test generating /components/schemas with sub-schemas'
+  version: 1.0.0
+paths:
+  /test/:
+    get:
+      operationId: test_op
+      responses:
+        default:
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/all'
+          headers:
+            x-count:
+              schema:
+                type: integer
+        '2XX':
+          $ref: '#/components/responses/default'
+      parameters:
+      - name: param1
+        in: query
+        schema:
+          anyOf:
+          - $ref: '#/components/schemas/schema1'
+          - $ref: '#/components/schemas/all'
+          - type: integer
+            maximum: 20
+            nullable: true
+        required: true
+      - name: param2
+        in: query
+        schema:
+          type: object
+          properties:
+            prop1:
+              type: string
+              format: date
+          additionalProperties: false
+          required:
+          - prop1
+        required: false
+      - name: param3
+        in: query
+        schema:
+          allOf:
+          - type: string
+          - format: date
+      - name: param1
+        in: header
+        schema:
+          type: string
+      - name: param4
+        in: cookie
+        schema:
+          type: array
+          items:
+            type: string
+        explode: false
+  /inline_schema_properties/:
+    get:
+      operationId: inline_schema_properties
+      responses:
+        default:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  prop1:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      prop2:
+                        type: string
+                    required:
+                    - prop2
+                additionalProperties: false
+                required:
+                - prop1
+  /custom-security:
+    get:
+      description: Operation with its own security defined
+      operationId: customSecurity
+      responses:
+        default:
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/all'
+          description: ''
+      security:
+      - oauth:
+        - read
+  /insecure:
+    get:
+      requestBody:
+        $ref: '#/components/requestBodies/dummy'
+      description: Operation with no security requirements
+      operationId: insecure
+      responses:
+        default:
+          $ref: '#/components/responses/default'
+      security: [ ]
+
+
+components:
+  schemas:
+    all:
+      type: object
+      description: schema named after a builtin python function
+      additionalProperties: false
+      properties:
+        any:
+          type: object
+          description: property named after a python builtin function
+        for:
+          type: object
+          description: schema and property named after a python keyword
+          additionalProperties: false
+          properties:
+            prop1:
+              type: string
+          required:
+          - prop1
+        u_0for:
+          type: string
+          description: property named after escaped python keyword
+      required:
+      - for
+    schema1:
+      type: object
+      properties:
+        prop1:
+          type: object
+          properties:
+            prop2:
+              type: object
+              properties:
+                key:
+                  type: string
+                  maxLength: 10
+                  minLength: 5
+                non/alpha:
+                  type: string
+                  readOnly: true
+              required:
+              - key
+              - non/alpha
+              additionalProperties: false
+          additionalProperties: false
+          required:
+          - prop2
+      additionalProperties: false
+      required:
+      - prop1
+  securitySchemes:
+    oauth-refresh:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://example.com/authorization_url
+          tokenUrl: https://example.com/token_url
+          refreshUrl: https://example.com/refresh_url
+          scopes:
+            read: read
+            write: write
+        clientCredentials:
+          refreshUrl: https://example.com/refresh_url
+          tokenUrl: https://example.com/token_url
+          scopes:
+            read: read
+            write: write
+        implicit:
+          authorizationUrl: https://example.com/authorization_url
+          refreshUrl: https://example.com/refresh_url
+          scopes:
+            read: read
+            write: write
+        password:
+          tokenUrl: https://example.com/token_url
+          refreshUrl: https://example.com/refresh_url
+          scopes:
+            read: read
+            write: write
+    oauth:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://example.com/authorization_url
+          tokenUrl: https://example.com/token_url
+          scopes:
+            read: read
+            write: write
+        clientCredentials:
+          tokenUrl: https://example.com/token_url
+          scopes:
+            read: read
+            write: write
+        implicit:
+          authorizationUrl: https://example.com/authorization_url
+          scopes:
+            read: read
+            write: write
+        password:
+          tokenUrl: https://example.com/token_url
+          scopes:
+            read: read
+            write: write
+    api-key:
+      type: apiKey
+      name: x-api-key
+      in: header
+    api-key-cookie:
+      type: apiKey
+      name: x-api-key
+      in: cookie
+    api-key-query:
+      type: apiKey
+      name: x-api-key
+      in: query
+    http_basic:
+      type: http
+      scheme: Basic
+    http_digest:
+      type: http
+      scheme: digest
+  responses:
+    default:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/all'
+      description: ''
+  requestBodies:
+    dummy:
+      required: false
+      description: ''
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              prop1:
+                type: string
+            additionalProperties: false
+            required:
+            - prop1
+
+security:
+- oauth-refresh:
+  - read
+  - write
+- oauth:
+  - read
+  - write
+- api-key: [ ]
+- api-key-cookie: [ ]
+- api-key-query: [ ]
+- http_basic: [ ]
+- http_digest: [ ]
