@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import typing
 from collections.abc import Mapping, Sequence
 from typing import Annotated
@@ -48,22 +50,22 @@ UniqueListValidator = pydantic.AfterValidator(validate_list_unique)
 
 class Schema(SchemaBase):
     # type == array
-    items: 'None | Reference[Schema] | Schema' = None
+    items: None | Reference[Schema] | Schema = None
 
     # type == object
-    properties: 'None | dict[str, Reference[Schema] | Schema]' = None
-    additionalProperties: 'None | bool | Reference[Schema] | Schema' = None
+    properties: None | dict[str, Reference[Schema] | Schema] = None
+    additionalProperties: None | bool | Reference[Schema] | Schema = None
 
-    schema_not: 'Annotated[None | Reference[Schema] | Schema, pydantic.Field(alias="not")]' = None
-    allOf: 'None | list[Reference[Schema] | Schema]' = None
-    oneOf: 'None | list[Reference[Schema] | Schema]' = None
-    anyOf: 'None | list[Reference[Schema] | Schema]' = None
+    schema_not: Annotated[None | Reference[Schema] | Schema, pydantic.Field(alias='not')] = None
+    allOf: None | list[Reference[Schema] | Schema] = None
+    oneOf: None | list[Reference[Schema] | Schema] = None
+    anyOf: None | list[Reference[Schema] | Schema] = None
 
     lapidary_name: typing.Annotated[str | None, pydantic.Field(alias='x-lapidary-type-name')] = None
 
 
 class ParameterBase(ParameterBaseBase):
-    content: 'typing.Annotated[dict[str, MediaType] | None, pydantic.Field(max_length=1, min_length=1)]' = None
+    content: typing.Annotated[dict[str, MediaType] | None, pydantic.Field(max_length=1, min_length=1)] = None
     param_schema: typing.Annotated[None | Reference[Schema] | Schema, pydantic.Field(alias='schema')] = None
 
     @pydantic.model_validator(mode='before')
@@ -100,7 +102,7 @@ class MediaType(MediaTypeBase):
 
 class Response(ResponseBase):
     headers: Annotated[dict[str, Reference[Header] | Header], pydantic.Field(default_factory=dict)]
-    content: 'typing.Annotated[dict[str, MediaType], pydantic.Field(default_factory=dict)]'
+    content: typing.Annotated[dict[str, MediaType], pydantic.Field(default_factory=dict)]
 
 
 class Responses(ExtendableModel, ModelWithPatternProperties):
@@ -124,7 +126,7 @@ class Parameter(ParameterBase, ParameterPydanticBase):
 
 
 class RequestBody(RequestBodyBase):
-    content: 'dict[str, MediaType]'
+    content: dict[str, MediaType]
 
 
 class Operation(OperationBase):
@@ -133,7 +135,7 @@ class Operation(OperationBase):
     ]
     requestBody: Annotated[None | Reference[RequestBody] | RequestBody, pydantic.Field(alias='requestBody')] = None
     responses: Responses
-    callbacks: 'dict[str, Reference[Callback] | Callback] | None' = None
+    callbacks: dict[str, Reference[Callback] | Callback] | None = None
 
 
 class PathItem(PathItemBase):
