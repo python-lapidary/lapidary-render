@@ -3,22 +3,19 @@
 [build-system]
 build-backend = "poetry.core.masonry.api"
 requires = [
-    "poetry-core>=1.3.2",
+    "poetry-core>=2",
 ]
 
-[tool.poetry]
+[project]
 name = "dummy_package"
 description = "Client library for dummy"
 version = "0.1.0"
 authors = []
 license = ""
-packages = [
-    { include = "dummy_package", from = "src" },
+requires-python = "~=3.9"
+dependencies = [
+    "lapidary~=0.12.0",
 ]
-
-[tool.poetry.dependencies]
-python = "^3.9"
-lapidary = "^0.12.0"
 
 [tool.lapidary]
 document_path = "lapidary/openapi/dummy.yaml"
