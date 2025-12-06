@@ -29,12 +29,12 @@ classifiers = [
     "Typing :: Typed",
 ]
 keywords = [
-    "OpenAPI",
-    "OpenAPI3",
-    "CodeGen",
     "Code Generation",
     "Code Generator",
+    "CodeGen",
     "OpenAPI Tools",
+    "OpenAPI",
+    "OpenAPI3",
 ]
 requires-python = "~=3.13"
 dynamic=["dependencies"]
@@ -57,52 +57,48 @@ dev = [
 ]
 
 docs = [
-    "mkdocs~=1.6",
-    "mkdocs-material~=9.6",
     "markdown-callouts~=0.4.0",
-    "mkdocstrings[python]~=0.30.1",
     "markdown-exec~=1.11",
     "mkdocs-llmstxt~=0.3.2",
+    "mkdocs-material~=9.6",
     "mkdocs-minify-plugin~=0.8.0",
     "mkdocs-section-index~=0.3.10",
+    "mkdocstrings[python]~=0.30.1",
+    "mkdocs~=1.6",
 ]
 
+[tool.mypy]
+exclude = ["tests/e2e"]
+ignore_missing_imports = true
+mypy_path = "src"
+namespace_packages = true
+packages = ['lapidary.render']
+python_version = "3.13"
+
+[tool.pytest.ini_options]
+addopts = "--color=yes"
+asyncio_default_fixture_loop_scope = 'function'
+log_cli = true
+norecursedirs = ['tests/e2e']
+pythonpath = ["src", "tests"]
+testpaths = ["tests"]
+
 [tool.ruff]
-target-version = "py313"
-extend-exclude = [
-    "tests/e2e",
-]
+extend-exclude = ["tests/e2e"]
 line-length = 120
 namespace-packages = ["lapidary/render"]
 src = ["src"]
-
-[tool.ruff.lint]
-extend-select = ['I', 'UP']
-extend-ignore = [
-    'F401', 'F403', 'F405',
-    'UP040', 'UP008',
-]
+target-version = "py313"
 
 [tool.ruff.format]
 quote-style = "single"
 
+[tool.ruff.lint]
+extend-ignore = [
+    'F401', 'F403', 'F405',
+    'UP040', 'UP008',
+]
+extend-select = ['I', 'UP']
+
 [tool.ruff.lint.isort]
 combine-as-imports = true
-
-[tool.mypy]
-mypy_path = "src"
-namespace_packages = true
-ignore_missing_imports = true
-python_version = "3.13"
-packages = ['lapidary.render']
-exclude = [
-    "tests/e2e",
-]
-
-[tool.pytest.ini_options]
-norecursedirs = ['tests/e2e']
-asyncio_default_fixture_loop_scope = 'function'
-log_cli = true
-testpaths = ["tests"]
-pythonpath = ["src", "tests"]
-addopts = "--color=yes"

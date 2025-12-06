@@ -7,15 +7,15 @@ requires = [
 ]
 
 [project]
-name = "dummy_package"
-description = "Client library for dummy"
-version = "0.1.0"
 authors = []
-license = ""
-requires-python = "~=3.9"
 dependencies = [
     "lapidary~=0.12.0",
 ]
+description = "Client library for dummy"
+license = ""
+name = "dummy_package"
+requires-python = "~=3.9"
+version = "0.1.0"
 
 [tool.lapidary]
 document_path = "lapidary/openapi/dummy.yaml"
