@@ -1,9 +1,4 @@
-import typing
-
-T = typing.TypeVar('T')
-
-
-def find_annotation_optional(
+def find_annotation_optional[T](
     metadata: list,
     annotation_type: type[T],
 ) -> T | None:
