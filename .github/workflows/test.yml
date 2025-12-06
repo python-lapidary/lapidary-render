@@ -18,7 +18,7 @@ jobs:
       uses: packetcoders/action-setup-cache-python-poetry@main
       with:
         python-version: 3.13
-        poetry-version: 2.1.1
+        poetry-version: 2.2.1
     - name: Install project
       run: poetry install
     - name: Run pytest
