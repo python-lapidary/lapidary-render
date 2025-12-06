@@ -1,9 +1,20 @@
 [build-system]
 build-backend = "poetry.core.masonry.api"
-requires = ["poetry-core>=1.0.0"]
+requires = ["poetry-core>=2.2.1"]
 
 [project]
 authors = [{ name = "Rafał Krupiński", email = "rafal@lapidary.dev" }]
+dependencies = [
+    "click~=8.2",
+    "httpx~=0.28.0",
+    "libcst~=1.5",
+    "openapi-pydantic~=0.5.0",
+    "pybase62~=1.0",
+    "pydantic~=2.0",
+    "python-mimeparse>=1.6,<3",
+    "ruamel-yaml~=0.18.0",
+    "tomli-w~=1.0",
+]
 description = "Python async OpenAPI client library generator"
 license = "AGPL-3.0"
 name = "lapidary-render"
@@ -31,40 +42,30 @@ dynamic=["dependencies"]
 [tool.poetry]
 packages = [{ include = "lapidary", from = "src" }]
 
-[tool.poetry.dependencies]
-python = "^3.13"
-click = "^8"
-httpx = "^0.28"
-libcst = "^1.5"
-openapi-pydantic = "^0.5"
-pybase62 = "^1"
-pydantic = "^2"
-python-mimeparse = ">=1.6,<3.0"
-ruamel-yaml = "^0.18"
-tomli-w = "^1"
-
 [project.urls]
 Homepage = "https://lapidary.dev/"
 
 [project.scripts]
 lapidary = "lapidary.render:app"
 
-[tool.poetry.group.dev.dependencies]
-pre-commit = "^4"
-pytest = "^8"
-pytest-asyncio = "^0.25"
-pytest-httpx = "^0.35"
+[dependency-groups]
+dev = [
+    "pre-commit~=4.0",
+    "pytest~=8.0",
+    "pytest-asyncio~=0.25.0",
+    "pytest-httpx~=0.35.0",
+]
 
-
-[tool.poetry.group.docs.dependencies]
-mkdocs = "^1.6.1"
-mkdocs-material = "^9.6.20"
-markdown-callouts = "^0.4.0"
-mkdocstrings = {extras = ["python"], version = "^0.30.1"}
-markdown-exec = "^1.11.0"
-mkdocs-llmstxt = "^0.3.2"
-mkdocs-minify-plugin = "^0.8.0"
-mkdocs-section-index = "^0.3.10"
+docs = [
+    "mkdocs~=1.6",
+    "mkdocs-material~=9.6",
+    "markdown-callouts~=0.4.0",
+    "mkdocstrings[python]~=0.30.1",
+    "markdown-exec~=1.11",
+    "mkdocs-llmstxt~=0.3.2",
+    "mkdocs-minify-plugin~=0.8.0",
+    "mkdocs-section-index~=0.3.10",
+]
 
 [tool.ruff]
 target-version = "py313"
