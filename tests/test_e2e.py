@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from lapidary.render.main import init_project, render_project
+from lapidary_render.main import init_project, render_project
 
 e2e_root = Path(__file__).parent / 'e2e'
 e2e_tests = [path.name for path in (e2e_root / 'render/initial').iterdir() if path.is_dir()]

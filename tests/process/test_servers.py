@@ -2,9 +2,9 @@ from pathlib import Path
 
 import pytest
 
-from lapidary.render.model import conv_openapi, openapi, python
-from lapidary.render.model.stack import Stack
-from lapidary.render.yaml import yaml
+from lapidary_render.model import conv_openapi, openapi, python
+from lapidary_render.model.stack import Stack
+from lapidary_render.yaml import yaml
 
 yaml_home = Path(__file__).parent / 'servers'
 test_files = [

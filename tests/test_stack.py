@@ -1,5 +1,5 @@
-from lapidary.render.model import metamodel, python, stack
-from lapidary.render.model.python import AnnotatedType
+from lapidary_render.model import metamodel, python, stack
+from lapidary_render.model.python import AnnotatedType
 
 
 def test_resolve_type_hint():

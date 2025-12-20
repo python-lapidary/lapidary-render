@@ -38,17 +38,17 @@ Note that lapidary-render requires Python 3.13
 
 ## Usage
 
-The `lapidary` command offers inline help and shell command completion. See `lapidary --help` for details.
+The `lapidary-render` command offers inline help and shell command completion. See `lapidary-render --help` for details.
 
-### `lapidary init`
+### `lapidary-render init`
 
-`lapidary init [--save] SCHEMA_PATH PROJECT_ROOT PACKAGE_NAME`
+`lapidary-render init [--save] SCHEMA_PATH PROJECT_ROOT PACKAGE_NAME`
 
 Initializes a project directory with a `pyproject.toml` file and optionally stores the OpenAPI document.
 
-### `lapidary render`
+### `lapidary-render render`
 
-`lapidary render [PROJECT_ROOT]`
+`lapidary-render render [PROJECT_ROOT]`
 
 Renders the client code in the project root. The default project root is the current directory.
 
@@ -56,7 +56,7 @@ All python files are generated in the `PROJECT_ROOT/src` directory.
 
 ## Configuration
 
-Lapidary can be configured with a `pyproject.yaml` file of the client project, under `[tool.lapidary]` key.
+Lapidary-render can be configured with a `pyproject.yaml` file of the client project, under `[tool.lapidary-render]` key.
 
 package
 : root package name.

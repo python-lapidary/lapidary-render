@@ -16,6 +16,6 @@ packages = [
 python = "^3.9"
 lapidary = {path="../../../../../lapidary"}
 
-[tool.lapidary]
+[tool.lapidary-render]
 document_path = "lapidary/openapi/dummy.yaml"
 package = "test_dummy"

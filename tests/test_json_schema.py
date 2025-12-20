@@ -3,17 +3,17 @@ from typing import Union
 import pytest
 from openapi_pydantic.v3.v3_1 import DataType
 
-from lapidary.render.model.conv_schema import OpenApi30SchemaConverter
-from lapidary.render.model.openapi import Schema
-from lapidary.render.model.python import (
+from lapidary_render.model.conv_schema import OpenApi30SchemaConverter
+from lapidary_render.model.openapi import Schema
+from lapidary_render.model.python import (
     AnnotatedType,
     AnnotatedVariable,
     ModulePath,
     NameRef,
     SchemaClass,
 )
-from lapidary.render.model.stack import Stack
-from lapidary.render.runtime import JsonValue, ModelBase
+from lapidary_render.model.stack import Stack
+from lapidary_render.runtime import JsonValue, ModelBase
 
 
 def test_no_type_is_json_value():

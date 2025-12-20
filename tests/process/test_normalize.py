@@ -1,7 +1,7 @@
 from openapi_pydantic.v3.v3_1 import DataType
 
-from lapidary.render.model.metamodel import MetaModel
-from lapidary.render.model.stack import Stack
+from lapidary_render.model.metamodel import MetaModel
+from lapidary_render.model.stack import Stack
 
 
 def test_normalize_single_anyof():

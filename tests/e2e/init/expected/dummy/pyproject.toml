@@ -17,6 +17,6 @@ name = "dummy_package"
 requires-python = "~=3.9"
 version = "0.1.0"
 
-[tool.lapidary]
+[tool.lapidary-render]
 document_path = "lapidary/openapi/dummy.yaml"
 package = "dummy_package"

@@ -1,4 +1,4 @@
-from lapidary.render.model.python import ModulePath
+from lapidary_render.model.python import ModulePath
 
 
 def test_relative_to():

@@ -5,7 +5,7 @@ import click
 
 
 @click.group()
-@click.version_option(package_name='lapidary.render', prog_name='lapidary')
+@click.version_option(package_name='lapidary_render', prog_name='lapidary-render')
 @click.option('--verbose', is_flag=True, help='Enable debug logs.', default=False)
 def app(verbose: bool) -> None:
     if verbose:

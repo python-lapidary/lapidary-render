@@ -16,7 +16,7 @@ packages = [
 python = "^3.9"
 lapidary = {path = "../../../../../lapidary", develop = true}
 
-[tool.lapidary]
+[tool.lapidary-render]
 document_path = "lapidary/openapi/openapi.yaml"
 origin = "https://petstore3.swagger.io/api/v3/openapi.json"
 package = "test_petstore"

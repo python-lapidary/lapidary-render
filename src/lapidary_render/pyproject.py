@@ -19,6 +19,6 @@ def mk_pyproject_toml(
             'version': '0.1.0',
         },
         'tool': {
-            'lapidary': config.model_dump(mode='json', exclude_unset=True, exclude_defaults=True),
+            'lapidary-render': config.model_dump(mode='json', exclude_unset=True, exclude_defaults=True),
         },
     }

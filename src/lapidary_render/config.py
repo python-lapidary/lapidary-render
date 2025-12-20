@@ -17,5 +17,5 @@ class Config(pydantic.BaseModel):
 def load_config(project_root: Path) -> Config:
     text = (project_root / PYPROJ_TOML).read_text()
     pyproj = tomllib.loads(text)
-    pyproj_dict = pyproj['tool']['lapidary']
+    pyproj_dict = pyproj['tool']['lapidary-render']
     return Config.model_validate(pyproj_dict)
