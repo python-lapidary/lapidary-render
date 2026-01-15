@@ -14,3 +14,6 @@ components:
       name: Authorization
       type: apiKey
       in: cookie
+    bearerToken:
+      type: http
+      scheme: bearer
