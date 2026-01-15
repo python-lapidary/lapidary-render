@@ -16,6 +16,7 @@ from .model import (
     ClientInit,
     HttpBasicAuth,
     HttpDigestAuth,
+    HttpBearerAuth,
     ImplicitOAuth2Flow,
     MetadataModel,
     MimeMap,

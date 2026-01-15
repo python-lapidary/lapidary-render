@@ -231,6 +231,9 @@ components:
     http_digest:
       type: http
       scheme: digest
+    http_bearer:
+      type: http
+      scheme: bearer
   responses:
     default:
       content:
@@ -265,3 +268,4 @@ security:
 - api-key-query: [ ]
 - http_basic: [ ]
 - http_digest: [ ]
+- http_bearer: [ ]

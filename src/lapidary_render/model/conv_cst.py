@@ -491,6 +491,8 @@ def mk_security_fn(auth: python.Auth) -> cst.BaseStatement:
     fn_name = cst.Name(f'{auth.type}_{auth.python_name}')
 
     match auth:
+        case python.HttpBearerAuth(): # check first because it's a subclass of ApiKeyAuth
+            return mk_auth_http_bearer(auth, fn_name)
         case python.ApiKeyAuth():
             return mk_auth_api_key(cast(python.ApiKeyAuth, auth), fn_name)
         case python.HttpBasicAuth():
@@ -660,6 +662,20 @@ def mk_auth_api_key(auth: python.ApiKeyAuth, fn_name: cst.Name):
         auth_key=str_literal(auth.key),
     )
 
+def mk_auth_http_bearer(auth: python.HttpBearerAuth, fn_name: cst.Name):
+    param_name = auth.location.value + '_name'
+    return cst.helpers.parse_template_statement(
+        """def {fn_name}(api_key: str) -> lapidary.runtime.NamedAuth:
+    return {auth_name}, {auth_class}(
+        api_key="Bearer " + api_key,
+        {param_name}={auth_key},
+    )""",
+        fn_name=fn_name,
+        auth_name=str_literal(auth.name),
+        auth_class=mk_name('lapidary', 'runtime', 'auth', auth.location.value.capitalize() + 'ApiKey'),
+        param_name=cst.Name(param_name),
+        auth_key=str_literal(auth.key),
+    )
 
 def mk_security_module(module: python.SecurityModule) -> cst.Module:
     return cst.Module(

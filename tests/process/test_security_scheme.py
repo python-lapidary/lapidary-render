@@ -29,3 +29,12 @@ def test_process_security_schemes(path: Path):
         location=python.ParamLocation.COOKIE,
         format='{}',
     )
+    assert converter.target.security_schemes['http_bearerToken'] == python.HttpBearerAuth(
+        type='http',
+        scheme='bearer',
+        name='bearerToken',
+        python_name='bearerToken',
+        key='Authorization',
+        location=python.ParamLocation.HEADER,
+        format = '{}'
+    )

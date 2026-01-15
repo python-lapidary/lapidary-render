@@ -401,12 +401,14 @@ class OpenApi30Converter:
     # need separate method to resolve references before calling a single-dispatched method
     @resolve_ref
     def process_security_scheme(self, value: openapi.SecurityScheme, stack: Stack) -> None:
-        match value.type:
-            case 'apiKey':
+        match value.type, value.scheme:
+            case 'apiKey', _:
                 self.process_security_scheme_api_key(value, stack)
-            case 'oauth2':
+            case 'oauth2', _:
                 self.process_security_scheme_oauth2(value, stack)
-            case 'http':
+            case 'http', 'bearer':
+                self.process_security_scheme_http_bearer(value, stack)
+            case 'http', _:
                 self.process_security_scheme_http(value, stack)
 
     def process_security_scheme_api_key(self, value: openapi.SecurityScheme, stack: Stack) -> None:
@@ -507,6 +509,20 @@ class OpenApi30Converter:
         except KeyError:
             raise NotImplementedError(stack.push('scheme'), value.scheme) from None
 
+    def process_security_scheme_http_bearer(self, value: openapi.SecurityScheme, stack: Stack) -> None:
+        logger.debug('Process HTTP Bearer security scheme %s', stack)
+        auth_name = stack.top()
+        flow_name = f'http_{auth_name}'
+
+        if flow_name in self.target.security_schemes:
+            return
+
+        self.target.security_schemes[flow_name] = python.HttpBearerAuth(
+            name=auth_name,
+            python_name=names.maybe_mangle_name(auth_name),
+            format=value.format,
+        )
+
 
 def param_style(
     style: str | None,
@@ -568,4 +584,5 @@ def map_process(
 HTTP_SCHEMES = {
     'basic': python.HttpBasicAuth,
     'digest': python.HttpDigestAuth,
+    'bearer': python.HttpBearerAuth,
 }

@@ -63,6 +63,15 @@ class HttpBasicAuth(Auth):
 
 
 @dc.dataclass(kw_only=True, frozen=True)
+class HttpBearerAuth(ApiKeyAuth):
+    type: str = 'http'
+    scheme: str = 'bearer'
+    key: str = 'Authorization'
+    location: ParamLocation = ParamLocation.HEADER
+    format: str | None = 'bearer_token'
+    bearer_format: str | None = 'bearer_token'
+
+@dc.dataclass(kw_only=True, frozen=True)
 class HttpDigestAuth(Auth):
     scheme: str = 'digest'
     type: str = 'http_digest'

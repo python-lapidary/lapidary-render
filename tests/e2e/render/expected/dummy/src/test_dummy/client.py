@@ -37,6 +37,7 @@ class ApiClient(lapidary.runtime.ClientBase):
                 {'api-key-query': ()},
                 {'http_basic': ()},
                 {'http_digest': ()},
+                {'http_bearer': ()},
             ),
             base_url=base_url,
             **kwargs,

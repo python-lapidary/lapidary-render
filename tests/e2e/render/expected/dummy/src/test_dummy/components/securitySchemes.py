@@ -134,3 +134,10 @@ def http_digest_http_digest(
         username=user_name,
         password=password,
     )
+
+
+def http_http_bearer(api_key: str) -> lapidary.runtime.NamedAuth:
+    return 'http_bearer', lapidary.runtime.auth.HeaderApiKey(
+        api_key="Bearer " + api_key,
+        header_name='Authorization',
+    )
