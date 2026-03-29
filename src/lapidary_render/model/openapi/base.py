@@ -38,7 +38,7 @@ class ModelWithAdditionalProperties(BaseModel):
 class ModelWithPatternProperties(BaseModel):
     @pydantic.model_validator(mode='before')
     @classmethod
-    def validate(cls, value: typing.Any, info: pydantic.ValidationInfo):
+    def validate_model(cls, value: typing.Any):
         for field_name, field_info in cls.model_fields.items():
             pattern_anno = find_annotation_optional(field_info.metadata, PropertyPattern)
             if not pattern_anno:
