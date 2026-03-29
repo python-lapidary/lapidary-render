@@ -11,14 +11,22 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version:
+        - '3.12'
+        - '3.13'
+        - '3.13t'
+        - '3.14'
+        - '3.14t'
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
     - name: Install Poetry
       uses: packetcoders/action-setup-cache-python-poetry@main
       with:
-        python-version: 3.13
-        poetry-version: 2.2.1
+        python-version: ${{ matrix.python-version }}
+        poetry-version: 2.3.2
     - name: Install project
       run: poetry install
     - name: Run pytest
