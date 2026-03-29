@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import dataclasses as dc
+import typing
 from collections.abc import Iterable, Mapping, Sequence
 
 
@@ -24,7 +25,7 @@ class NameRef:
 
     @staticmethod
     def from_type(typ: type) -> NameRef:
-        if hasattr(typ, '__origin__'):
+        if typing.get_args(typ):
             raise ValueError('Generic types unsupported', typ)
         module = typ.__module__
         name = typ.__name__
