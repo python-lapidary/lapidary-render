@@ -14,12 +14,18 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
-    - name: Install Poetry
-      uses: packetcoders/action-setup-cache-python-poetry@main
+      uses: actions/checkout@v6
+    - name: Set up Python
+      uses: actions/setup-python@v6
       with:
-        python-version: 3.14
-        poetry-version: 2.3.2
+        python-version: ${{ matrix.python-version }}
+    - name: Install Poetry
+      run: pipx install poetry==2.3.2
+    - name: Cache dependencies
+      uses: actions/cache@v5
+      with:
+        path: ~/.cache/pypoetry
+        key: ${{ runner.os }}-poetry-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
     - name: Mint token
       id: mint
       uses: tschm/token-mint-action@v1.0.3
