@@ -21,13 +21,13 @@ pipx install lapidary-render
 Start your project
 
 ```shell
-lapidary init --save https://example.com/openapi.json project_dir my_api_client
+lapidary-render init --save https://example.com/openapi.json project_dir my_api_client
 ```
 
 Generate code:
 ```shell
 cd project_dir
-lapidary render
+lapidary-render render
 ```
 
 Check the [documentation](https://lapidary.dev/lapidary-render/) for more details.

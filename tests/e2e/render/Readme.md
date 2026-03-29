@@ -1,6 +1,6 @@
 # End to end tests
 
-1. Create a project scaffolding (schema and pyproject.toml) for a test project (for example with `lapidary init`) in `init` directory
+1. Create a project scaffolding (schema and pyproject.toml) for a test project (for example with `lapidary-render init`) in `init` directory
 2. Copy the project scaffolding to `expected`
 3. Render project in `expected` directory.
 4. Examine the rendered code.
