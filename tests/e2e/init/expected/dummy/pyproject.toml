@@ -14,7 +14,7 @@ dependencies = [
 description = "Client library for dummy"
 license = ""
 name = "dummy_package"
-requires-python = "~=3.9"
+requires-python = "~=3.10"
 version = "0.1.0"
 
 [tool.lapidary-render]

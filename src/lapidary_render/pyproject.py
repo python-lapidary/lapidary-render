@@ -15,7 +15,7 @@ def mk_pyproject_toml(
             'description': f'Client library for {title}',
             'license': '',
             'name': config.package,
-            'requires-python': '~=3.9',
+            'requires-python': '~=3.10',
             'version': '0.1.0',
         },
         'tool': {
