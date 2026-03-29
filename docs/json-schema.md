@@ -45,7 +45,7 @@ The exceptions are:
 - enum: only allow values specified in the list
 - numeric constraints for types `number` and `integer`, to both of which the numeric constraints apply.
 
-That means most constraints can be processed separately, which is useful when they occur together with `allOf`, `oneOf`, `allOf` and `not`.
+That means most constraints can be processed separately, which is useful when they occur together with `allOf`, `oneOf`, `anyOf` and `not`.
 
 ### nullable
 
@@ -108,7 +108,7 @@ That means most constraints can be processed separately, which is useful when th
     or grouped by type:
 
         Union[
-            Literal[true, False],
+            Literal[True, False],
             StrLiteral['FileNotFound'],
         ]
 
@@ -188,7 +188,7 @@ The problem with this solution is that the name changes when keys or any value c
 
         Union[
             Annotated[str, Field(max_length=10)],
-            Annotated[int, Field(ge=10)]
+            Annotated[int, Field(le=10)]
         ]
 
 1. There might be more than one element for a given type:
@@ -304,7 +304,7 @@ The value is processed as a JSON Schema.
 
         type: object
         additionalProperties:
-            type: int
+            type: integer
 
     =>
 
@@ -364,15 +364,15 @@ When `anyOf` keyword is used, the instance validates as long as it validates aga
 For example, scalar constraints can be transformed to `Union` type
 
         type: integer
-        oneOf:
+        anyOf:
         - maximum: 10
         - minimum: 20
 
     =>
 
         Union[
-            Annotated[int, Field(ge=10)],
-            Annotated[int, Field(le=20)],
+            Annotated[int, Field(le=10)],
+            Annotated[int, Field(ge=20)],
         ]
 
 ## `oneOf`
@@ -488,7 +488,6 @@ For example, scalar constraints can be transformed to `Union` type
 =>
 
     type: integer
-    maximum: 20
 
 This is a bottom type:
 
@@ -518,9 +517,9 @@ If `enum` is in `allOf` sub-schemas, the output value is a set intersection of `
 
 ### `allOf` and scalar constraints
 
-1. When keywords don't repeat between sub-schemas, they can be simply merged..
+1. When keywords don't repeat between sub-schemas, they can be simply merged.
 1. When the same keyword is used more than once, the more constraining value wins.
-1. When merging `maximum` and `minimum` values, `exclusiveMinimum` and `exclusiveMaximum` must be considered. If the keyword (`minmum` or `maximum`) has the same value, the one with `exclusive*: true` is more constraining.
+1. When merging `maximum` and `minimum` values, `exclusiveMinimum` and `exclusiveMaximum` must be considered. If the keyword (`minimum` or `maximum`) has the same value, the one with `exclusive*: true` is more constraining.
 
 ### `allOf` and `object` constraints
 
@@ -686,7 +685,7 @@ Creating a parent class from the parent schema seems to only complicate things w
             schemas:
                 mySchema:
                     type: object
-                    properties
+                    properties:
                         myProp:
                             anyOf:
                             -   type: string
@@ -698,7 +697,7 @@ Creating a parent class from the parent schema seems to only complicate things w
             schemas:
                 mySchema:
                     type: object
-                    properties
+                    properties:
                         myProp:
                             anyOf:
                             -   type: string
@@ -729,7 +728,7 @@ Bob:
     -   #/Alice
 ```
 
-Actually oth schemas could be represented as the same class:
+Actually both schemas could be represented as the same class:
 
 ```python
 class Schema:
@@ -759,14 +758,14 @@ Sub-schemas in `allOf/oneOf` and `allOf/anyOf` must validate separately and cann
                 alpha:
                     multipleOf: 3
     -   oneOf:
-        -   properties
+        -   properties:
                 alpha:
                     maximum: 20
         -   properties:
                 alpha:
                     minimum: 10
 
-Objects that validate would need validate against one of sub0schemas in the first child _and_ one of sub-schemas in the second child.
+Objects that validate would need validate against one of sub-schemas in the first child _and_ one of sub-schemas in the second child.
 In this case the object would need a `int` field named 'alpha' that can be either divisible by 2 _or_ 3 and at the same time either less or equal 10 or more or equal to 20.
 
 This really describes four possibilities:
@@ -836,7 +835,7 @@ Now we can see a simple python class like this:
 
 ## Conflicting schemas
 
-1. There are many ways of declaring schemas that no value could validate. Such schemas aren't invalid, but the part describing a single type the the keywords apply to, must be discarded.
+1. There are many ways of declaring schemas that no value could validate. Such schemas aren't invalid, but the part describing a single type the keywords apply to, must be discarded.
 
         minimum: 20
         maximum: 10
@@ -876,7 +875,7 @@ Alice:
             type: object
             properties:
                 prop1:
-                    type: str
+                    type: string
 ```
 
 ```python
@@ -927,7 +926,7 @@ map:
 
 ```python
 sequence: list[str]
-map: dict[float]
+map: dict[str, float]
 ```
 
 There's no way of directly representing a generic python class:
