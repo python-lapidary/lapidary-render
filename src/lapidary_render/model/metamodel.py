@@ -3,6 +3,7 @@ from __future__ import annotations
 import dataclasses as dc
 import itertools
 import operator
+import types
 from collections.abc import Callable, Container, Iterable, Set
 from typing import Any, Self
 
@@ -12,6 +13,18 @@ from pydantic.alias_generators import to_pascal
 from .. import json_pointer, names, runtime
 from . import python
 from .stack import Stack
+
+JSON_TYPE_TO_PY_TYPE: dict[schema31.DataType, type] = {
+    schema31.DataType.ARRAY: list,
+    schema31.DataType.BOOLEAN: bool,
+    schema31.DataType.INTEGER: int,
+    schema31.DataType.NULL: types.NoneType,
+    schema31.DataType.NUMBER: float,
+    schema31.DataType.OBJECT: dict,
+    schema31.DataType.STRING: str,
+}
+
+PY_TYPE_TO_JSON_TYPE: dict[type, schema31.DataType] = {value: key for key, value in JSON_TYPE_TO_PY_TYPE.items()}
 
 
 def not_none_or[T](a: T | None, b: T | None, fn: Callable[[T, T], T]) -> T | None:
@@ -93,24 +106,27 @@ class MetaModel:
     all_of: list[MetaModel] | None = None
 
     def normalize_model(self) -> MetaModel | None:
-        # if this doesn't have any assertions and only a single sub-schema, return that sub-schema
-        if len(self.any_of or ()) + len(self.one_of or ()) + len(self.all_of or ()) == 1:
-            if self.any_of:
-                candidate = self.any_of[0]
-            elif self.one_of:
-                candidate = self.one_of[0]
-            elif self.all_of:
-                candidate = self.all_of[0]
-            else:
-                raise ValueError
-
-            if self._only_constraints() == MetaModel(stack=self.stack) or self._only_constraints() == MetaModel(
-                stack=self.stack, type_=candidate.type_
-            ):
-                return candidate
-
         if self.type_ is None:
             self.type_ = _all_types()
+
+        # limit types and enum values to intersection of types
+        if self.enum is not None:
+            enum_types = {PY_TYPE_TO_JSON_TYPE[type(v)] for v in self.enum}
+            self.type_ = self.type_ & enum_types
+            if not self.type_:
+                return None
+            allowed_py_types = tuple(JSON_TYPE_TO_PY_TYPE[t] for t in self.type_)
+            self.enum = {v for v in self.enum if isinstance(v, allowed_py_types)}
+
+        # promote single-item anyOf/oneOf to allOf so the merge loop handles them
+        for attr in ('any_of', 'one_of'):
+            items = getattr(self, attr)
+            if items and len(items) == 1:
+                self.all_of = [*(self.all_of or ()), items[0]]
+                setattr(self, attr, None)
+
+        if self.all_of and len(self.all_of) == 1 and not self._has_annotations(excluding=('all_of',)):
+            return self.all_of[0].normalize_model()
 
         # merge allOf
         model: MetaModel | None = self

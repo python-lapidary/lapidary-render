@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-from types import NoneType
 from typing import Any
 
 from openapi_pydantic.v3.v3_1 import schema as schema31
@@ -66,24 +65,14 @@ class OpenApi30SchemaConverter:
         self.model.description = value
 
     def process_schema_type(self, value: openapi.DataType, _: Stack):
-        typ = {schema31.DataType[value.name]}
-        assert isinstance(self.schema, openapi.Schema)
-        if self.schema.nullable:
-            typ.add(schema31.DataType.NULL)
-        self.model.type_ = self.model.type_.intersection(typ) if self.model.type_ else typ
+        self.model.type_ = {*(self.model.type_ or ()), schema31.DataType[value.name]}
 
-    def process_schema_nullable(self, value: openapi.DataType, _: Stack) -> None:
-        pass
+    def process_schema_nullable(self, value: bool, _: Stack) -> None:
+        if self.schema.type and value:
+            self.model.type_ = {*(self.model.type_ or ()), schema31.DataType.NULL}
 
     def process_schema_enum(self, value: list[Any], _: Stack) -> None:
-        enum_types = set(PY_TYPE_TO_JSON_TYPE[type(enum_value)] for enum_value in value)
-
-        allowed_types = enum_types.intersection(self.model.type_) if self.model.type_ else enum_types
-        allowed_py_types = tuple(JSON_TYPE_TO_PY_TYPE[typ] for typ in allowed_types)
-        new_enum_values = {enum_value for enum_value in value if isinstance(enum_value, allowed_py_types)}
-
-        self.model.enum = new_enum_values
-        self.model.type_ = allowed_types
+        self.model.enum = set(value)
 
     def process_schema_readOnly(self, value: bool, _) -> None:
         self.model.read_only = value
@@ -175,16 +164,3 @@ class OpenApi30SchemaConverter:
 
     def process_schema_examples(self, *_) -> None:
         pass
-
-
-JSON_TYPE_TO_PY_TYPE = {
-    schema31.DataType.STRING: str,
-    schema31.DataType.INTEGER: int,
-    schema31.DataType.BOOLEAN: bool,
-    schema31.DataType.NUMBER: float,
-    schema31.DataType.ARRAY: list,
-    schema31.DataType.OBJECT: dict,
-    schema31.DataType.NULL: NoneType,
-}
-
-PY_TYPE_TO_JSON_TYPE = {value: key for key, value in JSON_TYPE_TO_PY_TYPE.items()}
