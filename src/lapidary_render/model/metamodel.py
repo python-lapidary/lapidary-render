@@ -133,7 +133,7 @@ class MetaModel:
         for schema in self.all_of or ():
             if model is None:
                 return None
-            model &= schema
+            model &= schema.normalize_model()
 
         assert model is not None
         model.all_of = None
@@ -197,7 +197,6 @@ class MetaModel:
         model = dc.replace(self, stack=stack)
 
         model.type_ = not_none_or(self.type_, other.type_, operator.and_)
-
         model.enum = not_none_or(self.enum, other.enum, operator.and_)
         model.gt = not_none_or(self.gt, other.gt, max)
         model.ge = not_none_or(self.ge, other.ge, max)
@@ -236,7 +235,7 @@ class MetaModel:
         model.items = not_none_or(self.items, other.items, operator.and_)
 
         for field in ('all_of', 'any_of', 'one_of'):
-            merge(model, other, field, operator.and_)
+            merge(model, other, field, operator.add)
 
         # not_: MetaModel | None = None
 
