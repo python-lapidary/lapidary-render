@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import dataclasses as dc
+import types
 import typing
 from collections.abc import Iterable, Mapping, Sequence
 
@@ -66,6 +67,8 @@ class AnnotatedType:
         typ: type,
         generic: Sequence[AnnotatedType] = (),
     ) -> AnnotatedType:
+        if typ == types.NoneType:
+            return NoneMetaType
         return AnnotatedType(NameRef.from_type(typ), generic)
 
 

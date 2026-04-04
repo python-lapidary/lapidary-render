@@ -1,3 +1,4 @@
+import types
 from typing import Union
 
 import pytest
@@ -12,6 +13,7 @@ from lapidary_render.model.python import (
     NameRef,
     SchemaClass,
 )
+from lapidary_render.model.python.type_hint import union_of
 from lapidary_render.model.stack import Stack
 from lapidary_render.runtime import JsonValue, ModelBase
 
@@ -127,3 +129,25 @@ def test_read_write_property():
         ],
     )
     assert model == expected
+
+
+def test_anyof_nullable_is_optional():
+    # docs/json-schema.md#type-and-nullable — anyOf with nullable sub-schema produces Union including None
+    schema = Schema(
+        anyOf=[
+            Schema(
+                type=DataType.STRING,
+            ),
+            Schema(
+                type=DataType.INTEGER,
+                nullable=True,
+            ),
+        ],
+    )
+    converter = OpenApi30SchemaConverter(schema, Stack(('#', 'schemas', 'model')), ModulePath('root'), None)
+    annotation = converter.process_schema().as_annotation(
+        'root',
+        True,
+    )
+    expected = union_of(*(AnnotatedType.from_type(t) for t in (str, int, types.NoneType)))
+    assert annotation == expected
