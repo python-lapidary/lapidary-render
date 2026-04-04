@@ -7,6 +7,7 @@ from openapi_pydantic.v3.v3_1 import schema as schema31
 
 from lapidary_render import runtime
 from lapidary_render.model import conv_openapi, conv_schema, metamodel, openapi, python, stack
+from lapidary_render.model.python import NoneMetaType, union_of
 from lapidary_render.yaml import yaml
 
 logging.basicConfig()
@@ -242,9 +243,7 @@ def test_process_anyof_objects():
         object2=openapi.Schema(
             type=openapi.DataType.OBJECT,
             properties={
-                'int': openapi.Schema(
-                    type=openapi.DataType.INTEGER,
-                ),
+                'int': openapi.Schema(type=openapi.DataType.INTEGER),
             },
         ),
         myschema=openapi.Schema(
@@ -297,20 +296,18 @@ def test_process_anyof_objects():
                 },
             ),
             metamodel.MetaModel(
-                stack=stack.Stack(('#', 'components', 'schemas', 'myschema', 'schema', 'AnyOf2')),
-                type_={schema31.DataType.INTEGER},
+                stack=stack.Stack.from_str('#/components/schemas/myschema/anyOf/2/schema/2'),
+                type_={schema31.DataType.INTEGER, schema31.DataType.NULL},
                 le=20.0,
             ),
         ],
     )
 
-    assert model.as_annotation('package') == python.AnnotatedType(
-        python.type_hint._UNION,
-        (
-            python.AnnotatedType(python.NameRef.from_type(int), le=20),
-            python.AnnotatedType(python.NameRef('package.components.schemas.object1.schema', 'object1')),
-            python.AnnotatedType(python.NameRef('package.components.schemas.object2.schema', 'object2')),
-        ),
+    assert model.as_annotation('package') == union_of(
+        python.AnnotatedType(python.NameRef.from_type(int), le=20),
+        python.AnnotatedType(python.NameRef('package.components.schemas.object1.schema', 'object1')),
+        python.AnnotatedType(python.NameRef('package.components.schemas.object2.schema', 'object2')),
+        NoneMetaType,
     )
 
     assert [t for sub in model.dependencies() if (t := sub.as_type('root')) is not None] == [
