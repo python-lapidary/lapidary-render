@@ -368,7 +368,7 @@ def test_process_default_object():
 
 def test_process_default_schema():
     doc = mk_schemas_doc(
-        'test enums',
+        'test defaut schema',
         obj=openapi.Schema(),
     )
     converter = conv_schema.OpenApi30SchemaConverter(
