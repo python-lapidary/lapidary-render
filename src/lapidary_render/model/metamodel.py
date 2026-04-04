@@ -37,7 +37,7 @@ def same_or_raise[T](field: str) -> Callable[[T, T], T]:
 
 
 def _all_types() -> set[schema31.DataType]:
-    return {typ for typ in schema31.DataType if typ is not schema31.DataType.NULL}
+    return {typ for typ in schema31.DataType}
 
 
 def diff_dicts(dict1, dict2):

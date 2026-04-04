@@ -22,7 +22,18 @@ Simplified, JSON Schemas can be transformed to python model with the following f
 
 `python model = any JSON type - declared JSON Schema constraints`
 
-## `type`
+## Cross-type constraints
+
+Most of the constraints are type-specific (they apply only to values of a certain type or types).
+
+The exceptions are:
+
+- nullable: extend types by type `null`, but only if type is specified in that schema
+- enum: only allow values specified in the list
+
+That means most constraints can be processed separately, which is useful when they occur together with `allOf`, `oneOf`, `anyOf` and `not`.
+
+### `type` and `nullable`
 
 1. Since Schema object validates any JSON value, let's consider it a Union type:
 
@@ -30,54 +41,47 @@ Simplified, JSON Schemas can be transformed to python model with the following f
 
     =>
 
-        dict | list | float | int | str | bool
+        dict | list | float | int | str | bool | None
 
-2. pydantic provides type `JsonValue` type that reflects the type of any JSON data, except it also includes None for compatibility with JSON Schema.
+    or
 
+        pydantic.JsonValue
 
-### Type-specific constraints
+2. In OpenAPI, `type` key, if present, can only accept a single type
 
-Most of the constraints are type-specific (they apply only to values of a single type).
+    | JSON type | Python    |
+    |-----------|-----------|
+    | null      | `None`    |
+    | boolean   | `bool`    |
+    | integer   | `int`     |
+    | number    | `float`   |
+    | string    | `str`     |
+    | array     | `list`    |
+    | object    | `dict`    |
 
-The exceptions are:
+    e.g.
 
-- nullable: extend types by type `null`, but only if type is specified in that schema
-- enum: only allow values specified in the list
-- numeric constraints for types `number` and `integer`, to both of which the numeric constraints apply.
+        type: integer
 
-That means most constraints can be processed separately, which is useful when they occur together with `allOf`, `oneOf`, `anyOf` and `not`.
+    =>
 
-### nullable
+        int
 
-1. When `type` is present and `nullable` is `true`, the allowed types are extended with `null`. Three cases are possible
+3. `nullable` keyword can be used to extend the type with `None`
 
-    1. any type but null
+        type: integer
+        nullable: true
 
-            {}
+    =>
 
-    2. single type
+        int | None
 
-            type: integer
-
-        =>
-
-            int
-
-    3. single type or null
-
-            type: integer
-            nullable: true
-
-        =>
-
-            int | None
-
-1. Any combination of types is possible with `anyOf`/`oneOf`.
+4. Any combination of types is possible with `anyOf`/`oneOf`.
 
         anyOf:
-        -   type: string
-        -   type: integer
-            nullable: true
+        - type: string
+        - type: integer
+          nullable: true
 
     =>
 
@@ -219,7 +223,9 @@ The problem with this solution is that the name changes when keys or any value c
 
     =>
 
-        str | bool | dict | list
+        str | bool | dict | list | None
+
+   Numeric types are excluded since they can't validate against this schema.
 
 2. allOf applies the most restrictive set of constraints.
 
@@ -497,9 +503,7 @@ This is a bottom type:
 
 #### `allOf` and `nullable`
 
-`null` value validates against a schema with defined `type` and `nullable: true`.
-
-Since `nullable` keyword applies only when `type` is defined, the `nullable` is `true` only when the type defined in that sub-schema is included in the resulting type _and_ that type is defined in every sub-schema.
+The result is nullable only if every sub-schema either skips `type` or has `nullable: true`.
 
 ```yaml
 allOf:
@@ -635,11 +639,6 @@ Similarly, any value of allowed type, but absent from enum wouldn't validate.
 
 Therefore `enum` keyword determines allowed types, and it's a set intersection of the two.
 
-### `nullable` types and `enum`
-
-When `enum` is defined and contains a `null` value, schema must also declare `type` and `nullable: true`.
-
-Otherwise `null` value doesn't validate against the default `type` or default `nullable`
 
 ### `type` and constraints
 

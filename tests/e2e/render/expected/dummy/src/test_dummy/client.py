@@ -53,6 +53,7 @@ class ApiClient(lapidary.runtime.ClientBase):
             ],
             test_dummy.components.schemas.all.schema.all,
             test_dummy.components.schemas.schema1.schema.schema1,
+            None,
         ],
             lapidary.runtime.Query('param1',),
         ],

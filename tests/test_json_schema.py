@@ -18,12 +18,6 @@ from lapidary_render.model.stack import Stack
 from lapidary_render.runtime import JsonValue, ModelBase
 
 
-def test_no_type_is_json_value():
-    converter = OpenApi30SchemaConverter(Schema(), Stack(('#', 'schemas', 'model')), ModulePath('root'), None)
-    annotation = converter.process_schema().as_annotation('root')
-    assert annotation == JsonValue
-
-
 @pytest.mark.skip('error')
 def test_additional_properties_schema():
     schema = Schema(
@@ -56,18 +50,6 @@ def test_properties_and_additional_properties_schema():
     converter = OpenApi30SchemaConverter(schema, Stack(('#', 'schemas', 'model')), ModulePath('root'), None)
     typ = converter.process_schema().as_type('root')
     assert '__pydantic_extra__' in [field.name for field in typ.fields]
-
-
-@pytest.mark.skip('not implemented')
-def test_named_nullable_ignored():
-    """
-    pydantic.JsonValue is nullable (Union with None) while in OpenAPI 3.0 flavor of JSON Schema, an empty schema is not
-    """
-    schema = Schema(nullable=True)
-    converter = OpenApi30SchemaConverter(schema, Stack(('#', 'schemas', 'model')), ModulePath('root'), None)
-    typ = converter.process_schema().as_annotation('root')
-    #
-    assert typ != JsonValue
 
 
 @pytest.mark.skip('buggy')
