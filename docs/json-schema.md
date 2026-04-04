@@ -7,20 +7,34 @@ The examples below use YAML notation of JSON Schema version draft-wright-json-sc
 
 Python examples use python 3.10 (PEP 604) type hints syntax.
 
-## Set theory
+### Open and closed world
 
-JSON is a data format representing a limited collection of basic data types.
+JSON Schema is an open-world language: an empty schema accepts any JSON value, and adding keywords restricts the set of valid values.
 
-JSON Schema is language representing a set of constraints applicable to JSON, where empty schema means any JSON value, and set theory can be used to manipulate it.
+Standard Python class instances are dictionaries at runtime, but Pydantic objects and Python static type checking (mypy, pyright)
+are closed-world: an empty class accepts nothing, and adding fields expands what can be stored.
 
-Python model types, while able to represent the same basic types as JSON, describe what can be stored in memory, where empty model represents no data, which is the inversion of how JSON Schema describes values.
-
-!!! note
-    By default, object instances in python are just dictionaries with OOP syntax, but IDEs and type checking tools treat them more akin to C structs - if a field is not declared, it's not there.
-
-Simplified, JSON Schemas can be transformed to python model with the following formula
+This open/closed-world contrast is the main problem of mapping JSON Schema to Python types. The transformations in this document are
+an application of set theory to resolve it:
 
 `python model = any JSON type - declared JSON Schema constraints`
+
+
+### Type definitions and names
+
+In JSON Schema, schemas are often defined in-line, immediately describing body, field or property, or they can be referenced by path using
+`$ref` - these two methods are interchangeable, though typically reused schemas are defined under `components/schemas` element.
+Schemas are generally anonymous (unnamed) although they can be identified by their path.
+
+In python, types might be required to be named (classes), or they might be anonymous (parametrized types).
+Parametrized types are always derived from named types, and they themselves may be named too (type aliases).
+
+For each schema python code will need the following:
+
+- fully qualified name - name and package (file to store the class, package to import it from) - derived from schema path,
+- optional type parameters (pydantic field properties, lists item type, union element types, etc.) - derived from schema itself,
+- in case of object schemas, a class definition - derived from schema properties.
+
 
 ## Cross-type constraints
 
@@ -90,11 +104,6 @@ That means most constraints can be processed separately, which is useful when th
 
 ## `enum`
 
-1. If `enum` is in `anyOf` sub-schemas, the values are summed as sets.
-
-1. If `enum` is in `oneOf` sub-schemas, only the values that occur once can be validated
-    (not implemented, since Lapidary treats as just another anyOf).
-
 
 ### `enum` as `Literal`
 
@@ -153,9 +162,9 @@ Also creating an arbitrary number of objects, that might never be used will be e
 
 ```yaml
 enum:
--   id: 1
-    name: LoL
-    slug: league-of-legends
+- id: 1
+  name: LoL
+  slug: league-of-legends
 ```
 
 =>
@@ -225,7 +234,7 @@ The problem with this solution is that the name changes when keys or any value c
 
         str | bool | dict | list | None
 
-   Numeric types are excluded since they can't validate against this schema.
+    Numeric types are excluded since they can't validate against this schema.
 
 2. allOf applies the most restrictive set of constraints.
 
@@ -253,18 +262,18 @@ The problem with this solution is that the name changes when keys or any value c
 
     =>
 
-        class $name(BaseModel):
+        class Model(BaseModel):
           name: string
 
-1. In case of empty schema, it's impossible to say anything about it's possible contents.
+1. In case of default object schema, it's impossible to say anything about its fields.
 
     It could be mapped as `dict` but then adding a property would cause an incompatible change in the python code. Instead, it can be translated to empty model class with `extra = 'allow'`
 
-        {}
+        type: object
 
     =>
 
-        class $name(BaseModel):
+        class Model(BaseModel):
             model_config = pydantic.ConfigDict(
                 extra='allow'
             )
@@ -380,6 +389,11 @@ For example, scalar constraints can be transformed to `Union` type
             Annotated[int, Field(le=10)],
             Annotated[int, Field(ge=20)],
         ]
+
+### `anyOf` and `enum`
+
+1. If `enum` is in `anyOf` sub-schemas, the values are summed as sets.
+
 
 ## `oneOf`
 
@@ -498,8 +512,8 @@ For example, scalar constraints can be transformed to `Union` type
 This is a bottom type:
 
     allOf:
-    - integer
-    - string
+    - type: integer
+    - type: string
 
 #### `allOf` and `nullable`
 
@@ -530,7 +544,7 @@ If `enum` is in `allOf` sub-schemas, the output value is a set intersection of `
 1. Determining named properties:
 
     1. Take all property names from all sub-schemas.
-    1. If there are sub-schemas with `additionalProperties: false`, discard property names that match one of their property names.
+    1. If there are sub-schemas with `additionalProperties: false`, discard property names that don't match any of their sub-schema property names.
 
 1. Determining named property schemas
 
@@ -596,31 +610,32 @@ A python model must be generated for each combination of constraints, meaning th
 
 1. The keyword can be interpreted as a reversal or, in some cases removal of constraints, depending on the constraint.
 
+
         not:
             minimum: 10
 
     =>
 
-        maximum: 20
+        maximum: 10
         exclusiveMaximum: true
 
 1. It can be used to exclude a set or a range of values:
 
-        maximum: 65535
         minimum: 1
+        maximum: 10
         not:
-            maximum: 65534
-            minimum: 65534
+            maximum: 9
+            minimum: 9
         type: integer
 
     =>
 
         type: integer
         oneOf:
-        -   minimum: 1
-            maximum: 65535
-        -   minimum: 65534
-            maximum: 65534
+        - minimum: 1
+          maximum: 8
+        - minimum: 10
+          maximum: 10
 
     =>
 
@@ -631,7 +646,7 @@ A python model must be generated for each combination of constraints, meaning th
 
     Note: this is the only use of `not` I could find in apis.guru catalogue.
 
-## `type` and other keywords
+## Keyword interactions
 ### `type` and `enum`
 
 When `enum` and `type` are both used, any value present in `enum` but whose type is not present in `type` wouldn't validate.
@@ -664,7 +679,6 @@ The default `type` value (not defined) means all types are valid and all constra
         int | str
 
 
-## `type: object` and other keywords
 ### `object` and `oneOf`/`anyOf`
 
 The properties declared directly in the schema are always present (even if nullable, but excluding `writeOnly`/`readOnly`),
@@ -749,20 +763,20 @@ Sub-schemas in `allOf/oneOf` and `allOf/anyOf` must validate separately and cann
     required:
     -   alpha
     allOf:
-    -   oneOf:
-        -   properties:
-                alpha:
-                    multipleOf: 2
-        -   properties:
-                alpha:
-                    multipleOf: 3
-    -   oneOf:
-        -   properties:
-                alpha:
-                    maximum: 20
-        -   properties:
-                alpha:
-                    minimum: 10
+    - oneOf:
+      - properties:
+        alpha:
+          multipleOf: 2
+      - properties:
+        alpha:
+          multipleOf: 3
+    - oneOf:
+      - properties:
+          alpha:
+            maximum: 10
+      - properties:
+        alpha:
+          minimum: 20
 
 Objects that validate would need validate against one of sub-schemas in the first child _and_ one of sub-schemas in the second child.
 In this case the object would need a `int` field named 'alpha' that can be either divisible by 2 _or_ 3 and at the same time either less or equal 10 or more or equal to 20.
@@ -772,9 +786,9 @@ This really describes four possibilities:
 1. divisible by 2 and less or equal 20
 2. divisible by 2 and more or equal 10
 3. divisible by 3 and less or equal 20
-2. divisible by 3 and more or equal 10
+4. divisible by 3 and more or equal 10
 
-We can see wee need to restructure the schema by applying cartesian product and merging the inner allOf sub-schemas:
+We can see we need to restructure the schema by applying cartesian product and merging the inner allOf sub-schemas:
 
     type: object
     properties:
@@ -826,10 +840,10 @@ Now we can see a simple python class like this:
 
     class $name:
         alpha: Union[
-            Annotated[int, Field()]
-            Annotated[int, Field()]
-            Annotated[int, Field()]
-            Annotated[int, Field()]
+            Annotated[int, Field(...)],
+            Annotated[int, Field(...)],
+            Annotated[int, Field(...)],
+            Annotated[int, Field(...)],
         ]
 
 ## Conflicting schemas
@@ -967,7 +981,62 @@ CustomerEnvelope:
            $ref: '#/schemas/Customer'
 ```
 
+## Type naming
+
+### Name mangling
+
+To produce a valid Python identifier from an arbitrary string:
+
+1. replace any literal `u_` in the input with `uu_2` (escape the prefix itself).
+2. If the string is a Python keyword, prefix it with a null byte (`\0`) so that step 2 transforms the first character.
+3. If the first character is not in `[a-zA-Z]`, replace it with `u_{base62(codepoint)}`.
+4. Replace every subsequent character not in `[a-zA-Z0-9_]` with `u_{base62(codepoint)}`.
+
+URL path strings such as `/pets/{id}` are a single segment and are mangled in full - slashes, braces, and other characters all get escaped.
+
+Common examples:
+
+| Input | Result | Reason |
+|---|---|---------------------|
+| `for` | `u_0for` | keyword → `\0for`; `\0` (code point 0) → `u_0` |
+| `/test/` | `u_ltestu_l` | `/` (cp 47) → `u_l` |
+| `/pet/{petId}` | `u_lpetu_lu_1zpetIdu_21` | `/` `{` `}` all escaped |
+| `application/json` | `applicationu_ljson` | `/` (cp 47) → `u_l` |
+| `200` | `u_o00` | `2` (cp 50) → `u_o` |
+
+A `x-lapidary-type-name` extension on a schema overrides the generated class name.
+
+### anyOf / oneOf derived schemas
+
+When distributing a parent schema's constraints into `anyOf` or `oneOf` items (see *allOf and (oneOf or anyOf)*), the merged sub-schemas may differ from the originals. A changed sub-schema must receive a new name - it is a distinct derived type, not the original. Assign synthetic names by index:
+
+- `anyOf` items: `AnyOf0`, `AnyOf1`, ...
+- `oneOf` items: `OneOf0`, `OneOf1`, ...
+- Cartesian product of `anyOf` × `oneOf`: `AnyOneOf0`, `AnyOneOf1`, ...
+
+A sub-schema that is unchanged after distribution keeps its original name.
+
+### Parameter names
+
+OpenAPI scopes parameter names to their location: a `query` parameter a `path` parameter may both be named `id` in the same operation.
+Python function arguments share a single namespace, so in order to avoind naming conflicts each parameter shall be suffixed with a location
+marker to make it unique:
+
+| Location | Suffix |
+|---|---|
+| query | `_q` |
+| path | `_p` |
+| header | `_h` |
+| cookie | `_c` |
+
+A query parameter named `limit` becomes `limit_q`.
+
+A `x-lapidary-name` extension on a parameter overrides the generated name entirely, without any suffix.
+
+Suffixes are used instead of traditional Hungration notation prefixes to facilitate name completion in IDEs.
+
 ## References
 
-1. https://apis.guru/ - a directory of OpenAPI/swagger descriptions.
-1. https://www.learnjsonschema.com/2019-09/ - an extended explanation of JSON Schema keywords. Wrong version, but close enough.
+1. https://spec.openapis.org/oas/v3.0.4.html - the OpenAPI specification.
+1. https://www.learnjsonschema.com/2019-09/ - an extended explanation of JSON Schema keywords. Wrong version, but helpful in many aspects.
+1. https://apis.guru/ - a directory of OpenAPI/swagger descriptions (not updated since 2024).

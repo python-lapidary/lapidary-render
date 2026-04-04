@@ -15,11 +15,12 @@ from lapidary_render.model.python import (
 )
 from lapidary_render.model.python.type_hint import union_of
 from lapidary_render.model.stack import Stack
-from lapidary_render.runtime import JsonValue, ModelBase
+from lapidary_render.runtime import ModelBase
 
 
 @pytest.mark.skip('error')
 def test_additional_properties_schema():
+    # docs/json-schema.md#additionalproperties — schema value generates typed dict annotation
     schema = Schema(
         type=DataType.OBJECT,
         additionalProperties=Schema(
@@ -40,6 +41,7 @@ def test_additional_properties_schema():
 
 @pytest.mark.skip('not implemented')
 def test_properties_and_additional_properties_schema():
+    # docs/json-schema.md#additionalproperties — schema value alongside explicit properties generates __pydantic_extra__ field
     schema = Schema(
         type=DataType.OBJECT,
         properties={'prop1': Schema(type=DataType.NUMBER)},
@@ -54,7 +56,7 @@ def test_properties_and_additional_properties_schema():
 
 @pytest.mark.skip('buggy')
 def test_doesnt_make_nullable_with_enum():
-    """Parent schema is not nullable so resulting type shouldn't be either"""
+    # docs/json-schema.md#nullable-and-enum — null in enum requires type + nullable:true; without them null is excluded
     schema = Schema(
         anyOf=[
             Schema(type=DataType.STRING),
@@ -69,6 +71,7 @@ def test_doesnt_make_nullable_with_enum():
 
 @pytest.mark.skip('not implemented')
 def test_read_write_property():
+    # docs/json-schema.md#writeonly-readonly-and-non-required-properties — readOnly/writeOnly allOf merge produces optional union field
     schema = Schema(
         type=DataType.OBJECT,
         allOf=[
