@@ -159,12 +159,19 @@ def mk_annotated_type(
     alias: str | None = None,
     metadata: Sequence[cst.Name | cst.Attribute | cst.Call] = (),
     indent: int = 1,
-) -> cst.Name | cst.Attribute | cst.Subscript:
-    result: cst.Name | cst.Attribute | cst.Subscript = mk_simple_type_name(typ.typ)
-    if typ.generic_args:
-        result = mk_parametrized_type(
-            result, [mk_annotated_type(arg, indent=indent + 1) for arg in typ.generic_args], indent + 1
-        )
+) -> cst.BaseExpression:
+    result: cst.BaseExpression
+    if typ.typ == python.type_hint.typing_union_type:
+        args = [mk_annotated_type(arg, indent=indent + 1) for arg in typ.generic_args]
+        result = args[0]
+        for arg in args[1:]:
+            result = cst.BinaryOperation(result, cst.BitOr(), arg)
+    else:
+        result = mk_simple_type_name(typ.typ)
+        if typ.generic_args:
+            result = mk_parametrized_type(
+                result, [mk_annotated_type(arg, indent=indent + 1) for arg in typ.generic_args], indent + 1
+            )
 
     constraints = list(typ.num_constraints())
     all_metadata = [
@@ -216,22 +223,6 @@ def mk_parametrized_type(
 ) -> cst.BaseExpression:
     if not args:
         return typ
-    
-    elif (
-        isinstance(typ, cst.Attribute)
-        and isinstance(typ.value, cst.Name)
-        and typ.value.value == 'typing'
-        and typ.attr.value == 'Union'
-    ):
-        result  = args[0]
-        for arg in args[1:]:
-            result = cst.BinaryOperation(
-                result,
-                cst.BitOr(),
-                arg,
-            )
-        return result
-
     else:
         indenter = mk_indent_factory(len(args), indent)
         elements = [
@@ -276,7 +267,7 @@ def mk_function(
     params_kwonly: Sequence[cst.Param] = (),
     param_kwargs: cst.Param | None = None,
     body: Iterable[cst.BaseStatement] = (cst.SimpleStatementLine(body=[cst.Pass()]),),
-    returns: cst.Name | cst.Attribute | cst.Subscript | None = None,
+    returns: cst.BaseExpression | None = None,
     method: bool = False,
     async_: bool = False,
     indent=1,
@@ -312,7 +303,7 @@ def mk_function(
     )
 
 
-def mk_in_annotation(model: python.Parameter, indent: int) -> cst.Attribute | cst.Call:
+def mk_in_annotation(model: python.Parameter, indent: int) -> cst.Attribute | cst.Call | cst.Name:
     in_args = []
     if model.alias:
         in_args.append(str_literal(model.alias))
@@ -353,7 +344,7 @@ def mk_body_annotation(mime_map: python.MimeMap, indent: int) -> cst.Call:
 
 
 def mk_response(response: python.Response) -> cst.Call:
-    args = [mk_body_annotation(response.content, 5)]
+    args: list[cst.BaseExpression] = [mk_body_annotation(response.content, 5)]
     if response.headers_type != python.NoneMetaType:
         args.append(mk_annotated_type(response.headers_type))
     return mk_call(mk_name('lapidary', 'Response'), args, mk_indent_factory(len(args), 4, 1))
@@ -444,7 +435,7 @@ __all__ = (
     )
 
 
-def mk_scope_slice(scopes: Iterable[str]) -> cst.Subscript:
+def mk_scope_slice(scopes: Iterable[str]) -> cst.BaseExpression:
     return mk_parametrized_type(mk_name('typing', 'Literal'), [str_literal(scope) for scope in scopes], 2)
 
 

@@ -84,7 +84,7 @@ CONSTRAINTS: Mapping[str, NameRef] = {
 
 # don't use from_type(types.NoneType): https://github.com/python/cpython/issues/128197
 NoneMetaType = AnnotatedType(NameRef('types', 'NoneType'))
-_UNION = NameRef('typing', 'Union')
+typing_union_type = NameRef('typing', 'Union')
 
 
 def list_of(item: AnnotatedType) -> AnnotatedType:
@@ -94,7 +94,7 @@ def list_of(item: AnnotatedType) -> AnnotatedType:
 def union_of(*types: AnnotatedType) -> AnnotatedType:
     args: set[AnnotatedType] = set()
     for typ in types:
-        if typ.typ == _UNION:
+        if typ.typ == typing_union_type:
             args.update(typ.generic_args)
         else:
             args.add(typ)
@@ -104,7 +104,7 @@ def union_of(*types: AnnotatedType) -> AnnotatedType:
     if len(args) == 1:
         return next(iter(args))
 
-    return AnnotatedType(_UNION, tuple(sorted(args, key=str)))
+    return AnnotatedType(typing_union_type, tuple(sorted(args, key=str)))
 
 
 def tuple_of(*types: AnnotatedType) -> AnnotatedType:
