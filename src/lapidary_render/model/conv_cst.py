@@ -345,21 +345,16 @@ def mk_response(response: python.Response) -> cst.Call:
 
 
 def mk_operation_method(operation: python.OperationFunction) -> cst.FunctionDef:
-    decorator_args = [
-        cst.Arg(str_literal(operation.path)),
-    ]
-    if operation.security is not None:
-        decorator_args.append(
-            cst.Arg(
-                keyword=mk_name('security'),
-                value=mk_security_requirements_expr(operation.security, 2),
-            )
-        )
-    decorator = mk_call(mk_name('lapidary', 'runtime', operation.method), args=decorator_args)
+    decorator = mk_call(
+        mk_name('lapidary', operation.method),
+        args=[
+            cst.Arg(str_literal(operation.path)),
+        ],
+    )
 
     indenter = mk_indent_factory(len(operation.responses), 3, 1)
     responses = mk_call(
-        mk_name('lapidary', 'runtime', 'Responses'),
+        mk_name('lapidary', 'Responses'),
         [
             cst.Dict(
                 [
@@ -474,7 +469,7 @@ def mk_auth_oauth2_passwd(auth: python.PasswordOAuth2Flow, fn_name: cst.Name) ->
     if scope is not None:
         kwargs['scope'] = ' '.join(scope)
 
-    return {auth_name}, httpx_auth.OAuth2ResourceOwnerPasswordCredentials(
+    return httpx_auth.OAuth2ResourceOwnerPasswordCredentials(
         token_url={token_url},
         username=username,
         password=password,
@@ -560,7 +555,7 @@ def mk_auth_oauth2_auth_code(auth: python.AuthorizationCodeOAuth2Flow, fn_name: 
     )
 
 
-def mk_auth_http_digest(auth, fn_name):
+def mk_auth_http_digest(_, fn_name):
     return cst.helpers.parse_template_statement(
         """def {fn_name}(
     user_name: str,
@@ -574,7 +569,7 @@ def mk_auth_http_digest(auth, fn_name):
     )
 
 
-def mk_auth_http_basic(auth, fn_name):
+def mk_auth_http_basic(_, fn_name):
     return cst.helpers.parse_template_statement(
         """def {fn_name}(
     user_name: str,

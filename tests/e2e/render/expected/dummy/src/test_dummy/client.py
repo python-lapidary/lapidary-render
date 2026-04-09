@@ -106,9 +106,6 @@ class ApiClient:
         ]:
         pass
     
-        '/custom-security',
-        security=({'oauth': ('read',)},),
-    )
     @lapidary.get('/custom-security',)
     async def customSecurity(
         self: typing.Self,
@@ -127,9 +124,6 @@ class ApiClient:
         ]:
         pass
     
-        '/insecure',
-        security=(),
-    )
     @lapidary.get('/insecure',)
     async def insecure(
         self: typing.Self,

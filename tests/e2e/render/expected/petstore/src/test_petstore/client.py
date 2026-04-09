@@ -48,10 +48,7 @@ class ApiClient:
         ]:
         pass
     
-    @lapidary.runtime.put(
-        '/pet',
-        security=({'petstore_auth': ('write:pets', 'read:pets')},),
-    )
+    @lapidary.put('/pet',)
     async def updatePet(
         self: typing.Self,
         body: typing.Annotated[
@@ -84,10 +81,7 @@ class ApiClient:
         ]:
         pass
     
-    @lapidary.runtime.get(
-        '/pet/findByStatus',
-        security=({'petstore_auth': ('write:pets', 'read:pets')},),
-    )
+    @lapidary.get('/pet/findByStatus',)
     async def findPetsByStatus(
         self: typing.Self,
         *, status_q: typing.Annotated[
@@ -118,10 +112,7 @@ class ApiClient:
         ]:
         pass
     
-    @lapidary.runtime.get(
-        '/pet/findByTags',
-        security=({'petstore_auth': ('write:pets', 'read:pets')},),
-    )
+    @lapidary.get('/pet/findByTags',)
     async def findPetsByTags(
         self: typing.Self,
         *, tags_q: typing.Annotated[
@@ -152,13 +143,7 @@ class ApiClient:
         ]:
         pass
     
-    @lapidary.runtime.get(
-        '/pet/{petId}',
-        security=(
-            {'api_key': ()},
-            {'petstore_auth': ('write:pets', 'read:pets')},
-        ),
-    )
+    @lapidary.get('/pet/{petId}',)
     async def getPetById(
         self: typing.Self,
         *, petId_p: typing.Annotated[
@@ -186,10 +171,7 @@ class ApiClient:
         ]:
         pass
     
-    @lapidary.runtime.post(
-        '/pet/{petId}',
-        security=({'petstore_auth': ('write:pets', 'read:pets')},),
-    )
+    @lapidary.post('/pet/{petId}',)
     async def updatePetWithForm(
         self: typing.Self,
         *, petId_p: typing.Annotated[
@@ -220,10 +202,7 @@ class ApiClient:
         ]:
         pass
     
-    @lapidary.runtime.delete(
-        '/pet/{petId}',
-        security=({'petstore_auth': ('write:pets', 'read:pets')},),
-    )
+    @lapidary.delete('/pet/{petId}',)
     async def deletePet(
         self: typing.Self,
         *, petId_p: typing.Annotated[
@@ -247,10 +226,7 @@ class ApiClient:
         ]:
         pass
     
-    @lapidary.runtime.post(
-        '/pet/{petId}/uploadImage',
-        security=({'petstore_auth': ('write:pets', 'read:pets')},),
-    )
+    @lapidary.post('/pet/{petId}/uploadImage',)
     async def uploadFile(
         self: typing.Self,
         *, petId_p: typing.Annotated[
@@ -279,10 +255,7 @@ class ApiClient:
         ]:
         pass
     
-    @lapidary.runtime.get(
-        '/store/inventory',
-        security=({'api_key': ()},),
-    )
+    @lapidary.get('/store/inventory',)
     async def getInventory(
         self: typing.Self,
     ) -> typing.Annotated[
