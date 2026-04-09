@@ -317,66 +317,6 @@ def mk_operation_params(operation: python.OperationFunction) -> Iterator[cst.Par
         )
 
 
-def mk_client_init_fn(model: python.ClientInit) -> cst.FunctionDef:
-    name_base_url = cst.Name('base_url')
-    name_kwargs = cst.Name('kwargs')
-    args = [cst.Arg(keyword=name_base_url, value=name_base_url), cst.Arg(star='**', value=name_kwargs)]
-    if model.security:
-        args.insert(0, cst.Arg(keyword=cst.Name('security'), value=mk_security_requirements_expr(model.security, 2)))
-
-    return mk_function(
-        name='__init__',
-        params=[cst.Param(cst.Name('self'))],
-        params_kwonly=[
-            cst.Param(
-                name_base_url,
-                cst.Annotation(cst.Name('str')),
-                default=str_literal(model.base_url) if model.base_url else None,
-            )
-        ],
-        param_kwargs=cst.Param(name_kwargs),
-        returns=cst.Name('None'),
-        body=[
-            cst.SimpleStatementLine(
-                [
-                    cst.Expr(
-                        mk_call(
-                            cst.Attribute(
-                                mk_call('super'),
-                                cst.Name('__init__'),
-                            ),
-                            args,
-                        )
-                    )
-                ]
-            )
-        ],
-    )
-
-
-def mk_security_requirements_expr(reqs: python.SecurityRequirements, indent=1) -> cst.BaseExpression:
-    indenter = mk_indent_factory(len(reqs), indent)
-    return cst.Tuple(
-        [
-            cst.Element(
-                cst.Dict(
-                    [
-                        cst.DictElement(str_literal(name_), cst.Tuple([cst.Element(str_literal(arg)) for arg in args]))
-                        for name_, args in item.items()
-                    ]
-                ),
-                cst.Comma(whitespace_after=indenter(idx)),
-            )
-            for idx, item in enumerate(reqs)
-        ],
-        lpar=[
-            cst.LeftParen(
-                whitespace_after=indenter(-1),
-            ),
-        ],
-    )
-
-
 def mk_body_annotation(mime_map: python.MimeMap, indent: int) -> cst.Call:
     indenter = mk_indent_factory(len(mime_map), indent, break_threshold=1)
     return mk_call(
@@ -459,7 +399,20 @@ def mk_operation_method(operation: python.OperationFunction) -> cst.FunctionDef:
 
 
 def mk_client_module(module: python.ClientModule) -> cst.Module:
-    body = [mk_client_init_fn(module.body.init_method)]
+    body = []
+
+    if module.body.base_url:
+        body.append(
+            cst.SimpleStatementLine(
+                body=[
+                    cst.Assign(
+                        targets=[cst.AssignTarget(cst.Name('lapidary_base_url'))],
+                        value=str_literal(module.body.base_url),
+                    )
+                ],
+            )
+        )
+
     with click.progressbar(module.body.methods, label='Rendering operations', show_eta=True) as bar:
         for operation in module.body.methods:
             bar.update(1, operation)
@@ -477,7 +430,6 @@ __all__ = (
             mk_class_def(
                 class_name='ApiClient',
                 body=body,
-                parent=mk_name('lapidary', 'runtime', 'ClientBase'),
             ),
         ],
     )

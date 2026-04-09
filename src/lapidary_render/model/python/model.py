@@ -198,31 +198,11 @@ class SchemaClass:
 
 
 @dc.dataclass
-class ClientInit:
-    default_auth: str | None = None
-    auth_models: Mapping[str, Auth] = dc.field(default_factory=dict)
-    base_url: str | None = None
-
-    # FIXME
-    # headers: Iterable[tuple[str, str]] = dc.field(default_factory=list)
-    # response_map: ResponseMap = dc.field(default_factory=dict)
-
-    security: SecurityRequirements | None = None
-
-    def dependencies(self) -> Iterable[NameRef]:
-        yield from ()
-        # FIXME
-        # for mime_map in self.response_map.values():
-        #     yield from mime_map.values()
-
-
-@dc.dataclass(frozen=True)
 class ClientClass:
-    init_method: ClientInit
+    base_url: str | None = None
     methods: list[OperationFunction] = dc.field(default_factory=list)
 
     def dependencies(self) -> Iterable[NameRef]:
-        yield from self.init_method.dependencies()
         for fn in self.methods:
             yield from fn.dependencies()
 

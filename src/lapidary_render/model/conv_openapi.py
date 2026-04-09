@@ -35,7 +35,7 @@ class OpenApi30Converter:
         self.target = python.ClientModel(
             client=python.ClientModule(
                 path=python.ModulePath((str(self.root_package), 'client')),
-                body=python.ClientClass(init_method=python.ClientInit()),
+                body=python.ClientClass(),
             ),
             package=str(root_package),
         )
@@ -113,7 +113,7 @@ class OpenApi30Converter:
 
             server_url = urljoin(self._origin, server_url)
 
-        self.target.client.body.init_method.base_url = server_url
+        self.target.client.body.base_url = server_url
 
     def process_global_headers(self, value: Mapping[str, openapi.Header], stack: Stack) -> None:
         logger.debug('Process global headers %s', stack)
@@ -375,7 +375,7 @@ class OpenApi30Converter:
         return typ
 
     def process_global_security(self, value: Iterable[openapi.SecurityRequirement] | None, stack: Stack) -> None:
-        self.target.client.body.init_method.security = self.process_security(value, stack)
+        self.process_security(value, stack)
 
     def process_security(
         self, value: Iterable[openapi.SecurityRequirement] | None, stack: Stack

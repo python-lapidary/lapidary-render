@@ -18,22 +18,10 @@ import test_petstore.paths.u_luseru_llogin.get.responses.u_o00.headers
 import types
 
 
-class ApiClient(lapidary.runtime.ClientBase):
+class ApiClient:
+    lapidary_base_url = 'https://petstore3.swagger.io/v3'
     
-    def __init__(
-        self,
-        *, base_url: str = 'https://petstore3.swagger.io/v3',
-        **kwargs,
-    ) -> None:
-        super().__init__(
-            base_url=base_url,
-            **kwargs,
-        )
-    
-    @lapidary.runtime.post(
-        '/pet',
-        security=({'petstore_auth': ('write:pets', 'read:pets')},),
-    )
+    @lapidary.post('/pet',)
     async def addPet(
         self: typing.Self,
         body: typing.Annotated[

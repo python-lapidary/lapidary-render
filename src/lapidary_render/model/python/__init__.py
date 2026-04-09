@@ -13,7 +13,6 @@ from .model import (
     AuthorizationCodeOAuth2Flow,
     ClientClass,
     ClientCredentialsOAuth2Flow,
-    ClientInit,
     HttpBasicAuth,
     HttpDigestAuth,
     ImplicitOAuth2Flow,

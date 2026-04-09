@@ -22,4 +22,4 @@ def test_servers(document_path: Path, expected: str | None):
 
     converter = conv_openapi.OpenApi30Converter(python.ModulePath('package', False), document, None)
     converter.process_servers(document.servers, Stack(('#', 'servers')))
-    assert converter.target.client.body.init_method.base_url == expected
+    assert converter.target.client.body.base_url == expected

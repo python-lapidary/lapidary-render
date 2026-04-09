@@ -21,28 +21,10 @@ import test_dummy.paths.u_ltestu_l.get.responses.default.headers
 import types
 
 
-class ApiClient(lapidary.runtime.ClientBase):
+class ApiClient:
+    lapidary_base_url = '/'
     
-    def __init__(
-        self,
-        *, base_url: str = '/',
-        **kwargs,
-    ) -> None:
-        super().__init__(
-            security=(
-                {'oauth-refresh': ('read', 'write')},
-                {'oauth': ('read', 'write')},
-                {'api-key': ()},
-                {'api-key-cookie': ()},
-                {'api-key-query': ()},
-                {'http_basic': ()},
-                {'http_digest': ()},
-            ),
-            base_url=base_url,
-            **kwargs,
-        )
-    
-    @lapidary.runtime.get('/test/',)
+    @lapidary.get('/test/',)
     async def test_op(
         self: typing.Self,
         *, param1_q: typing.Annotated[
