@@ -11,7 +11,7 @@ template_imports = [
     'builtins',
     'typing',
     'typing_extensions',
-    'lapidary.runtime',
+    'lapidary',
 ]
 
 

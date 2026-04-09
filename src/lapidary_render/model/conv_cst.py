@@ -60,7 +60,7 @@ def mk_schema_module(model: python.SchemaModule) -> cst.Module:
                 mk_class_def(
                     class_name=class_model.name,
                     body=list(mk_schema_class_body(class_model)),
-                    parent=mk_name('lapidary', 'runtime', 'ModelBase'),
+                    parent=mk_name('lapidary', 'ModelBase'),
                 )
                 for class_model in model.body
             ),
@@ -302,8 +302,8 @@ def mk_in_annotation(model: python.Parameter, indent: int) -> cst.Attribute | cs
     if model.alias:
         in_args.append(str_literal(model.alias))
     if model.style:
-        in_args.append(cst.Arg(keyword=cst.Name('style'), value=mk_name('lapidary', 'runtime', model.style.value)))
-    in_ = mk_name('lapidary', 'runtime', model.in_)
+        in_args.append(cst.Arg(keyword=cst.Name('style'), value=mk_name('lapidary', model.style.value)))
+    in_ = mk_name('lapidary', model.in_)
     return mk_call(in_, in_args, indent) if in_args else in_
 
 
@@ -319,7 +319,7 @@ def mk_operation_params(operation: python.OperationFunction) -> Iterator[cst.Par
 def mk_body_annotation(mime_map: python.MimeMap, indent: int) -> cst.Call:
     indenter = mk_indent_factory(len(mime_map), indent, break_threshold=1)
     return mk_call(
-        mk_name('lapidary', 'runtime', 'Body'),
+        mk_name('lapidary', 'Body'),
         [
             cst.Dict(
                 [
@@ -341,7 +341,7 @@ def mk_response(response: python.Response) -> cst.Call:
     args = [mk_body_annotation(response.content, 5)]
     if response.headers_type != python.NoneMetaType:
         args.append(mk_annotated_type(response.headers_type))
-    return mk_call(mk_name('lapidary', 'runtime', 'Response'), args, mk_indent_factory(len(args), 4, 1))
+    return mk_call(mk_name('lapidary', 'Response'), args, mk_indent_factory(len(args), 4, 1))
 
 
 def mk_operation_method(operation: python.OperationFunction) -> cst.FunctionDef:
@@ -599,7 +599,7 @@ def mk_auth_api_key(auth: python.ApiKeyAuth, fn_name: cst.Name):
         {param_name}={auth_key},
     )""",
         fn_name=fn_name,
-        auth_class=mk_name('lapidary', 'runtime', 'auth', auth.location.value.capitalize() + 'ApiKey'),
+        auth_class=mk_name('lapidary', 'auth', auth.location.value.capitalize() + 'ApiKey'),
         param_name=cst.Name(param_name),
         auth_key=str_literal(auth.key),
     )
@@ -611,7 +611,7 @@ def mk_security_module(module: python.SecurityModule) -> cst.Module:
         body=[
             FUTURE_ANNOTATIONS,
             *(mk_imports(module)),
-            cst.SimpleStatementLine([cst.Import([cst.ImportAlias(mk_name('lapidary', 'runtime', 'auth'))])]),
+            cst.SimpleStatementLine([cst.Import([cst.ImportAlias(mk_name('lapidary', 'auth'))])]),
             *(mk_security_fn(auth).with_changes(leading_lines=DBL_EMPTY_LINE) for auth in module.body.values()),
         ],
     )
@@ -650,14 +650,10 @@ def mk_import(module: str) -> cst.Import:
 
 def mk_imports(module: python.AbstractModule) -> Iterator[cst.SimpleStatementLine]:
     imports = [
-        cst.SimpleStatementLine([cst.Import([cst.ImportAlias(mk_name('lapidary', 'runtime'))])], [cst.EmptyLine()]),
+        cst.SimpleStatementLine([cst.Import([cst.ImportAlias(mk_name('lapidary'))])], [cst.EmptyLine()]),
         cst.Import([cst.ImportAlias(cst.Name('pydantic'))]),
         cst.Import([cst.ImportAlias(cst.Name('typing_extensions'), cst.AsName(cst.Name('typing')))]),
-        *(
-            mk_import(mod_name)
-            for mod_name in module.imports
-            if mod_name not in ('pydantic', 'typing', 'lapidary.runtime')
-        ),
+        *(mk_import(mod_name) for mod_name in module.imports if mod_name not in ('pydantic', 'typing', 'lapidary')),
     ]
     return (cst.SimpleStatementLine([imp]) if not isinstance(imp, cst.SimpleStatementLine) else imp for imp in imports)
 

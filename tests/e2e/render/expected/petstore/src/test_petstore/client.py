@@ -6,7 +6,7 @@ __all__ = (
     'ApiClient',
 )
 
-import lapidary.runtime
+import lapidary
 import pydantic
 import typing_extensions as typing
 import test_petstore.components.schemas.ApiResponse.schema
@@ -26,7 +26,7 @@ class ApiClient:
         self: typing.Self,
         body: typing.Annotated[
             test_petstore.components.schemas.Pet.schema.Pet,
-            lapidary.runtime.Body({
+            lapidary.Body({
                 'application/json': test_petstore.components.schemas.Pet.schema.Pet,
             },),
         ],
@@ -35,14 +35,14 @@ class ApiClient:
             test_petstore.components.schemas.Pet.schema.Pet,
             None,
         ],
-            lapidary.runtime.Responses({
-                '200': lapidary.runtime.Response(
-                    lapidary.runtime.Body({
+            lapidary.Responses({
+                '200': lapidary.Response(
+                    lapidary.Body({
                         'application/json': test_petstore.components.schemas.Pet.schema.Pet,
                     },),
                 ),
-                '405': lapidary.runtime.Response(
-                    lapidary.runtime.Body({},),
+                '405': lapidary.Response(
+                    lapidary.Body({},),
                 ),
             },),
         ]:
@@ -56,7 +56,7 @@ class ApiClient:
         self: typing.Self,
         body: typing.Annotated[
             test_petstore.components.schemas.Pet.schema.Pet,
-            lapidary.runtime.Body({
+            lapidary.Body({
                 'application/json': test_petstore.components.schemas.Pet.schema.Pet,
             },),
         ],
@@ -65,20 +65,20 @@ class ApiClient:
             test_petstore.components.schemas.Pet.schema.Pet,
             None,
         ],
-            lapidary.runtime.Responses({
-                '200': lapidary.runtime.Response(
-                    lapidary.runtime.Body({
+            lapidary.Responses({
+                '200': lapidary.Response(
+                    lapidary.Body({
                         'application/json': test_petstore.components.schemas.Pet.schema.Pet,
                     },),
                 ),
-                '400': lapidary.runtime.Response(
-                    lapidary.runtime.Body({},),
+                '400': lapidary.Response(
+                    lapidary.Body({},),
                 ),
-                '404': lapidary.runtime.Response(
-                    lapidary.runtime.Body({},),
+                '404': lapidary.Response(
+                    lapidary.Body({},),
                 ),
-                '405': lapidary.runtime.Response(
-                    lapidary.runtime.Body({},),
+                '405': lapidary.Response(
+                    lapidary.Body({},),
                 ),
             },),
         ]:
@@ -97,7 +97,7 @@ class ApiClient:
         ],
             lapidary.runtime.Query(
         'status',
-        style=lapidary.runtime.FormExplode,
+        style=lapidary.FormExplode,
     ),
         ] = None,
     ) -> typing.Annotated[
@@ -105,14 +105,14 @@ class ApiClient:
             list[test_petstore.components.schemas.Pet.schema.Pet,],
             None,
         ],
-            lapidary.runtime.Responses({
-                '200': lapidary.runtime.Response(
-                    lapidary.runtime.Body({
+            lapidary.Responses({
+                '200': lapidary.Response(
+                    lapidary.Body({
                         'application/json': list[test_petstore.components.schemas.Pet.schema.Pet,],
                     },),
                 ),
-                '400': lapidary.runtime.Response(
-                    lapidary.runtime.Body({},),
+                '400': lapidary.Response(
+                    lapidary.Body({},),
                 ),
             },),
         ]:
@@ -131,7 +131,7 @@ class ApiClient:
         ],
             lapidary.runtime.Query(
         'tags',
-        style=lapidary.runtime.FormExplode,
+        style=lapidary.FormExplode,
     ),
         ] = None,
     ) -> typing.Annotated[
@@ -139,14 +139,14 @@ class ApiClient:
             list[test_petstore.components.schemas.Pet.schema.Pet,],
             None,
         ],
-            lapidary.runtime.Responses({
-                '200': lapidary.runtime.Response(
-                    lapidary.runtime.Body({
+            lapidary.Responses({
+                '200': lapidary.Response(
+                    lapidary.Body({
                         'application/json': list[test_petstore.components.schemas.Pet.schema.Pet,],
                     },),
                 ),
-                '400': lapidary.runtime.Response(
-                    lapidary.runtime.Body({},),
+                '400': lapidary.Response(
+                    lapidary.Body({},),
                 ),
             },),
         ]:
@@ -163,24 +163,24 @@ class ApiClient:
         self: typing.Self,
         *, petId_p: typing.Annotated[
             int,
-            lapidary.runtime.Path('petId',),
+            lapidary.Path('petId',),
         ],
     ) -> typing.Annotated[
             tuple[
             test_petstore.components.schemas.Pet.schema.Pet,
             None,
         ],
-            lapidary.runtime.Responses({
-                '200': lapidary.runtime.Response(
-                    lapidary.runtime.Body({
+            lapidary.Responses({
+                '200': lapidary.Response(
+                    lapidary.Body({
                         'application/json': test_petstore.components.schemas.Pet.schema.Pet,
                     },),
                 ),
-                '400': lapidary.runtime.Response(
-                    lapidary.runtime.Body({},),
+                '400': lapidary.Response(
+                    lapidary.Body({},),
                 ),
-                '404': lapidary.runtime.Response(
-                    lapidary.runtime.Body({},),
+                '404': lapidary.Response(
+                    lapidary.Body({},),
                 ),
             },),
         ]:
@@ -194,7 +194,7 @@ class ApiClient:
         self: typing.Self,
         *, petId_p: typing.Annotated[
             int,
-            lapidary.runtime.Path('petId',),
+            lapidary.Path('petId',),
         ],
         name_q: typing.Annotated[
             typing.Union[
@@ -212,9 +212,9 @@ class ApiClient:
         ] = None,
     ) -> typing.Annotated[
             None,
-            lapidary.runtime.Responses({
-                '405': lapidary.runtime.Response(
-                    lapidary.runtime.Body({},),
+            lapidary.Responses({
+                '405': lapidary.Response(
+                    lapidary.Body({},),
                 ),
             },),
         ]:
@@ -228,7 +228,7 @@ class ApiClient:
         self: typing.Self,
         *, petId_p: typing.Annotated[
             int,
-            lapidary.runtime.Path('petId',),
+            lapidary.Path('petId',),
         ],
         meta: typing.Annotated[
             typing.Union[
@@ -239,9 +239,9 @@ class ApiClient:
         ] = None,
     ) -> typing.Annotated[
             None,
-            lapidary.runtime.Responses({
-                '400': lapidary.runtime.Response(
-                    lapidary.runtime.Body({},),
+            lapidary.Responses({
+                '400': lapidary.Response(
+                    lapidary.Body({},),
                 ),
             },),
         ]:
@@ -255,7 +255,7 @@ class ApiClient:
         self: typing.Self,
         *, petId_p: typing.Annotated[
             int,
-            lapidary.runtime.Path('petId',),
+            lapidary.Path('petId',),
         ],
         additionalMetadata_q: typing.Annotated[
             typing.Union[
@@ -269,9 +269,9 @@ class ApiClient:
             test_petstore.components.schemas.ApiResponse.schema.ApiResponse,
             None,
         ],
-            lapidary.runtime.Responses({
-                '200': lapidary.runtime.Response(
-                    lapidary.runtime.Body({
+            lapidary.Responses({
+                '200': lapidary.Response(
+                    lapidary.Body({
                         'application/json': test_petstore.components.schemas.ApiResponse.schema.ApiResponse,
                     },),
                 ),
@@ -293,9 +293,9 @@ class ApiClient:
             ],
             None,
         ],
-            lapidary.runtime.Responses({
-                '200': lapidary.runtime.Response(
-                    lapidary.runtime.Body({
+            lapidary.Responses({
+                '200': lapidary.Response(
+                    lapidary.Body({
                         'application/json': dict[
                             str,
                             pydantic.JsonValue,
@@ -306,12 +306,12 @@ class ApiClient:
         ]:
         pass
     
-    @lapidary.runtime.post('/store/order',)
+    @lapidary.post('/store/order',)
     async def placeOrder(
         self: typing.Self,
         body: typing.Annotated[
             test_petstore.components.schemas.Order.schema.Order,
-            lapidary.runtime.Body({
+            lapidary.Body({
                 'application/json': test_petstore.components.schemas.Order.schema.Order,
             },),
         ],
@@ -320,73 +320,73 @@ class ApiClient:
             test_petstore.components.schemas.Order.schema.Order,
             None,
         ],
-            lapidary.runtime.Responses({
-                '200': lapidary.runtime.Response(
-                    lapidary.runtime.Body({
+            lapidary.Responses({
+                '200': lapidary.Response(
+                    lapidary.Body({
                         'application/json': test_petstore.components.schemas.Order.schema.Order,
                     },),
                 ),
-                '405': lapidary.runtime.Response(
-                    lapidary.runtime.Body({},),
+                '405': lapidary.Response(
+                    lapidary.Body({},),
                 ),
             },),
         ]:
         pass
     
-    @lapidary.runtime.get('/store/order/{orderId}',)
+    @lapidary.get('/store/order/{orderId}',)
     async def getOrderById(
         self: typing.Self,
         *, orderId_p: typing.Annotated[
             int,
-            lapidary.runtime.Path('orderId',),
+            lapidary.Path('orderId',),
         ],
     ) -> typing.Annotated[
             tuple[
             test_petstore.components.schemas.Order.schema.Order,
             None,
         ],
-            lapidary.runtime.Responses({
-                '200': lapidary.runtime.Response(
-                    lapidary.runtime.Body({
+            lapidary.Responses({
+                '200': lapidary.Response(
+                    lapidary.Body({
                         'application/json': test_petstore.components.schemas.Order.schema.Order,
                     },),
                 ),
-                '400': lapidary.runtime.Response(
-                    lapidary.runtime.Body({},),
+                '400': lapidary.Response(
+                    lapidary.Body({},),
                 ),
-                '404': lapidary.runtime.Response(
-                    lapidary.runtime.Body({},),
+                '404': lapidary.Response(
+                    lapidary.Body({},),
                 ),
             },),
         ]:
         pass
     
-    @lapidary.runtime.delete('/store/order/{orderId}',)
+    @lapidary.delete('/store/order/{orderId}',)
     async def deleteOrder(
         self: typing.Self,
         *, orderId_p: typing.Annotated[
             int,
-            lapidary.runtime.Path('orderId',),
+            lapidary.Path('orderId',),
         ],
     ) -> typing.Annotated[
             None,
-            lapidary.runtime.Responses({
-                '400': lapidary.runtime.Response(
-                    lapidary.runtime.Body({},),
+            lapidary.Responses({
+                '400': lapidary.Response(
+                    lapidary.Body({},),
                 ),
-                '404': lapidary.runtime.Response(
-                    lapidary.runtime.Body({},),
+                '404': lapidary.Response(
+                    lapidary.Body({},),
                 ),
             },),
         ]:
         pass
     
-    @lapidary.runtime.post('/user',)
+    @lapidary.post('/user',)
     async def createUser(
         self: typing.Self,
         body: typing.Annotated[
             test_petstore.components.schemas.User.schema.User,
-            lapidary.runtime.Body({
+            lapidary.Body({
                 'application/json': test_petstore.components.schemas.User.schema.User,
             },),
         ],
@@ -395,9 +395,9 @@ class ApiClient:
             test_petstore.components.schemas.User.schema.User,
             None,
         ],
-            lapidary.runtime.Responses({
-                'default': lapidary.runtime.Response(
-                    lapidary.runtime.Body({
+            lapidary.Responses({
+                'default': lapidary.Response(
+                    lapidary.Body({
                         'application/json': test_petstore.components.schemas.User.schema.User,
                     },),
                 ),
@@ -405,12 +405,12 @@ class ApiClient:
         ]:
         pass
     
-    @lapidary.runtime.post('/user/createWithList',)
+    @lapidary.post('/user/createWithList',)
     async def createUsersWithListInput(
         self: typing.Self,
         body: typing.Annotated[
             list[test_petstore.components.schemas.User.schema.User,],
-            lapidary.runtime.Body({
+            lapidary.Body({
                 'application/json': list[test_petstore.components.schemas.User.schema.User,],
             },),
         ],
@@ -425,20 +425,20 @@ class ApiClient:
                 None,
             ],
         ],
-            lapidary.runtime.Responses({
-                '200': lapidary.runtime.Response(
-                    lapidary.runtime.Body({
+            lapidary.Responses({
+                '200': lapidary.Response(
+                    lapidary.Body({
                         'application/json': test_petstore.components.schemas.User.schema.User,
                     },),
                 ),
-                'default': lapidary.runtime.Response(
-                    lapidary.runtime.Body({},),
+                'default': lapidary.Response(
+                    lapidary.Body({},),
                 ),
             },),
         ]:
         pass
     
-    @lapidary.runtime.get('/user/login',)
+    @lapidary.get('/user/login',)
     async def loginUser(
         self: typing.Self,
         *, username_q: typing.Annotated[
@@ -446,35 +446,35 @@ class ApiClient:
             str,
             None,
         ],
-            lapidary.runtime.Query('username',),
+            lapidary.Query('username',),
         ] = None,
         password_q: typing.Annotated[
             typing.Union[
             str,
             None,
         ],
-            lapidary.runtime.Query('password',),
+            lapidary.Query('password',),
         ] = None,
     ) -> typing.Annotated[
             tuple[
             str,
             test_petstore.paths.u_luseru_llogin.get.responses.u_o00.headers.ResponseMetadata,
         ],
-            lapidary.runtime.Responses({
-                '200': lapidary.runtime.Response(
-                    lapidary.runtime.Body({
+            lapidary.Responses({
+                '200': lapidary.Response(
+                    lapidary.Body({
                         'application/json': str,
                     },),
                     test_petstore.paths.u_luseru_llogin.get.responses.u_o00.headers.ResponseMetadata,
                 ),
-                '400': lapidary.runtime.Response(
-                    lapidary.runtime.Body({},),
+                '400': lapidary.Response(
+                    lapidary.Body({},),
                 ),
             },),
         ]:
         pass
     
-    @lapidary.runtime.get('/user/logout',)
+    @lapidary.get('/user/logout',)
     async def logoutUser(
         self: typing.Self,
     ) -> typing.Annotated[
@@ -482,83 +482,83 @@ class ApiClient:
             None,
             None,
         ],
-            lapidary.runtime.Responses({
-                'default': lapidary.runtime.Response(
-                    lapidary.runtime.Body({},),
+            lapidary.Responses({
+                'default': lapidary.Response(
+                    lapidary.Body({},),
                 ),
             },),
         ]:
         pass
     
-    @lapidary.runtime.get('/user/{username}',)
+    @lapidary.get('/user/{username}',)
     async def getUserByName(
         self: typing.Self,
         *, username_p: typing.Annotated[
             str,
-            lapidary.runtime.Path('username',),
+            lapidary.Path('username',),
         ],
     ) -> typing.Annotated[
             tuple[
             test_petstore.components.schemas.User.schema.User,
             None,
         ],
-            lapidary.runtime.Responses({
-                '200': lapidary.runtime.Response(
-                    lapidary.runtime.Body({
+            lapidary.Responses({
+                '200': lapidary.Response(
+                    lapidary.Body({
                         'application/json': test_petstore.components.schemas.User.schema.User,
                     },),
                 ),
-                '400': lapidary.runtime.Response(
-                    lapidary.runtime.Body({},),
+                '400': lapidary.Response(
+                    lapidary.Body({},),
                 ),
-                '404': lapidary.runtime.Response(
-                    lapidary.runtime.Body({},),
+                '404': lapidary.Response(
+                    lapidary.Body({},),
                 ),
             },),
         ]:
         pass
     
-    @lapidary.runtime.put('/user/{username}',)
+    @lapidary.put('/user/{username}',)
     async def updateUser(
         self: typing.Self,
         body: typing.Annotated[
             test_petstore.components.schemas.User.schema.User,
-            lapidary.runtime.Body({
+            lapidary.Body({
                 'application/json': test_petstore.components.schemas.User.schema.User,
             },),
         ],
         *, username_p: typing.Annotated[
             str,
-            lapidary.runtime.Path('username',),
+            lapidary.Path('username',),
         ],
     ) -> typing.Annotated[
             tuple[
             None,
             None,
         ],
-            lapidary.runtime.Responses({
-                'default': lapidary.runtime.Response(
-                    lapidary.runtime.Body({},),
+            lapidary.Responses({
+                'default': lapidary.Response(
+                    lapidary.Body({},),
                 ),
             },),
         ]:
         pass
     
-    @lapidary.runtime.delete('/user/{username}',)
+    @lapidary.delete('/user/{username}',)
     async def deleteUser(
         self: typing.Self,
         *, username_p: typing.Annotated[
             str,
-            lapidary.runtime.Path('username',),
+            lapidary.Path('username',),
         ],
     ) -> typing.Annotated[
             None,
-            lapidary.runtime.Responses({
-                '400': lapidary.runtime.Response(
-                    lapidary.runtime.Body({},),
+            lapidary.Responses({
+                '400': lapidary.Response(
+                    lapidary.Body({},),
                 ),
-                '404': lapidary.runtime.Response(
-                    lapidary.runtime.Body({},),
+                '404': lapidary.Response(
+                    lapidary.Body({},),
                 ),
             },),
         ]:

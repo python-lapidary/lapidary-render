@@ -71,7 +71,7 @@ def test_property_schema(doc_dummy: openapi.OpenAPI) -> None:
     )
     assert schema.as_type('package') == python.SchemaClass(
         name='schema',
-        base_type=python.NameRef(module='lapidary.runtime', name='ModelBase'),
+        base_type=python.NameRef(module='lapidary', name='ModelBase'),
         allow_extra=False,
         fields=[
             python.AnnotatedVariable(
@@ -410,7 +410,7 @@ def test_process_union_object_int():
     model = converter.process_schema()
     assert [t for sub in model.dependencies() if (t := sub.as_type('package')) is not None][0] == python.SchemaClass(
         'schema1',
-        python.NameRef('lapidary.runtime', 'ModelBase'),
+        python.NameRef('lapidary', 'ModelBase'),
         True,
         fields=[
             python.AnnotatedVariable(

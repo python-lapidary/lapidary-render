@@ -6,7 +6,7 @@ __all__ = (
     'ApiClient',
 )
 
-import lapidary.runtime
+import lapidary
 import pydantic
 import typing_extensions as typing
 import annotated_types
@@ -37,28 +37,28 @@ class ApiClient:
             test_dummy.components.schemas.schema1.schema.schema1,
             None,
         ],
-            lapidary.runtime.Query('param1',),
+            lapidary.Query('param1',),
         ],
         param2_q: typing.Annotated[
             typing.Union[
             test_dummy.paths.u_ltestu_l.get.parameters.u_n.schema.schema.schema,
             None,
         ],
-            lapidary.runtime.Query('param2',),
+            lapidary.Query('param2',),
         ] = None,
         param3_q: typing.Annotated[
             typing.Union[
             datetime.date,
             None,
         ],
-            lapidary.runtime.Query('param3',),
+            lapidary.Query('param3',),
         ] = None,
         meta: typing.Annotated[
             typing.Union[
             test_dummy.paths.u_ltestu_l.get.parameters.meta.RequestMetadata,
             None,
         ],
-            lapidary.runtime.Metadata,
+            lapidary.Metadata,
         ] = None,
     ) -> typing.Annotated[
             typing.Union[
@@ -73,13 +73,14 @@ class ApiClient:
         ],
             lapidary.runtime.Responses({
                 'default': lapidary.runtime.Response(
-                    lapidary.runtime.Body({
+                    lapidary.Body({
                         'application/json': test_dummy.components.schemas.all.schema.all,
                     },),
                     test_dummy.paths.u_ltestu_l.get.responses.default.headers.ResponseMetadata,
                 ),
                 '2XX': lapidary.runtime.Response(
                     lapidary.runtime.Body({
+                    lapidary.Body({
                         'application/json': test_dummy.components.schemas.all.schema.all,
                     },),
                 ),
@@ -87,7 +88,7 @@ class ApiClient:
         ]:
         pass
     
-    @lapidary.runtime.get('/inline_schema_properties/',)
+    @lapidary.get('/inline_schema_properties/',)
     async def inline_schema_properties(
         self: typing.Self,
     ) -> typing.Annotated[
@@ -95,9 +96,9 @@ class ApiClient:
             test_dummy.paths.u_linline_schema_propertiesu_l.get.responses.default.content.applicationu_ljson.schema.schema.schema,
             None,
         ],
-            lapidary.runtime.Responses({
-                'default': lapidary.runtime.Response(
-                    lapidary.runtime.Body({
+            lapidary.Responses({
+                'default': lapidary.Response(
+                    lapidary.Body({
                         'application/json': test_dummy.paths.u_linline_schema_propertiesu_l.get.responses.default.content.applicationu_ljson.schema.schema.schema,
                     },),
                 ),
@@ -105,10 +106,10 @@ class ApiClient:
         ]:
         pass
     
-    @lapidary.runtime.get(
         '/custom-security',
         security=({'oauth': ('read',)},),
     )
+    @lapidary.get('/custom-security',)
     async def customSecurity(
         self: typing.Self,
     ) -> typing.Annotated[
@@ -116,9 +117,9 @@ class ApiClient:
             list[test_dummy.components.schemas.all.schema.all,],
             None,
         ],
-            lapidary.runtime.Responses({
-                'default': lapidary.runtime.Response(
-                    lapidary.runtime.Body({
+            lapidary.Responses({
+                'default': lapidary.Response(
+                    lapidary.Body({
                         'application/json': list[test_dummy.components.schemas.all.schema.all,],
                     },),
                 ),
@@ -126,15 +127,15 @@ class ApiClient:
         ]:
         pass
     
-    @lapidary.runtime.get(
         '/insecure',
         security=(),
     )
+    @lapidary.get('/insecure',)
     async def insecure(
         self: typing.Self,
         body: typing.Annotated[
             test_dummy.components.requestBodies.dummy.content.applicationu_ljson.schema.schema.schema,
-            lapidary.runtime.Body({
+            lapidary.Body({
                 'application/json': test_dummy.components.requestBodies.dummy.content.applicationu_ljson.schema.schema.schema,
             },),
         ],
@@ -143,9 +144,9 @@ class ApiClient:
             test_dummy.components.schemas.all.schema.all,
             None,
         ],
-            lapidary.runtime.Responses({
-                'default': lapidary.runtime.Response(
-                    lapidary.runtime.Body({
+            lapidary.Responses({
+                'default': lapidary.Response(
+                    lapidary.Body({
                         'application/json': test_dummy.components.schemas.all.schema.all,
                     },),
                 ),
