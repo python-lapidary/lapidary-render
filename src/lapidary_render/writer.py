@@ -65,11 +65,11 @@ def update_project(
                     path = (parent / existing).relative_to(target_root)
 
                     if path not in written:
-                        bar.update(1, str(path))
+                        bar.update(1, str(path))  # type: ignore[arg-type]
                         files_.remove(existing)
                         (parent / existing).unlink()
             if not files_ and not dirs:
-                bar.update(1, str(parent))
+                bar.update(1, str(parent))  # type: ignore[arg-type]
                 parent.rmdir()
 
 

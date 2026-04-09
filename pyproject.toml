@@ -70,6 +70,7 @@ ignore_missing_imports = true
 mypy_path = "src"
 namespace_packages = true
 packages = ['lapidary_render']
+plugins = ["pydantic.mypy"]
 python_version = "3.12"
 
 [tool.pytest.ini_options]

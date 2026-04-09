@@ -121,7 +121,7 @@ class OpenApi30Converter:
             return
 
         for header_name, header in value.items():
-            self.global_headers[header_name] = self.process_parameter(header, stack.push(header_name))
+            self.global_headers[header_name] = self.process_header(header, stack.push(header_name))
 
     def process_global_responses(self, value: openapi.Responses | None, stack: Stack) -> None:
         logger.debug('Process global responses %s', stack)
@@ -187,14 +187,10 @@ class OpenApi30Converter:
         stack: Stack,
     ) -> None:
         common_params_stack = stack.push('parameters')
-        common_params = (
-            {
-                param.name: self.process_parameter(param, common_params_stack.push(str(idx)))
-                for idx, param in enumerate(value.parameters)
-            }
-            if value.parameters
-            else {}
-        )
+        common_params = {}
+        for idx, param in enumerate(value.parameters or ()):
+            processed = self.process_parameter(param, common_params_stack.push(str(idx)))
+            common_params[processed.name] = processed
 
         for method in ('get', 'post', 'put', 'delete', 'head', 'patch', 'options', 'trace'):
             if operation := getattr(value, method):
@@ -228,7 +224,9 @@ class OpenApi30Converter:
         self._response_cache[stack] = response
         return response
 
-    def process_headers(self, value: Mapping[str, openapi.Header], stack: Stack) -> python.AnnotatedType:
+    def process_headers(
+        self, value: Mapping[str, openapi.Header | openapi.Reference[openapi.Header]], stack: Stack
+    ) -> python.AnnotatedType:
         if not value:
             return python.NoneMetaType
         headers = [self.process_header(header, stack.push(name)) for name, header in value.items()]
@@ -394,7 +392,8 @@ class OpenApi30Converter:
         for scheme_name, scopes in value.items():
             scheme_stack = schemes_root.push(scheme_name)
             self.process_security_scheme(
-                openapi.Reference[openapi.SecurityRequirement](ref=str(scheme_stack)), scheme_stack
+                openapi.Reference[openapi.SecurityScheme](ref=str(scheme_stack)),
+                scheme_stack,
             )
         return value
 
@@ -415,6 +414,8 @@ class OpenApi30Converter:
         flow_name = f'api_key_{auth_name}'
         if flow_name in self.target.security_schemes:
             return
+
+        assert value.name
 
         self.target.security_schemes[flow_name] = python.ApiKeyAuth(
             name=auth_name,
@@ -446,6 +447,8 @@ class OpenApi30Converter:
         if value.refreshUrl:
             raise NotImplementedError(stack.push('refreshUrl'))
 
+        assert value.authorizationUrl
+
         auth_name = stack[-3]
         self.target.security_schemes[f'oauth2_implicit_{auth_name}'] = python.ImplicitOAuth2Flow(
             name=auth_name,
@@ -458,6 +461,8 @@ class OpenApi30Converter:
         if value.refreshUrl:
             raise NotImplementedError(stack.push('refreshUrl'))
 
+        assert value.tokenUrl
+
         auth_name = stack[-3]
         self.target.security_schemes[f'oauth2_password_{auth_name}'] = python.PasswordOAuth2Flow(
             name=auth_name,
@@ -469,6 +474,9 @@ class OpenApi30Converter:
     def process_oauth2_auth_code(self, value: openapi.OAuthFlow, stack: Stack) -> None:
         if value.refreshUrl:
             raise NotImplementedError(stack.push('refreshUrl'))
+
+        assert value.tokenUrl
+        assert value.authorizationUrl
 
         auth_name = stack[-3]
         self.target.security_schemes[f'oauth2_auth_code_{auth_name}'] = python.AuthorizationCodeOAuth2Flow(
@@ -483,6 +491,8 @@ class OpenApi30Converter:
         if value.refreshUrl:
             raise NotImplementedError(stack.push('refreshUrl'))
 
+        assert value.tokenUrl
+
         auth_name = stack[-3]
         self.target.security_schemes[f'oauth2_client_credentials_{auth_name}'] = python.ClientCredentialsOAuth2Flow(
             name=auth_name,
@@ -493,6 +503,9 @@ class OpenApi30Converter:
 
     def process_security_scheme_http(self, value: openapi.SecurityScheme, stack: Stack) -> None:
         logger.debug('Process HTTP security scheme %s', stack)
+
+        assert value.scheme
+
         auth_name = stack.top()
         flow_name = f'http_{auth_name}'
 

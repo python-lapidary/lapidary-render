@@ -1,3 +1,4 @@
+# mypy: disable-error-code="assignment"
 from __future__ import annotations
 
 import typing
@@ -36,7 +37,10 @@ class SecurityScheme(SecuritySchemeBase):
 
 
 class Reference[Target](ReferenceBase):
-    model_config = pydantic.ConfigDict(frozen=True)
+    model_config = pydantic.ConfigDict(
+        frozen=True,
+        populate_by_name=True,
+    )
 
 
 def validate_list_unique(v: Sequence[typing.Any]) -> Sequence[typing.Any]:
@@ -157,7 +161,7 @@ class Paths(ModelWithPatternProperties):
 
 
 class Callback(ModelWithAdditionalProperties):
-    __pydantic_extra__ = dict[str, Reference[PathItem] | PathItem]
+    __pydantic_extra__: dict[str, Reference[PathItem] | PathItem]
 
 
 class Components(ComponentsBase):

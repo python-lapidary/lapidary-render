@@ -1,4 +1,4 @@
-from collections.abc import Callable, Iterable, Iterator, Sequence
+from collections.abc import Callable, Iterable, Iterator, MutableSequence, Sequence
 
 import click
 import libcst as cst
@@ -31,6 +31,7 @@ def str_literal(value: str) -> cst.SimpleString:
 
 
 def mk_literal(value: str | int | float) -> cst.BaseExpression:
+    typ: type[cst.Float] | type[cst.Integer]
     if isinstance(value, str):
         return str_literal(value)
     elif isinstance(value, int):
@@ -46,7 +47,7 @@ def mk_literal(value: str | int | float) -> cst.BaseExpression:
         negate = False
     node = typ(str(value))
     if negate:
-        node = cst.UnaryOperation(cst.Minus(), node)
+        return cst.UnaryOperation(cst.Minus(), node)
     return node
 
 
@@ -304,7 +305,7 @@ def mk_function(
 
 
 def mk_in_annotation(model: python.Parameter, indent: int) -> cst.Attribute | cst.Call | cst.Name:
-    in_args = []
+    in_args: MutableSequence[cst.BaseExpression | cst.Arg] = []
     if model.alias:
         in_args.append(str_literal(model.alias))
     if model.style:
@@ -399,7 +400,7 @@ def mk_operation_method(operation: python.OperationFunction) -> cst.FunctionDef:
 
 
 def mk_client_module(module: python.ClientModule) -> cst.Module:
-    body = []
+    body: MutableSequence[cst.SimpleStatementLine | cst.BaseCompoundStatement] = []
 
     if module.body.base_url:
         body.append(
@@ -421,11 +422,10 @@ def mk_client_module(module: python.ClientModule) -> cst.Module:
         header=MODULE_HEADER,
         body=[
             FUTURE_ANNOTATIONS,
-            cst.EmptyLine(),
             cst.helpers.parse_template_statement("""
 __all__ = (
     'ApiClient',
-)"""),
+)""").with_changes(leading_lines=[cst.EmptyLine()]),
             *mk_imports(module),
             mk_class_def(
                 class_name='ApiClient',
@@ -439,7 +439,7 @@ def mk_scope_slice(scopes: Iterable[str]) -> cst.BaseExpression:
     return mk_parametrized_type(mk_name('typing', 'Literal'), [str_literal(scope) for scope in scopes], 2)
 
 
-def mk_security_fn(auth: python.Auth) -> cst.BaseStatement:
+def mk_security_fn(auth: python.Auth) -> cst.SimpleStatementLine | cst.BaseCompoundStatement:
     fn_name = cst.Name(f'{auth.type}_{auth.python_name}')
 
     match auth:
@@ -461,7 +461,9 @@ def mk_security_fn(auth: python.Auth) -> cst.BaseStatement:
             raise TypeError(auth, type(auth))
 
 
-def mk_auth_oauth2_passwd(auth: python.PasswordOAuth2Flow, fn_name: cst.Name) -> cst.BaseStatement:
+def mk_auth_oauth2_passwd(
+    auth: python.PasswordOAuth2Flow, fn_name: cst.Name
+) -> cst.SimpleStatementLine | cst.BaseCompoundStatement:
     return cst.helpers.parse_template_statement(
         """def {fn_name}(
     username: str,
@@ -484,7 +486,9 @@ def mk_auth_oauth2_passwd(auth: python.PasswordOAuth2Flow, fn_name: cst.Name) ->
     )
 
 
-def mk_auth_oauth2_implicit(auth: python.ImplicitOAuth2Flow, fn_name: cst.Name) -> cst.BaseStatement:
+def mk_auth_oauth2_implicit(
+    auth: python.ImplicitOAuth2Flow, fn_name: cst.Name
+) -> cst.SimpleStatementLine | cst.BaseCompoundStatement:
     return cst.helpers.parse_template_statement(
         """def {fn_name}(
     scope: collections.abc.Iterable[{scopes}] | None = None,
@@ -504,7 +508,9 @@ def mk_auth_oauth2_implicit(auth: python.ImplicitOAuth2Flow, fn_name: cst.Name) 
     )
 
 
-def mk_auth_oauth2_client_creds(auth: python.ClientCredentialsOAuth2Flow, fn_name: cst.Name) -> cst.BaseStatement:
+def mk_auth_oauth2_client_creds(
+    auth: python.ClientCredentialsOAuth2Flow, fn_name: cst.Name
+) -> cst.SimpleStatementLine | cst.BaseCompoundStatement:
     return cst.helpers.parse_template_statement(
         """def {fn_name}(
     client_id: str,
@@ -637,14 +643,19 @@ def mk_import(module: str) -> cst.Import:
     return cst.Import([cst.ImportAlias(mk_name(*parts))])
 
 
-def mk_imports(module: python.AbstractModule) -> Iterator[cst.SimpleStatementLine]:
-    imports = [
+def mk_imports(module: python.AbstractModule) -> Iterable[cst.SimpleStatementLine]:
+    return [
         cst.SimpleStatementLine([cst.Import([cst.ImportAlias(mk_name('lapidary'))])], [cst.EmptyLine()]),
-        cst.Import([cst.ImportAlias(cst.Name('pydantic'))]),
-        cst.Import([cst.ImportAlias(cst.Name('typing_extensions'), cst.AsName(cst.Name('typing')))]),
-        *(mk_import(mod_name) for mod_name in module.imports if mod_name not in ('pydantic', 'typing', 'lapidary')),
+        cst.SimpleStatementLine([cst.Import([cst.ImportAlias(cst.Name('pydantic'))])]),
+        cst.SimpleStatementLine(
+            [cst.Import([cst.ImportAlias(cst.Name('typing_extensions'), cst.AsName(cst.Name('typing')))])]
+        ),
+        *(
+            cst.SimpleStatementLine([mk_import(mod_name)])
+            for mod_name in module.imports
+            if mod_name not in ('pydantic', 'typing', 'lapidary')
+        ),
     ]
-    return (cst.SimpleStatementLine([imp]) if not isinstance(imp, cst.SimpleStatementLine) else imp for imp in imports)
 
 
 def mk_metadata_module(module: python.MetadataModule) -> cst.Module:
@@ -664,4 +675,6 @@ MODULE_ROOT = cst.Module(
     header=MODULE_HEADER, body=[cst.helpers.parse_template_statement('from .client import ApiClient')]
 )
 
-FUTURE_ANNOTATIONS = cst.ImportFrom(cst.Name('__future__'), [cst.ImportAlias(cst.Name('annotations'))])
+FUTURE_ANNOTATIONS = cst.SimpleStatementLine(
+    body=[cst.ImportFrom(cst.Name('__future__'), [cst.ImportAlias(cst.Name('annotations'))])]
+)

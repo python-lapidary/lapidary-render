@@ -68,6 +68,8 @@ class OpenApi30SchemaConverter:
         self.model.type_ = {*(self.model.type_ or ()), schema31.DataType[value.name]}
 
     def process_schema_nullable(self, value: bool, _: Stack) -> None:
+        assert isinstance(self.schema, openapi.Schema)
+
         if self.schema.type and value:
             self.model.type_ = {*(self.model.type_ or ()), schema31.DataType.NULL}
 
@@ -130,7 +132,7 @@ class OpenApi30SchemaConverter:
                 self.model.properties[name] = prop_model
 
     @resolve_ref
-    def _process_subschema(self, value: openapi.Schema, stack: Stack) -> MetaModel | None:
+    def _process_subschema(self, value: openapi.Schema | bool, stack: Stack) -> MetaModel | None:
         return OpenApi30SchemaConverter(value, stack, self.root_package, self.source).process_schema()
 
     def process_schema_additionalProperties(self, value: openapi.Schema | bool, stack: Stack) -> None:

@@ -7,9 +7,9 @@ from collections.abc import Callable, Mapping, Sequence
 from typing import Any, Concatenate
 
 import pydantic
-from openapi_pydantic.v3 import v3_0 as openapi
 
 from ..json_pointer import decode_json_pointer
+from . import openapi
 from .stack import Stack
 
 logger = logging.getLogger(__name__)
@@ -32,9 +32,11 @@ def resolve_ref[Target, R, **P](
     ) -> R:
         if isinstance(value, openapi.Reference):
             logger.debug('Resolving ref %s', value.ref)
-            value, stack_str = resolve_refs_recursive(self.source, value)
+            resolved, stack_str = resolve_refs_recursive(self.source, value)
             stack = Stack.from_str(stack_str)
-        return fn(self, value, stack, *args, **kwargs)
+        else:
+            resolved = value
+        return fn(self, resolved, stack, *args, **kwargs)
 
     return wrapper
 
@@ -46,9 +48,9 @@ def resolve_refs_recursive[Target](root: openapi.OpenAPI, ref: openapi.Reference
         if pointer in stack:
             raise ValueError('Circular references', stack, pointer)
         stack.append(pointer)
-        target = _resolve_ref(root, pointer)
+        target: Target | openapi.Reference[Target] = _resolve_ref(root, pointer)
         if not isinstance(target, openapi.Reference):
-            return typing.cast(Target, target), ref.ref
+            return target, ref.ref
         ref = target
 
 
