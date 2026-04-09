@@ -11,10 +11,7 @@ import types
 class ResponseMetadata(pydantic.BaseModel):
     
     Xu_jRateu_jLimit: typing.Annotated[
-            typing.Union[
-            int,
-            None,
-        ],
+            int | None,
             lapidary.Header(
         'X-Rate-Limit',
         style=lapidary.SimpleMultimap,
@@ -22,10 +19,7 @@ class ResponseMetadata(pydantic.BaseModel):
         ] = None
     
     Xu_jExpiresu_jAfter: typing.Annotated[
-            typing.Union[
-            datetime.datetime,
-            None,
-        ],
+            datetime.datetime | None,
             lapidary.Header(
         'X-Expires-After',
         style=lapidary.SimpleMultimap,

@@ -85,11 +85,8 @@ class ApiClient:
     async def findPetsByStatus(
         self: typing.Self,
         *, status_q: typing.Annotated[
-            typing.Union[
-            str,
-            None,
-        ],
-            lapidary.runtime.Query(
+            str | None,
+            lapidary.Query(
         'status',
         style=lapidary.FormExplode,
     ),
@@ -116,11 +113,8 @@ class ApiClient:
     async def findPetsByTags(
         self: typing.Self,
         *, tags_q: typing.Annotated[
-            typing.Union[
-            list[str,],
-            None,
-        ],
-            lapidary.runtime.Query(
+            list[str,] | None,
+            lapidary.Query(
         'tags',
         style=lapidary.FormExplode,
     ),
@@ -179,18 +173,12 @@ class ApiClient:
             lapidary.Path('petId',),
         ],
         name_q: typing.Annotated[
-            typing.Union[
-            str,
-            None,
-        ],
-            lapidary.runtime.Query('name',),
+            str | None,
+            lapidary.Query('name',),
         ] = None,
         status_q: typing.Annotated[
-            typing.Union[
-            str,
-            None,
-        ],
-            lapidary.runtime.Query('status',),
+            str | None,
+            lapidary.Query('status',),
         ] = None,
     ) -> typing.Annotated[
             None,
@@ -210,11 +198,8 @@ class ApiClient:
             lapidary.Path('petId',),
         ],
         meta: typing.Annotated[
-            typing.Union[
-            test_petstore.paths.u_lpetu_lu_1zpetIdu_21.delete.parameters.meta.RequestMetadata,
-            None,
-        ],
-            lapidary.runtime.Metadata,
+            test_petstore.paths.u_lpetu_lu_1zpetIdu_21.delete.parameters.meta.RequestMetadata | None,
+            lapidary.Metadata,
         ] = None,
     ) -> typing.Annotated[
             None,
@@ -234,11 +219,8 @@ class ApiClient:
             lapidary.Path('petId',),
         ],
         additionalMetadata_q: typing.Annotated[
-            typing.Union[
-            str,
-            None,
-        ],
-            lapidary.runtime.Query('additionalMetadata',),
+            str | None,
+            lapidary.Query('additionalMetadata',),
         ] = None,
     ) -> typing.Annotated[
             tuple[
@@ -388,16 +370,13 @@ class ApiClient:
             },),
         ],
     ) -> typing.Annotated[
-            typing.Union[
             tuple[
                 test_petstore.components.schemas.User.schema.User,
                 None,
-            ],
-            tuple[
+            ] | tuple[
                 None,
                 None,
             ],
-        ],
             lapidary.Responses({
                 '200': lapidary.Response(
                     lapidary.Body({
@@ -415,17 +394,11 @@ class ApiClient:
     async def loginUser(
         self: typing.Self,
         *, username_q: typing.Annotated[
-            typing.Union[
-            str,
-            None,
-        ],
+            str | None,
             lapidary.Query('username',),
         ] = None,
         password_q: typing.Annotated[
-            typing.Union[
-            str,
-            None,
-        ],
+            str | None,
             lapidary.Query('password',),
         ] = None,
     ) -> typing.Annotated[

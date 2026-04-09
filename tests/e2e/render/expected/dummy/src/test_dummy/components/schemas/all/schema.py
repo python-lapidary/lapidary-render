@@ -10,13 +10,10 @@ import types
 
 class all(lapidary.ModelBase):
     
-    any: typing.Union[
-            dict[
+    any: dict[
                 str,
                 pydantic.JsonValue,
-            ],
-            None,
-        ] = None
+            ] | None = None
     
     u_0for: typing.Annotated[
             test_dummy.components.schemas.all.properties.u_0for.schema.u_0for,
@@ -24,10 +21,7 @@ class all(lapidary.ModelBase):
         ]
     
     uu_1X0for: typing.Annotated[
-            typing.Union[
-            str,
-            None,
-        ],
+            str | None,
             pydantic.Field(alias='u_0for',),
         ] = None
     

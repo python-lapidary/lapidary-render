@@ -213,9 +213,24 @@ def mk_parametrized_type(
     typ: cst.Name | cst.Attribute,
     args: Sequence[cst.BaseExpression],
     indent=1,
-) -> cst.Name | cst.Attribute | cst.Subscript:
+) -> cst.BaseExpression:
     if not args:
         return typ
+    
+    elif (
+        isinstance(typ, cst.Attribute)
+        and isinstance(typ.value, cst.Name)
+        and typ.value.value == 'typing'
+        and typ.attr.value == 'Union'
+    ):
+        result  = args[0]
+        for arg in args[1:]:
+            result = cst.BinaryOperation(
+                result,
+                cst.BitOr(),
+                arg,
+            )
+        return result
 
     else:
         indenter = mk_indent_factory(len(args), indent)
@@ -460,10 +475,7 @@ def mk_auth_oauth2_passwd(auth: python.PasswordOAuth2Flow, fn_name: cst.Name) ->
         """def {fn_name}(
     username: str,
     password: str,
-    scope: typing.Union[
-        collections.abc.Iterable[{scopes}],
-        None
-    ] = None,
+    scope: collections.abc.Iterable[{scopes}] | None = None,
     **kwargs,
 ) -> httpx.Auth:
     if scope is not None:
@@ -484,10 +496,7 @@ def mk_auth_oauth2_passwd(auth: python.PasswordOAuth2Flow, fn_name: cst.Name) ->
 def mk_auth_oauth2_implicit(auth: python.ImplicitOAuth2Flow, fn_name: cst.Name) -> cst.BaseStatement:
     return cst.helpers.parse_template_statement(
         """def {fn_name}(
-    scope: typing.Union[
-        collections.abc.Iterable[{scopes}],
-        None
-    ] = None,
+    scope: collections.abc.Iterable[{scopes}] | None = None,
     **kwargs,
 ) -> httpx.Auth:
     if scope is not None:
@@ -509,10 +518,7 @@ def mk_auth_oauth2_client_creds(auth: python.ClientCredentialsOAuth2Flow, fn_nam
         """def {fn_name}(
     client_id: str,
     client_secret: str,
-    scope: typing.Union[
-        collections.abc.Iterable[{scopes}],
-        None
-    ] = None,
+    scope: collections.abc.Iterable[{scopes}] | None = None,
     **kwargs,
 ) -> httpx.Auth:
     if scope is not None:
@@ -533,10 +539,7 @@ def mk_auth_oauth2_client_creds(auth: python.ClientCredentialsOAuth2Flow, fn_nam
 def mk_auth_oauth2_auth_code(auth: python.AuthorizationCodeOAuth2Flow, fn_name: cst.Name):
     return cst.helpers.parse_template_statement(
         """def {fn_name}(
-    scope: typing.Union[
-        collections.abc.Iterable[{scopes}],
-        None
-    ] = None,
+    scope: collections.abc.Iterable[{scopes}] | None = None,
     **kwargs,
 ) -> httpx.Auth:
     if scope is not None:

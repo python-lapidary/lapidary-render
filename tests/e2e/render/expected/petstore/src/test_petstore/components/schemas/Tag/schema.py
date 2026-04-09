@@ -9,12 +9,6 @@ import types
 
 class Tag(lapidary.ModelBase):
     
-    id: typing.Union[
-            int,
-            None,
-        ] = None
+    id: int | None = None
     
-    name: typing.Union[
-            str,
-            None,
-        ] = None
+    name: str | None = None

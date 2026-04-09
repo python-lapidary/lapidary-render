@@ -11,13 +11,10 @@ import lapidary.auth
 
 
 def oauth2_implicit_oauth(
-    scope: typing.Union[
-        collections.abc.Iterable[typing.Literal[
+    scope: collections.abc.Iterable[typing.Literal[
         'read',
         'write',
-    ]],
-        None
-    ] = None,
+    ]] | None = None,
     **kwargs,
 ) -> httpx.Auth:
     if scope is not None:
@@ -32,13 +29,10 @@ def oauth2_implicit_oauth(
 def oauth2_password_oauth(
     username: str,
     password: str,
-    scope: typing.Union[
-        collections.abc.Iterable[typing.Literal[
+    scope: collections.abc.Iterable[typing.Literal[
         'read',
         'write',
-    ]],
-        None
-    ] = None,
+    ]] | None = None,
     **kwargs,
 ) -> httpx.Auth:
     if scope is not None:
@@ -53,13 +47,10 @@ def oauth2_password_oauth(
 
 
 def oauth2_authorization_code_oauth(
-    scope: typing.Union[
-        collections.abc.Iterable[typing.Literal[
+    scope: collections.abc.Iterable[typing.Literal[
         'read',
         'write',
-    ]],
-        None
-    ] = None,
+    ]] | None = None,
     **kwargs,
 ) -> httpx.Auth:
     if scope is not None:
@@ -75,13 +66,10 @@ def oauth2_authorization_code_oauth(
 def oauth2_client_credentials_oauth(
     client_id: str,
     client_secret: str,
-    scope: typing.Union[
-        collections.abc.Iterable[typing.Literal[
+    scope: collections.abc.Iterable[typing.Literal[
         'read',
         'write',
-    ]],
-        None
-    ] = None,
+    ]] | None = None,
     **kwargs,
 ) -> httpx.Auth:
     if scope is not None:

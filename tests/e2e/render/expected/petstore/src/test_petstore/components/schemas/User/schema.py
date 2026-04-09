@@ -9,42 +9,18 @@ import types
 
 class User(lapidary.ModelBase):
     
-    id: typing.Union[
-            int,
-            None,
-        ] = None
+    id: int | None = None
     
-    username: typing.Union[
-            str,
-            None,
-        ] = None
+    username: str | None = None
     
-    firstName: typing.Union[
-            str,
-            None,
-        ] = None
+    firstName: str | None = None
     
-    lastName: typing.Union[
-            str,
-            None,
-        ] = None
+    lastName: str | None = None
     
-    email: typing.Union[
-            str,
-            None,
-        ] = None
+    email: str | None = None
     
-    password: typing.Union[
-            str,
-            None,
-        ] = None
+    password: str | None = None
     
-    phone: typing.Union[
-            str,
-            None,
-        ] = None
+    phone: str | None = None
     
-    userStatus: typing.Union[
-            int,
-            None,
-        ] = None
+    userStatus: int | None = None

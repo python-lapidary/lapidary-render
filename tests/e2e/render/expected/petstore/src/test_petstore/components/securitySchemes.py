@@ -11,13 +11,10 @@ import lapidary.auth
 
 
 def oauth2_implicit_petstore_auth(
-    scope: typing.Union[
-        collections.abc.Iterable[typing.Literal[
+    scope: collections.abc.Iterable[typing.Literal[
         'write:pets',
         'read:pets',
-    ]],
-        None
-    ] = None,
+    ]] | None = None,
     **kwargs,
 ) -> httpx.Auth:
     if scope is not None:

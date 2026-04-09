@@ -28,58 +28,40 @@ class ApiClient:
     async def test_op(
         self: typing.Self,
         *, param1_q: typing.Annotated[
-            typing.Union[
             typing.Annotated[
                 int,
                 annotated_types.Le(20,),
-            ],
-            test_dummy.components.schemas.all.schema.all,
-            test_dummy.components.schemas.schema1.schema.schema1,
-            None,
-        ],
+            ] | test_dummy.components.schemas.all.schema.all | test_dummy.components.schemas.schema1.schema.schema1 | None,
             lapidary.Query('param1',),
         ],
         param2_q: typing.Annotated[
-            typing.Union[
-            test_dummy.paths.u_ltestu_l.get.parameters.u_n.schema.schema.schema,
-            None,
-        ],
+            test_dummy.paths.u_ltestu_l.get.parameters.u_n.schema.schema.schema | None,
             lapidary.Query('param2',),
         ] = None,
         param3_q: typing.Annotated[
-            typing.Union[
-            datetime.date,
-            None,
-        ],
+            datetime.date | None,
             lapidary.Query('param3',),
         ] = None,
         meta: typing.Annotated[
-            typing.Union[
-            test_dummy.paths.u_ltestu_l.get.parameters.meta.RequestMetadata,
-            None,
-        ],
+            test_dummy.paths.u_ltestu_l.get.parameters.meta.RequestMetadata | None,
             lapidary.Metadata,
         ] = None,
     ) -> typing.Annotated[
-            typing.Union[
             tuple[
                 test_dummy.components.schemas.all.schema.all,
                 test_dummy.paths.u_ltestu_l.get.responses.default.headers.ResponseMetadata,
-            ],
-            tuple[
+            ] | tuple[
                 test_dummy.components.schemas.all.schema.all,
                 None,
             ],
-        ],
-            lapidary.runtime.Responses({
-                'default': lapidary.runtime.Response(
+            lapidary.Responses({
+                'default': lapidary.Response(
                     lapidary.Body({
                         'application/json': test_dummy.components.schemas.all.schema.all,
                     },),
                     test_dummy.paths.u_ltestu_l.get.responses.default.headers.ResponseMetadata,
                 ),
-                '2XX': lapidary.runtime.Response(
-                    lapidary.runtime.Body({
+                '2XX': lapidary.Response(
                     lapidary.Body({
                         'application/json': test_dummy.components.schemas.all.schema.all,
                     },),

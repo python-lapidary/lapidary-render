@@ -88,6 +88,5 @@ class SecurityModule(AbstractModule[Mapping[str, Auth]]):
             NameRef(module='httpx', name='BasicAuth'),
             NameRef(module='httpx', name='Auth'),
             NameRef(module='httpx_auth', name='OAuth2AuthorizationCode'),
-            NameRef(module='typing', name='Union'),
             NameRef(module='collections.abc', name='Iterable'),
         )

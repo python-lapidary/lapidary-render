@@ -9,17 +9,8 @@ import types
 
 class ApiResponse(lapidary.ModelBase):
     
-    code: typing.Union[
-            int,
-            None,
-        ] = None
+    code: int | None = None
     
-    type: typing.Union[
-            str,
-            None,
-        ] = None
+    type: str | None = None
     
-    message: typing.Union[
-            str,
-            None,
-        ] = None
+    message: str | None = None

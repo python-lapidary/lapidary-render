@@ -10,18 +10,12 @@ import types
 class RequestMetadata(pydantic.BaseModel):
     
     param1_h: typing.Annotated[
-            typing.Union[
-            str,
-            None,
-        ],
+            str | None,
             lapidary.Header('param1',),
         ] = None
     
     param4_c: typing.Annotated[
-            typing.Union[
-            list[str,],
-            None,
-        ],
+            list[str,] | None,
             lapidary.Cookie(
         'param4',
         style=lapidary.Form,
