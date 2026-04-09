@@ -1,5 +1,4 @@
 from collections.abc import Callable, Iterable, Iterator, Sequence
-from typing import cast
 
 import click
 import libcst as cst
@@ -444,19 +443,19 @@ def mk_security_fn(auth: python.Auth) -> cst.BaseStatement:
 
     match auth:
         case python.ApiKeyAuth():
-            return mk_auth_api_key(cast(python.ApiKeyAuth, auth), fn_name)
+            return mk_auth_api_key(auth, fn_name)
         case python.HttpBasicAuth():
             return mk_auth_http_basic(auth, fn_name)
         case python.HttpDigestAuth():
             return mk_auth_http_digest(auth, fn_name)
         case python.AuthorizationCodeOAuth2Flow():
-            return mk_auth_oauth2_auth_code(cast(python.AuthorizationCodeOAuth2Flow, auth), fn_name)
+            return mk_auth_oauth2_auth_code(auth, fn_name)
         case python.ClientCredentialsOAuth2Flow():
-            return mk_auth_oauth2_client_creds(cast(python.ClientCredentialsOAuth2Flow, auth), fn_name)
+            return mk_auth_oauth2_client_creds(auth, fn_name)
         case python.ImplicitOAuth2Flow():
-            return mk_auth_oauth2_implicit(cast(python.ImplicitOAuth2Flow, auth), fn_name)
+            return mk_auth_oauth2_implicit(auth, fn_name)
         case python.PasswordOAuth2Flow():
-            return mk_auth_oauth2_passwd(cast(python.PasswordOAuth2Flow, auth), fn_name)
+            return mk_auth_oauth2_passwd(auth, fn_name)
         case _:
             raise TypeError(auth, type(auth))
 
@@ -471,7 +470,7 @@ def mk_auth_oauth2_passwd(auth: python.PasswordOAuth2Flow, fn_name: cst.Name) ->
         None
     ] = None,
     **kwargs,
-) -> lapidary.runtime.NamedAuth:
+) -> httpx.Auth:
     if scope is not None:
         kwargs['scope'] = ' '.join(scope)
 
@@ -483,7 +482,6 @@ def mk_auth_oauth2_passwd(auth: python.PasswordOAuth2Flow, fn_name: cst.Name) ->
     )""",
         fn_name=fn_name,
         scopes=mk_scope_slice(auth.scopes.keys()),
-        auth_name=str_literal(auth.name),
         token_url=str_literal(auth.token_url),
     )
 
@@ -496,18 +494,17 @@ def mk_auth_oauth2_implicit(auth: python.ImplicitOAuth2Flow, fn_name: cst.Name) 
         None
     ] = None,
     **kwargs,
-) -> lapidary.runtime.NamedAuth:
+) -> httpx.Auth:
     if scope is not None:
         kwargs['scope'] = ' '.join(scope)
 
-    return {auth_name}, httpx_auth.OAuth2Implicit(
+    return httpx_auth.OAuth2Implicit(
         authorization_url={authorization_url},
         **kwargs,
     )
 """,
         fn_name=fn_name,
         scopes=mk_scope_slice(auth.scopes.keys()),
-        auth_name=str_literal(auth.name),
         authorization_url=str_literal(auth.authorization_url),
     )
 
@@ -522,11 +519,11 @@ def mk_auth_oauth2_client_creds(auth: python.ClientCredentialsOAuth2Flow, fn_nam
         None
     ] = None,
     **kwargs,
-) -> lapidary.runtime.NamedAuth:
+) -> httpx.Auth:
     if scope is not None:
         kwargs['scope'] = ' '.join(scope)
 
-    return {auth_name}, httpx_auth.OAuth2ClientCredentials(
+    return httpx_auth.OAuth2ClientCredentials(
         token_url={token_url},
         client_id=client_id,
         client_secret=client_secret,
@@ -534,7 +531,6 @@ def mk_auth_oauth2_client_creds(auth: python.ClientCredentialsOAuth2Flow, fn_nam
     )""",
         fn_name=fn_name,
         scopes=mk_scope_slice(auth.scopes.keys()),
-        auth_name=str_literal(auth.name),
         token_url=str_literal(auth.token_url),
     )
 
@@ -547,11 +543,11 @@ def mk_auth_oauth2_auth_code(auth: python.AuthorizationCodeOAuth2Flow, fn_name: 
         None
     ] = None,
     **kwargs,
-) -> lapidary.runtime.NamedAuth:
+) -> httpx.Auth:
     if scope is not None:
         kwargs['scope'] = ' '.join(scope)
 
-    return {auth_name}, httpx_auth.OAuth2AuthorizationCode(
+    return httpx_auth.OAuth2AuthorizationCode(
         authorization_url={authorization_url},
         token_url={token_url},
         **kwargs,
@@ -559,7 +555,6 @@ def mk_auth_oauth2_auth_code(auth: python.AuthorizationCodeOAuth2Flow, fn_name: 
 """,
         fn_name=fn_name,
         scopes=mk_scope_slice(auth.scopes.keys()),
-        auth_name=str_literal(auth.name),
         authorization_url=str_literal(auth.authorization_url),
         token_url=str_literal(auth.token_url),
     )
@@ -570,13 +565,12 @@ def mk_auth_http_digest(auth, fn_name):
         """def {fn_name}(
     user_name: str,
     password: str
-) -> lapidary.runtime.NamedAuth:
-    return {auth_name}, httpx.DigestAuth(
+) -> httpx.Auth:
+    return httpx.DigestAuth(
         username=user_name,
         password=password,
     )""",
         fn_name=fn_name,
-        auth_name=str_literal(auth.name),
     )
 
 
@@ -585,13 +579,12 @@ def mk_auth_http_basic(auth, fn_name):
         """def {fn_name}(
     user_name: str,
     password: str
-) -> lapidary.runtime.NamedAuth:
-    return {auth_name}, httpx.BasicAuth(
+) -> httpx.Auth:
+    return httpx.BasicAuth(
         username=user_name,
         password=password,
     )""",
         fn_name=fn_name,
-        auth_name=str_literal(auth.name),
     )
 
 
@@ -600,13 +593,12 @@ def mk_auth_api_key(auth: python.ApiKeyAuth, fn_name: cst.Name):
         '_parameter_name' if auth.location == openapi.ParameterLocation.QUERY else '_name'
     )
     return cst.helpers.parse_template_statement(
-        """def {fn_name}(api_key: str) -> lapidary.runtime.NamedAuth:
-    return {auth_name}, {auth_class}(
+        """def {fn_name}(api_key: str) -> httpx.Auth:
+    return {auth_class}(
         api_key=api_key,
         {param_name}={auth_key},
     )""",
         fn_name=fn_name,
-        auth_name=str_literal(auth.name),
         auth_class=mk_name('lapidary', 'runtime', 'auth', auth.location.value.capitalize() + 'ApiKey'),
         param_name=cst.Name(param_name),
         auth_key=str_literal(auth.key),

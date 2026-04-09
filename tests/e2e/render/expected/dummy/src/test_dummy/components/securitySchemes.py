@@ -19,11 +19,11 @@ def oauth2_implicit_oauth(
         None
     ] = None,
     **kwargs,
-) -> lapidary.runtime.NamedAuth:
+) -> httpx.Auth:
     if scope is not None:
         kwargs['scope'] = ' '.join(scope)
 
-    return 'oauth', httpx_auth.OAuth2Implicit(
+    return httpx_auth.OAuth2Implicit(
         authorization_url='https://example.com/authorization_url',
         **kwargs,
     )
@@ -40,11 +40,11 @@ def oauth2_password_oauth(
         None
     ] = None,
     **kwargs,
-) -> lapidary.runtime.NamedAuth:
+) -> httpx.Auth:
     if scope is not None:
         kwargs['scope'] = ' '.join(scope)
 
-    return 'oauth', httpx_auth.OAuth2ResourceOwnerPasswordCredentials(
+    return httpx_auth.OAuth2ResourceOwnerPasswordCredentials(
         token_url='https://example.com/token_url',
         username=username,
         password=password,
@@ -61,11 +61,11 @@ def oauth2_authorization_code_oauth(
         None
     ] = None,
     **kwargs,
-) -> lapidary.runtime.NamedAuth:
+) -> httpx.Auth:
     if scope is not None:
         kwargs['scope'] = ' '.join(scope)
 
-    return 'oauth', httpx_auth.OAuth2AuthorizationCode(
+    return httpx_auth.OAuth2AuthorizationCode(
         authorization_url='https://example.com/authorization_url',
         token_url='https://example.com/token_url',
         **kwargs,
@@ -83,11 +83,11 @@ def oauth2_client_credentials_oauth(
         None
     ] = None,
     **kwargs,
-) -> lapidary.runtime.NamedAuth:
+) -> httpx.Auth:
     if scope is not None:
         kwargs['scope'] = ' '.join(scope)
 
-    return 'oauth', httpx_auth.OAuth2ClientCredentials(
+    return httpx_auth.OAuth2ClientCredentials(
         token_url='https://example.com/token_url',
         client_id=client_id,
         client_secret=client_secret,
@@ -95,22 +95,22 @@ def oauth2_client_credentials_oauth(
     )
 
 
-def api_key_apiu_jkey(api_key: str) -> lapidary.runtime.NamedAuth:
-    return 'api-key', lapidary.runtime.auth.HeaderApiKey(
+def api_key_apiu_jkey(api_key: str) -> httpx.Auth:
+    return lapidary.auth.HeaderApiKey(
         api_key=api_key,
         header_name='x-api-key',
     )
 
 
-def api_key_apiu_jkeyu_jcookie(api_key: str) -> lapidary.runtime.NamedAuth:
-    return 'api-key-cookie', lapidary.runtime.auth.CookieApiKey(
+def api_key_apiu_jkeyu_jcookie(api_key: str) -> httpx.Auth:
+    return lapidary.auth.CookieApiKey(
         api_key=api_key,
         cookie_name='x-api-key',
     )
 
 
-def api_key_apiu_jkeyu_jquery(api_key: str) -> lapidary.runtime.NamedAuth:
-    return 'api-key-query', lapidary.runtime.auth.QueryApiKey(
+def api_key_apiu_jkeyu_jquery(api_key: str) -> httpx.Auth:
+    return lapidary.auth.QueryApiKey(
         api_key=api_key,
         query_parameter_name='x-api-key',
     )
@@ -119,8 +119,8 @@ def api_key_apiu_jkeyu_jquery(api_key: str) -> lapidary.runtime.NamedAuth:
 def http_basic_http_basic(
     user_name: str,
     password: str
-) -> lapidary.runtime.NamedAuth:
-    return 'http_basic', httpx.BasicAuth(
+) -> httpx.Auth:
+    return httpx.BasicAuth(
         username=user_name,
         password=password,
     )
@@ -129,8 +129,8 @@ def http_basic_http_basic(
 def http_digest_http_digest(
     user_name: str,
     password: str
-) -> lapidary.runtime.NamedAuth:
-    return 'http_digest', httpx.DigestAuth(
+) -> httpx.Auth:
+    return httpx.DigestAuth(
         username=user_name,
         password=password,
     )

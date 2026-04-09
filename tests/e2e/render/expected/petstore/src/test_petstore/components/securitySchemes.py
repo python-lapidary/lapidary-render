@@ -19,18 +19,18 @@ def oauth2_implicit_petstore_auth(
         None
     ] = None,
     **kwargs,
-) -> lapidary.runtime.NamedAuth:
+) -> httpx.Auth:
     if scope is not None:
         kwargs['scope'] = ' '.join(scope)
 
-    return 'petstore_auth', httpx_auth.OAuth2Implicit(
+    return httpx_auth.OAuth2Implicit(
         authorization_url='https://petstore.swagger.io/oauth/authorize',
         **kwargs,
     )
 
 
-def api_key_api_key(api_key: str) -> lapidary.runtime.NamedAuth:
-    return 'api_key', lapidary.runtime.auth.HeaderApiKey(
+def api_key_api_key(api_key: str) -> httpx.Auth:
+    return lapidary.auth.HeaderApiKey(
         api_key=api_key,
         header_name='api_key',
     )
