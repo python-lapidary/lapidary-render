@@ -6,7 +6,7 @@ import pytest
 from openapi_pydantic.v3.v3_1 import schema as schema31
 
 from lapidary_render import runtime
-from lapidary_render.model import conv_openapi, conv_schema, metamodel, openapi, python, stack
+from lapidary_render.model import conv_openapi, conv_schema, openapi, python, schemamodel, stack
 from lapidary_render.model.python import NoneMetaType, union_of
 from lapidary_render.yaml import yaml
 
@@ -61,7 +61,7 @@ def test_property_schema(doc_dummy: openapi.OpenAPI) -> None:
     converter = conv_openapi.OpenApi30Converter(python.ModulePath('dummy', False), doc_dummy, None)
     operations: openapi.PathItem = doc_dummy.paths.paths['/test/']
 
-    schema: metamodel.MetaModel = converter._process_schema(
+    schema: schemamodel.SchemaModel = converter._process_schema(
         operations.get.parameters[1].param_schema, stack.Stack.from_str('#/paths/~1test~1/get/parameters/1/schema')
     )
     assert schema is not None
@@ -224,7 +224,7 @@ def test_enum_limits_type():
         doc.components.schemas['myschema'], stack_, python.ModulePath('root'), doc
     )
     model = converter.process_schema()
-    assert model == metamodel.MetaModel(
+    assert model == schemamodel.SchemaModel(
         stack=stack_.push('schema', 'myschema'),
         type_={schema31.DataType.BOOLEAN, schema31.DataType.STRING},
         enum={True, False, 'FileNotFound'},
@@ -267,15 +267,15 @@ def test_process_anyof_objects():
     model = converter.process_schema()
 
     # check normalized model
-    assert model == metamodel.MetaModel(
+    assert model == schemamodel.SchemaModel(
         stack=stack.Stack(('#', 'components', 'schemas', 'myschema', 'schema', 'myschema')),
-        type_=metamodel._all_types(),
+        type_=schemamodel._all_types(),
         any_of=[
-            metamodel.MetaModel(
+            schemamodel.SchemaModel(
                 stack=stack.Stack(('#', 'components', 'schemas', 'object1', 'schema', 'object1')),
                 type_={schema31.DataType.OBJECT},
                 properties={
-                    'str': metamodel.MetaModel(
+                    'str': schemamodel.SchemaModel(
                         stack=stack.Stack(
                             ('#', 'components', 'schemas', 'object1', 'properties', 'str', 'schema', 'str')
                         ),
@@ -283,11 +283,11 @@ def test_process_anyof_objects():
                     ),
                 },
             ),
-            metamodel.MetaModel(
+            schemamodel.SchemaModel(
                 stack=stack.Stack(('#', 'components', 'schemas', 'object2', 'schema', 'object2')),
                 type_={schema31.DataType.OBJECT},
                 properties={
-                    'int': metamodel.MetaModel(
+                    'int': schemamodel.SchemaModel(
                         stack=stack.Stack(
                             ('#', 'components', 'schemas', 'object2', 'properties', 'int', 'schema', 'int')
                         ),
@@ -295,7 +295,7 @@ def test_process_anyof_objects():
                     ),
                 },
             ),
-            metamodel.MetaModel(
+            schemamodel.SchemaModel(
                 stack=stack.Stack.from_str('#/components/schemas/myschema/anyOf/2/schema/2'),
                 type_={schema31.DataType.INTEGER, schema31.DataType.NULL},
                 le=20.0,

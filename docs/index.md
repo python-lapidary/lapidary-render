@@ -14,9 +14,9 @@ Lapidary-render is a code generator that creates client code from an OpenAPI doc
 
     Generator processes data in three stages
 
-    1. Enhance and transform OpenAPI to a structure more close resembling python model structure
-    2. Convert the enhanced OpenAPI to a metamodel
-    3. Convert the metamodel to a syntax tree
+    1. Normalize JSON Schema using set algebra (intersection, union)
+    2. Convert OpenAPI model with the normalized schemas into a Python model
+    3. Convert the Python model to a Python syntax tree
 
 - [x] Client code should be simple.
 

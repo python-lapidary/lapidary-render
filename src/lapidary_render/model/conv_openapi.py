@@ -7,9 +7,8 @@ from typing import Any
 from mimeparse import parse_media_range
 
 from .. import json_pointer, names
-from . import metamodel, openapi, python
+from . import openapi, python, schemamodel
 from .conv_schema import OpenApi30SchemaConverter
-from .metamodel import MetaModel, resolve_type_name
 from .python import type_hint
 from .refs import resolve_ref
 from .stack import Stack
@@ -42,7 +41,7 @@ class OpenApi30Converter:
 
         self._response_cache: MutableMapping[Stack, python.Response] = {}
 
-        self._models: MutableMapping[Stack, metamodel.MetaModel] = {}
+        self._models: MutableMapping[Stack, schemamodel.SchemaModel] = {}
         """
         Store all models directly referred by methods.
         Indirectly referred must be accessible via the direct models.
@@ -69,7 +68,9 @@ class OpenApi30Converter:
 
         modules: Mapping[python.ModulePath, list[python.SchemaClass]] = defaultdict(list)
         for stack, class_ in models.items():
-            modules[python.ModulePath(resolve_type_name(str(self.root_package), stack).typ.module)].append(class_)
+            modules[python.ModulePath(schemamodel.resolve_type_name(str(self.root_package), stack).typ.module)].append(
+                class_
+            )
 
         self.target.model_modules.extend(
             (
@@ -84,7 +85,7 @@ class OpenApi30Converter:
         return self.target
 
     def _collect_schema_models(
-        self, model: metamodel.MetaModel, models: MutableMapping[Stack, python.SchemaClass]
+        self, model: schemamodel.SchemaModel, models: MutableMapping[Stack, python.SchemaClass]
     ) -> None:
         try:
             if class_ := model.as_type(str(self.root_package)):
@@ -231,7 +232,7 @@ class OpenApi30Converter:
             return python.NoneMetaType
         headers = [self.process_header(header, stack.push(name)) for name, header in value.items()]
         model = python.MetadataModel('ResponseMetadata', headers)
-        annotation = resolve_type_name(str(self.root_package), stack.push('ResponseMetadata'))
+        annotation = schemamodel.resolve_type_name(str(self.root_package), stack.push('ResponseMetadata'))
 
         self.target.model_modules.append(
             python.MetadataModule(
@@ -272,7 +273,7 @@ class OpenApi30Converter:
         return types
 
     @resolve_ref
-    def _process_schema(self, value: openapi.Schema, stack: Stack) -> MetaModel | None:
+    def _process_schema(self, value: openapi.Schema, stack: Stack) -> schemamodel.SchemaModel | None:
         if not (model := self._models.get(stack)):
             converter = OpenApi30SchemaConverter(value, stack, self.root_package, self.source)
             if (model := converter.process_schema()) is not None:
@@ -363,7 +364,7 @@ class OpenApi30Converter:
     ) -> python.AnnotatedType:
         fields = [field for field in value if field.in_ in ('Cookie', 'Header')]
         metadata_model = python.MetadataModel('RequestMetadata', fields)
-        typ = resolve_type_name(str(self.root_package), stack.push('meta', 'RequestMetadata'))
+        typ = schemamodel.resolve_type_name(str(self.root_package), stack.push('meta', 'RequestMetadata'))
         self.target.model_modules.append(
             python.MetadataModule(
                 path=python.ModulePath(typ.typ.module, is_module=True),

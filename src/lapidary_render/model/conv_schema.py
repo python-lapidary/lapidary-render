@@ -5,8 +5,7 @@ from typing import Any
 
 from openapi_pydantic.v3.v3_1 import schema as schema31
 
-from . import openapi, python
-from .metamodel import MetaModel
+from . import openapi, python, schemamodel
 from .refs import resolve_ref, resolve_refs_recursive
 from .stack import Stack
 
@@ -25,7 +24,7 @@ class OpenApi30SchemaConverter:
         self.stack = stack
         self.root_package = root_package
 
-        self.model = MetaModel(
+        self.model = schemamodel.SchemaModel(
             stack=stack.push('schema', stack.top()),
         )
 
@@ -34,8 +33,8 @@ class OpenApi30SchemaConverter:
 
     def process_schema(
         self,
-    ) -> MetaModel | None:
-        """Return MetaModel for schema or None if schema could never validate any values."""
+    ) -> schemamodel.SchemaModel | None:
+        """Return SchemaModel for schema or None if schema could never validate any values."""
 
         logger.debug('Processing schema %s', self.stack)
 
@@ -132,7 +131,7 @@ class OpenApi30SchemaConverter:
                 self.model.properties[name] = prop_model
 
     @resolve_ref
-    def _process_subschema(self, value: openapi.Schema | bool, stack: Stack) -> MetaModel | None:
+    def _process_subschema(self, value: openapi.Schema | bool, stack: Stack) -> schemamodel.SchemaModel | None:
         return OpenApi30SchemaConverter(value, stack, self.root_package, self.source).process_schema()
 
     def process_schema_additionalProperties(self, value: openapi.Schema | bool, stack: Stack) -> None:
@@ -141,7 +140,7 @@ class OpenApi30SchemaConverter:
     def process_schema_required(self, value: list[str], _) -> None:
         self.model.props_required = set(value)
 
-    def _process_subschemas(self, value: list[openapi.Schema], stack: Stack) -> list[MetaModel]:
+    def _process_subschemas(self, value: list[openapi.Schema], stack: Stack) -> list[schemamodel.SchemaModel]:
         return list(
             filter(
                 None,

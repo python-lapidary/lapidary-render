@@ -64,7 +64,7 @@ def diff_dicts(dict1, dict2):
 
 
 @dc.dataclass(kw_only=True)
-class MetaModel:
+class SchemaModel:
     """
     Here we decide whether a schema transforms into a type annotation, class or both.
     It's a class when schemas is object type, type annotation when it's non-object type, and both when it's both object and non-object.
@@ -95,17 +95,17 @@ class MetaModel:
     pattern: str | None = None
     format: str | None = None
 
-    properties: dict[str, MetaModel] = dc.field(default_factory=dict)
-    additional_props: MetaModel | bool = True
+    properties: dict[str, SchemaModel] = dc.field(default_factory=dict)
+    additional_props: SchemaModel | bool = True
     props_required: Set[str] = dc.field(default_factory=set)
 
-    items: MetaModel | None = None
+    items: SchemaModel | None = None
 
-    any_of: list[MetaModel] | None = None
-    one_of: list[MetaModel] | None = None
-    all_of: list[MetaModel] | None = None
+    any_of: list[SchemaModel] | None = None
+    one_of: list[SchemaModel] | None = None
+    all_of: list[SchemaModel] | None = None
 
-    def normalize_model(self) -> MetaModel | None:
+    def normalize_model(self) -> SchemaModel | None:
         if self.type_ is None:
             self.type_ = _all_types()
 
@@ -129,7 +129,7 @@ class MetaModel:
             return self.all_of[0].normalize_model()
 
         # merge allOf
-        model: MetaModel | None = self
+        model: SchemaModel | None = self
         for schema in self.all_of or ():
             if model is None:
                 return None
@@ -182,17 +182,17 @@ class MetaModel:
             one_of=None,
         )
 
-    def __and__(self, other) -> MetaModel | None:
-        if not isinstance(other, MetaModel | bool):
+    def __and__(self, other) -> SchemaModel | None:
+        if not isinstance(other, SchemaModel | bool):
             return NotImplemented
         return self.intersect(other, self.stack)
 
-    def intersect(self, other: MetaModel | bool, stack: Stack) -> MetaModel | None:
+    def intersect(self, other: SchemaModel | bool, stack: Stack) -> SchemaModel | None:
         if other is None or other is False:
             return None
         if other is True:
             return self
-        assert isinstance(other, MetaModel)
+        assert isinstance(other, SchemaModel)
 
         model = dc.replace(self, stack=stack)
 
@@ -220,13 +220,13 @@ class MetaModel:
         else:
             self_schema = (
                 self.additional_props
-                if isinstance(self.additional_props, MetaModel)
-                else MetaModel(stack=self.stack.push('additionalProperties'))
+                if isinstance(self.additional_props, SchemaModel)
+                else SchemaModel(stack=self.stack.push('additionalProperties'))
             )
             other_schema = (
                 other.additional_props
-                if isinstance(other.additional_props, MetaModel)
-                else MetaModel(stack=other.stack.push('additionalProperties'))
+                if isinstance(other.additional_props, SchemaModel)
+                else SchemaModel(stack=other.stack.push('additionalProperties'))
             )
             model.additional_props = self_schema & other_schema or False
 
@@ -237,11 +237,11 @@ class MetaModel:
         for field in ('all_of', 'any_of', 'one_of'):
             merge(model, other, field, operator.add)
 
-        # not_: MetaModel | None = None
+        # not_: SchemaModel | None = None
 
         return model
 
-    def _properties_and(self, other: MetaModel) -> dict[str, MetaModel]:
+    def _properties_and(self, other: SchemaModel) -> dict[str, SchemaModel]:
         # If any schema has additionalProperties is false, the names in resulting properties are limited to those of that schema
 
         new_properties_keys = set((self.properties or {}).keys()) | set((other.properties or {}).keys())
@@ -254,7 +254,7 @@ class MetaModel:
         # prepare schemas
         # If both schemas have the same property, their sub-schemas are merged.
         # If one of the schemas doesn't, its additionalProperties schema is merged instead, if present
-        new_properties: dict[str, MetaModel] = {}
+        new_properties: dict[str, SchemaModel] = {}
         for prop_name in new_properties_keys:
             self_schema = (self.properties or {}).get(prop_name)
             other_schema = (other.properties or {}).get(prop_name)
@@ -262,13 +262,13 @@ class MetaModel:
             if schema is None:
                 break
 
-            if not self_schema and isinstance(self.additional_props, MetaModel):
+            if not self_schema and isinstance(self.additional_props, SchemaModel):
                 schema &= self.additional_props
 
             if schema is None:
                 break
 
-            if not other_schema and isinstance(other.additional_props, MetaModel):
+            if not other_schema and isinstance(other.additional_props, SchemaModel):
                 schema &= other.additional_props
             if schema is None:
                 break
@@ -312,7 +312,7 @@ class MetaModel:
             return self._as_type(root_package)  # type: ignore[misc]
         return None
 
-    def dependencies(self) -> Iterable[MetaModel]:
+    def dependencies(self) -> Iterable[SchemaModel]:
         yield from self.any_of or ()
         if self.items is not None:
             yield self.items
@@ -468,7 +468,7 @@ FORMAT_ENCODERS = {
 }
 
 
-def set_multi(model: MetaModel | None, *models: MetaModel) -> MetaModel | None:
+def set_multi(model: SchemaModel | None, *models: SchemaModel) -> SchemaModel | None:
     result = model
     for item in models:
         result = not_none_or(result, item, operator.and_)
