@@ -5,9 +5,7 @@ from typing import Any
 
 from openapi_pydantic.v3.v3_1 import schema as schema31
 
-from . import openapi, python, schemamodel
-from .refs import resolve_ref, resolve_refs_recursive
-from .stack import Stack
+from . import openapi, python, refs, schemamodel, stack
 
 logger = logging.getLogger(__name__)
 
@@ -16,16 +14,16 @@ class OpenApi30SchemaConverter:
     def __init__(
         self,
         schema: openapi.Schema | bool | None,
-        stack: Stack,
+        s: stack.Stack,
         root_package: python.ModulePath,
         source: openapi.OpenAPI,
     ) -> None:
         self.schema = schema
-        self.stack = stack
+        self.stack = s
         self.root_package = root_package
 
         self.model = schemamodel.SchemaModel(
-            stack=stack.push('schema', stack.top()),
+            stack=s.push('schema', s.top()),
         )
 
         # source is needed by @resolve_ref mechanism
@@ -57,22 +55,22 @@ class OpenApi30SchemaConverter:
             return model_
         return None
 
-    def process_schema_title(self, value: str, _: Stack) -> None:
+    def process_schema_title(self, value: str, _: stack.Stack) -> None:
         self.model.title = value
 
-    def process_schema_description(self, value: str, _: Stack) -> None:
+    def process_schema_description(self, value: str, _: stack.Stack) -> None:
         self.model.description = value
 
-    def process_schema_type(self, value: openapi.DataType, _: Stack):
+    def process_schema_type(self, value: openapi.DataType, _: stack.Stack):
         self.model.type_ = {*(self.model.type_ or ()), schema31.DataType[value.name]}
 
-    def process_schema_nullable(self, value: bool, _: Stack) -> None:
+    def process_schema_nullable(self, value: bool, _: stack.Stack) -> None:
         assert isinstance(self.schema, openapi.Schema)
 
         if self.schema.type and value:
             self.model.type_ = {*(self.model.type_ or ()), schema31.DataType.NULL}
 
-    def process_schema_enum(self, value: list[Any], _: Stack) -> None:
+    def process_schema_enum(self, value: list[Any], _: stack.Stack) -> None:
         self.model.enum = set(value)
 
     def process_schema_readOnly(self, value: bool, _) -> None:
@@ -116,46 +114,46 @@ class OpenApi30SchemaConverter:
     def process_schema_minLength(self, value: int, _) -> None:
         self.model.min_length = value
 
-    @resolve_ref
-    def process_schema_items(self, value: openapi.Schema, stack: Stack) -> None:
-        self.model.items = self._process_subschema(value, stack)
+    @refs.resolve_ref
+    def process_schema_items(self, value: openapi.Schema, s: stack.Stack) -> None:
+        self.model.items = self._process_subschema(value, s)
 
-    def process_schema_properties(self, value: dict[str, openapi.Schema], stack: Stack) -> None:
+    def process_schema_properties(self, value: dict[str, openapi.Schema], s: stack.Stack) -> None:
         for name, sub_schema in value.items():
-            sub_stack = stack.push(name)
+            sub_stack = s.push(name)
             if isinstance(sub_schema, openapi.Reference):
-                sub_schema, path = resolve_refs_recursive(self.source, sub_schema)
-                sub_stack = Stack.from_str(path)
+                sub_schema, path = refs.resolve_refs_recursive(self.source, sub_schema)
+                sub_stack = stack.Stack.from_str(path)
 
             if prop_model := self._process_subschema(sub_schema, sub_stack):
                 self.model.properties[name] = prop_model
 
-    @resolve_ref
-    def _process_subschema(self, value: openapi.Schema | bool, stack: Stack) -> schemamodel.SchemaModel | None:
-        return OpenApi30SchemaConverter(value, stack, self.root_package, self.source).process_schema()
+    @refs.resolve_ref
+    def _process_subschema(self, value: openapi.Schema | bool, s: stack.Stack) -> schemamodel.SchemaModel | None:
+        return OpenApi30SchemaConverter(value, s, self.root_package, self.source).process_schema()
 
-    def process_schema_additionalProperties(self, value: openapi.Schema | bool, stack: Stack) -> None:
-        self.model.additional_props = self._process_subschema(value, stack) or False
+    def process_schema_additionalProperties(self, value: openapi.Schema | bool, s: stack.Stack) -> None:
+        self.model.additional_props = self._process_subschema(value, s) or False
 
     def process_schema_required(self, value: list[str], _) -> None:
         self.model.props_required = set(value)
 
-    def _process_subschemas(self, value: list[openapi.Schema], stack: Stack) -> list[schemamodel.SchemaModel]:
+    def _process_subschemas(self, value: list[openapi.Schema], s: stack.Stack) -> list[schemamodel.SchemaModel]:
         return list(
             filter(
                 None,
-                [self._process_subschema(item_schema, stack.push(str(idx))) for idx, item_schema in enumerate(value)],
+                [self._process_subschema(item_schema, s.push(str(idx))) for idx, item_schema in enumerate(value)],
             )
         )
 
-    def process_schema_oneOf(self, value: list[openapi.Schema], stack: Stack) -> None:
-        self.model.one_of = self._process_subschemas(value, stack)
+    def process_schema_oneOf(self, value: list[openapi.Schema], s: stack.Stack) -> None:
+        self.model.one_of = self._process_subschemas(value, s)
 
-    def process_schema_anyOf(self, value: list[openapi.Schema], stack: Stack) -> None:
-        self.model.any_of = self._process_subschemas(value, stack)
+    def process_schema_anyOf(self, value: list[openapi.Schema], s: stack.Stack) -> None:
+        self.model.any_of = self._process_subschemas(value, s)
 
-    def process_schema_allOf(self, value: list[openapi.Schema], stack: Stack) -> None:
-        self.model.all_of = self._process_subschemas(value, stack)
+    def process_schema_allOf(self, value: list[openapi.Schema], s: stack.Stack) -> None:
+        self.model.all_of = self._process_subschemas(value, s)
 
     def process_schema_xml(self, *_) -> None:
         pass

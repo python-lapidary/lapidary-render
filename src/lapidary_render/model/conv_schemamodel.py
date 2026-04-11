@@ -3,20 +3,18 @@ from __future__ import annotations
 from openapi_pydantic.v3.v3_1 import schema as schema31
 
 from .. import json_pointer, names, runtime
-from . import python
-from .schemamodel import SchemaModel
-from .stack import Stack
+from . import python, schemamodel, stack
 
 FORMAT_ENCODERS = {
-    (schema31.DataType.STRING, 'uuid'): python.NameRef(module='uuid', name='UUID'),
-    (schema31.DataType.STRING, 'date'): python.NameRef(module='datetime', name='date'),
-    (schema31.DataType.STRING, 'date-time'): python.NameRef(module='datetime', name='datetime'),
-    (schema31.DataType.STRING, 'time'): python.NameRef(module='datetime', name='time'),
-    (schema31.DataType.STRING, 'decimal'): python.NameRef(module='decimal', name='Decimal'),
+    (schema31.DataType.STRING, 'uuid'): python.NameRef.from_str('uuid:UUID'),
+    (schema31.DataType.STRING, 'date'): python.NameRef.from_str('datetime:date'),
+    (schema31.DataType.STRING, 'date-time'): python.NameRef.from_str('datetime:datetime'),
+    (schema31.DataType.STRING, 'time'): python.NameRef.from_str('datetime:time'),
+    (schema31.DataType.STRING, 'decimal'): python.NameRef.from_str('decimal:Decimal'),
 }
 
 
-def resolve_type_name(root_package: str, pointer: Stack) -> python.AnnotatedType:
+def resolve_type_name(root_package: str, pointer: stack.Stack) -> python.AnnotatedType:
     # FIXME all fields should be saved as json ref; all schemas saved in a map with json ref as a key
 
     parts = [names.maybe_mangle_name(json_pointer.decode_json_pointer(part)) for part in pointer.path[1:]]
@@ -25,12 +23,12 @@ def resolve_type_name(root_package: str, pointer: Stack) -> python.AnnotatedType
     return python.AnnotatedType(python.NameRef(module_name, top))
 
 
-def as_type(model: SchemaModel, root_package: str) -> python.SchemaClass | None:
+def as_type(model: schemamodel.SchemaModel, root_package: str) -> python.SchemaClass | None:
     """convert schema model, excluding any sub-schemas"""
     if model.any_of or not model.type_ or schema31.DataType.OBJECT not in model.type_ or model.is_any_obj():
         return None
 
-    name = model.stack.top()  # TODO name = value.lapidary_name or stack.top()
+    name = model.stack.top()  # TODO name = value.lapidary_name or s.top()
     fields = [
         _as_class_field(
             as_annotation(prop_model, root_package, prop_name in model.props_required),
@@ -49,7 +47,7 @@ def as_type(model: SchemaModel, root_package: str) -> python.SchemaClass | None:
 
 
 def as_annotation(
-    model: SchemaModel, root_package: str, required: bool = True, include_object: bool = True
+    model: schemamodel.SchemaModel, root_package: str, required: bool = True, include_object: bool = True
 ) -> python.AnnotatedType:
     """
     Create type hint for the type represented by the source schema.
@@ -115,7 +113,7 @@ def _as_class_field(anno: python.AnnotatedType, name: str, required: bool) -> py
     )
 
 
-def _as_numeric_anno(model: SchemaModel, typ: type) -> python.AnnotatedType:
+def _as_numeric_anno(model: schemamodel.SchemaModel, typ: type) -> python.AnnotatedType:
     num_constraints = {'lt', 'gt', 'ge', 'le', 'multiple_of'}
     constraints = {}
     for key in num_constraints:
@@ -127,7 +125,7 @@ def _as_numeric_anno(model: SchemaModel, typ: type) -> python.AnnotatedType:
     )
 
 
-def _as_str_anno(model: SchemaModel) -> python.AnnotatedType:
+def _as_str_anno(model: schemamodel.SchemaModel) -> python.AnnotatedType:
     str_constraints = {'max_length', 'min_length', 'pattern'}
     constraints = {key: value for key in str_constraints if (value := getattr(model, key)) is not None}
     return python.AnnotatedType(
@@ -136,7 +134,7 @@ def _as_str_anno(model: SchemaModel) -> python.AnnotatedType:
     )
 
 
-def _as_object_anno(model: SchemaModel, root_package: str) -> python.AnnotatedType:
+def _as_object_anno(model: schemamodel.SchemaModel, root_package: str) -> python.AnnotatedType:
     if not model.properties and not (
         any(sub.properties for sub in model.any_of or () if schema31.DataType.OBJECT in (sub.type_ or ()))
         and any(sub.properties for sub in model.one_of or () if schema31.DataType.OBJECT in (sub.type_ or ()))

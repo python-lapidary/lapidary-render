@@ -7,11 +7,7 @@ from typing import Any
 from mimeparse import parse_media_range
 
 from .. import json_pointer, names
-from . import conv_schemamodel, openapi, python, schemamodel
-from .conv_schema import OpenApi30SchemaConverter
-from .python import type_hint
-from .refs import resolve_ref
-from .stack import Stack
+from . import conv_schema, conv_schemamodel, openapi, python, refs, schemamodel, stack
 
 logger = logging.getLogger(__name__)
 
@@ -39,20 +35,20 @@ class OpenApi30Converter:
             package=str(root_package),
         )
 
-        self._response_cache: MutableMapping[Stack, python.Response] = {}
+        self._response_cache: MutableMapping[stack.Stack, python.Response] = {}
 
-        self._models: MutableMapping[Stack, schemamodel.SchemaModel] = {}
+        self._models: MutableMapping[stack.Stack, schemamodel.SchemaModel] = {}
         """
         Store all models directly referred by methods.
         Indirectly referred must be accessible via the direct models.
         """
 
     def process(self) -> python.ClientModel:
-        stack = Stack()
+        s = stack.Stack()
 
         map_process(
             self.source,
-            stack,
+            s,
             {
                 'servers': self.process_servers,
                 'lapidary_responses_global': self.process_global_responses,
@@ -62,13 +58,13 @@ class OpenApi30Converter:
             },
         )
 
-        models: MutableMapping[Stack, python.SchemaClass] = {}
+        models: MutableMapping[stack.Stack, python.SchemaClass] = {}
         for model in self._models.values():
             self._collect_schema_models(model, models)
 
         modules: Mapping[python.ModulePath, list[python.SchemaClass]] = defaultdict(list)
-        for stack, class_ in models.items():
-            mod_name = conv_schemamodel.resolve_type_name(str(self.root_package), stack).typ.module
+        for s, class_ in models.items():
+            mod_name = conv_schemamodel.resolve_type_name(str(self.root_package), s).typ.module
             modules[python.ModulePath(mod_name)].append(class_)
 
         self.target.model_modules.extend(
@@ -84,7 +80,7 @@ class OpenApi30Converter:
         return self.target
 
     def _collect_schema_models(
-        self, model: schemamodel.SchemaModel, models: MutableMapping[Stack, python.SchemaClass]
+        self, model: schemamodel.SchemaModel, models: MutableMapping[stack.Stack, python.SchemaClass]
     ) -> None:
         try:
             if class_ := conv_schemamodel.as_type(model, str(self.root_package)):
@@ -94,8 +90,8 @@ class OpenApi30Converter:
         for submodel in model.dependencies():
             self._collect_schema_models(submodel, models)
 
-    def process_servers(self, value: list[openapi.Server] | None, stack: Stack) -> None:
-        logger.debug('Process servers %s', stack)
+    def process_servers(self, value: list[openapi.Server] | None, s: stack.Stack) -> None:
+        logger.debug('Process servers %s', s)
 
         if not value:
             logger.warning('No servers found')
@@ -115,78 +111,78 @@ class OpenApi30Converter:
 
         self.target.client.body.base_url = server_url
 
-    def process_global_headers(self, value: Mapping[str, openapi.Header], stack: Stack) -> None:
-        logger.debug('Process global headers %s', stack)
+    def process_global_headers(self, value: Mapping[str, openapi.Header], s: stack.Stack) -> None:
+        logger.debug('Process global headers %s', s)
         if not value:
             return
 
         for header_name, header in value.items():
-            self.global_headers[header_name] = self.process_header(header, stack.push(header_name))
+            self.global_headers[header_name] = self.process_header(header, s.push(header_name))
 
-    def process_global_responses(self, value: openapi.Responses | None, stack: Stack) -> None:
-        logger.debug('Process global responses %s', stack)
+    def process_global_responses(self, value: openapi.Responses | None, s: stack.Stack) -> None:
+        logger.debug('Process global responses %s', s)
         if not value:
             return
 
         self.global_responses = {
-            code: self.process_response(response, stack.push(code)) for code, response in value.responses.items()
+            code: self.process_response(response, s.push(code)) for code, response in value.responses.items()
         }
 
     def _process_schema_or_content(
         self,
         value: openapi.ParameterBase,
-        stack: Stack,
+        s: stack.Stack,
     ) -> tuple[python.AnnotatedType, str | None]:
         if value.param_schema and value.content:
             raise ValueError()
         if value.param_schema:
-            model = self._process_schema(value.param_schema, stack.push('schema'))
+            model = self._process_schema(value.param_schema, s.push('schema'))
             assert model
             return conv_schemamodel.as_annotation(model, str(self.root_package), value.required), None
         elif value.content:
             media_type, media_type_obj = next(iter(value.content.items()))
             # encoding = media_type_obj.encoding
             model = self._process_schema(
-                media_type_obj.media_type_schema or openapi.Schema(), stack.push('content', media_type)
+                media_type_obj.media_type_schema or openapi.Schema(), s.push('content', media_type)
             )
             assert model
             return conv_schemamodel.as_annotation(model, str(self.root_package), value.required), media_type
         else:
-            raise TypeError(f'{stack}: schema or content is required')
+            raise TypeError(f'{s}: schema or content is required')
 
     # Not providing process_parameters (plural) as each caller calls it in a different context
     # (list, map or map with defaults)
 
-    @resolve_ref
-    def process_parameter(self, value: openapi.Parameter, stack: Stack) -> python.Parameter:
-        logger.debug('process_parameter %s', stack)
+    @refs.resolve_ref
+    def process_parameter(self, value: openapi.Parameter, s: stack.Stack) -> python.Parameter:
+        logger.debug('process_parameter %s', s)
 
         if not isinstance(value, openapi.ParameterBase):
-            raise TypeError(f'Expected Parameter object at {stack}, got {type(value).__name__}.')
+            raise TypeError(f'Expected Parameter object at {s}, got {type(value).__name__}.')
 
-        typ, media_type = self._process_schema_or_content(value, stack)
+        typ, media_type = self._process_schema_or_content(value, s)
         python_name = parameter_name(value)
         return python.Parameter(
             name=python_name,
             typ=typ,
             in_=value.param_in.value.capitalize(),  # type: ignore[arg-type]
-            style=param_style(value.style, value.explode, value.param_in, stack),
+            style=param_style(value.style, value.explode, value.param_in, s),
             required=value.required,
             media_type=media_type,
             alias=value.name if value.name != python_name else None,
         )
 
-    def process_paths(self, value: openapi.Paths, stack: Stack) -> None:
+    def process_paths(self, value: openapi.Paths, s: stack.Stack) -> None:
         for path, path_item in value.paths.items():
             if path.startswith('/'):
-                self.process_path(path_item, stack.push(path))
+                self.process_path(path_item, s.push(path))
 
     def process_path(
         self,
         value: openapi.PathItem,
-        stack: Stack,
+        s: stack.Stack,
     ) -> None:
-        common_params_stack = stack.push('parameters')
+        common_params_stack = s.push('parameters')
         common_params = {}
         for idx, param in enumerate(value.parameters or ()):
             processed = self.process_parameter(param, common_params_stack.push(str(idx)))
@@ -194,44 +190,44 @@ class OpenApi30Converter:
 
         for method in ('get', 'post', 'put', 'delete', 'head', 'patch', 'options', 'trace'):
             if operation := getattr(value, method):
-                self.process_operation(operation, stack.push(method), common_params)
+                self.process_operation(operation, s.push(method), common_params)
         if self._path_progress:
-            self._path_progress(json_pointer.decode_json_pointer(stack.top()))
+            self._path_progress(json_pointer.decode_json_pointer(s.top()))
 
-    @resolve_ref
-    def process_request_body(self, value: openapi.RequestBody, stack: Stack) -> python.MimeMap:
+    @refs.resolve_ref
+    def process_request_body(self, value: openapi.RequestBody, s: stack.Stack) -> python.MimeMap:
         # TODO handle required
-        return self.process_content(value.content, stack.push('content'))
+        return self.process_content(value.content, s.push('content'))
 
-    def process_responses(self, value: openapi.Responses, stack: Stack) -> python.ResponseMap:
-        return {code: self.process_response(response, stack.push(code)) for code, response in value.responses.items()}
+    def process_responses(self, value: openapi.Responses, s: stack.Stack) -> python.ResponseMap:
+        return {code: self.process_response(response, s.push(code)) for code, response in value.responses.items()}
 
-    @resolve_ref
+    @refs.resolve_ref
     def process_response(
         self,
         value: openapi.Response,
-        stack: Stack,
+        s: stack.Stack,
     ) -> python.Response:
         assert isinstance(value, openapi.Response)
 
-        if response := self._response_cache.get(stack):
+        if response := self._response_cache.get(s):
             return response
 
         response = python.Response(
-            content=self.process_content(value.content, stack.push('content')),
-            headers_type=self.process_headers(value.headers, stack.push('headers')),
+            content=self.process_content(value.content, s.push('content')),
+            headers_type=self.process_headers(value.headers, s.push('headers')),
         )
-        self._response_cache[stack] = response
+        self._response_cache[s] = response
         return response
 
     def process_headers(
-        self, value: Mapping[str, openapi.Header | openapi.Reference[openapi.Header]], stack: Stack
+        self, value: Mapping[str, openapi.Header | openapi.Reference[openapi.Header]], s: stack.Stack
     ) -> python.AnnotatedType:
         if not value:
             return python.NoneMetaType
-        headers = [self.process_header(header, stack.push(name)) for name, header in value.items()]
+        headers = [self.process_header(header, s.push(name)) for name, header in value.items()]
         model = python.MetadataModel('ResponseMetadata', headers)
-        annotation = conv_schemamodel.resolve_type_name(str(self.root_package), stack.push('ResponseMetadata'))
+        annotation = conv_schemamodel.resolve_type_name(str(self.root_package), s.push('ResponseMetadata'))
 
         self.target.model_modules.append(
             python.MetadataModule(
@@ -241,11 +237,11 @@ class OpenApi30Converter:
         )
         return annotation
 
-    @resolve_ref
-    def process_header(self, value: openapi.Header, stack: Stack) -> python.Parameter:
-        alias = stack.top()
+    @refs.resolve_ref
+    def process_header(self, value: openapi.Header, s: stack.Stack) -> python.Parameter:
+        alias = s.top()
 
-        typ, _ = self._process_schema_or_content(value, stack)
+        typ, _ = self._process_schema_or_content(value, s)
 
         python_name = names.maybe_mangle_name(alias)
         return python.Parameter(
@@ -253,11 +249,11 @@ class OpenApi30Converter:
             typ=typ,
             in_='Header',
             required=value.required,
-            style=param_style(value.style, value.explode, openapi.ParameterLocation.HEADER, stack),
+            style=param_style(value.style, value.explode, openapi.ParameterLocation.HEADER, s),
             alias=alias if alias != python_name else None,
         )
 
-    def process_content(self, value: Mapping[str, openapi.MediaType], stack: Stack) -> python.MimeMap:
+    def process_content(self, value: Mapping[str, openapi.MediaType], s: stack.Stack) -> python.MimeMap:
         """Returns: {mime_type: response body type hint}"""
         if not value:
             return {}
@@ -266,38 +262,36 @@ class OpenApi30Converter:
             mime_parsed = parse_media_range(mime)
             if mime_parsed[:2] != ('application', 'json'):
                 continue
-            model = self._process_schema(media_type.media_type_schema or openapi.Schema(), stack.push(mime, 'schema'))
+            model = self._process_schema(media_type.media_type_schema or openapi.Schema(), s.push(mime, 'schema'))
             assert model
             types[mime] = conv_schemamodel.as_annotation(model, str(self.root_package))
         return types
 
-    @resolve_ref
-    def _process_schema(self, value: openapi.Schema, stack: Stack) -> schemamodel.SchemaModel | None:
-        if not (model := self._models.get(stack)):
-            converter = OpenApi30SchemaConverter(value, stack, self.root_package, self.source)
+    @refs.resolve_ref
+    def _process_schema(self, value: openapi.Schema, s: stack.Stack) -> schemamodel.SchemaModel | None:
+        if not (model := self._models.get(s)):
+            converter = conv_schema.OpenApi30SchemaConverter(value, s, self.root_package, self.source)
             if (model := converter.process_schema()) is not None:
-                self._models[stack] = model
+                self._models[s] = model
 
         return model
 
     def process_operation(
         self,
         value: openapi.Operation,
-        stack: Stack,
+        s: stack.Stack,
         common_params: Mapping[str, python.Parameter],
     ) -> None:
-        logger.debug('Process operation %s', stack)
+        logger.debug('Process operation %s', s)
 
         if not value.operationId:
-            raise ValueError(f'{stack}: operationId is required')
+            raise ValueError(f'{s}: operationId is required')
 
-        params = self._mk_params(value.parameters, stack.push('parameters'), common_params)
+        params = self._mk_params(value.parameters, s.push('parameters'), common_params)
 
-        request_body = (
-            self.process_request_body(value.requestBody, stack.push('requestBody')) if value.requestBody else {}
-        )
-        responses = self.process_responses(value.responses, stack.push('responses'))
-        security = self.process_security(value.security, stack.push('security'))
+        request_body = self.process_request_body(value.requestBody, s.push('requestBody')) if value.requestBody else {}
+        responses = self.process_responses(value.responses, s.push('responses'))
+        security = self.process_security(value.security, s.push('security'))
 
         return_types: set[python.AnnotatedType] = set()
         for status_code, response in responses.items():
@@ -305,17 +299,17 @@ class OpenApi30Converter:
             if status_code[0] in ('4', '5'):
                 continue
 
-            body_type = type_hint.union_of(*response.content.values())
-            return_types.add(type_hint.tuple_of(body_type, response.headers_type))
+            body_type = python.type_hint.union_of(*response.content.values())
+            return_types.add(python.type_hint.tuple_of(body_type, response.headers_type))
 
         model = python.OperationFunction(
             name=names.maybe_mangle_name(value.operationId),
-            method=stack.top(),
-            path=json_pointer.decode_json_pointer(stack[-2]),
+            method=s.top(),
+            path=json_pointer.decode_json_pointer(s[-2]),
             request_body=request_body,
             params=params,
             responses=responses,
-            return_type=type_hint.union_of(*return_types),
+            return_type=python.type_hint.union_of(*return_types),
             security=security,
         )
 
@@ -324,13 +318,11 @@ class OpenApi30Converter:
     def _mk_params(
         self,
         value: list[openapi.Parameter | openapi.Reference],
-        stack: Stack,
+        s: stack.Stack,
         common_params: Mapping[str, python.Parameter],
     ) -> Sequence[python.Parameter]:
         processed_params: Sequence[python.Parameter] = (
-            [self.process_parameter(oa_param, stack.push(str(idx))) for idx, oa_param in enumerate(value)]
-            if value
-            else ()
+            [self.process_parameter(oa_param, s.push(str(idx))) for idx, oa_param in enumerate(value)] if value else ()
         )
 
         all_fields = {field.name: field for field in itertools.chain(common_params.values(), processed_params)}.values()
@@ -343,12 +335,12 @@ class OpenApi30Converter:
             else:
                 direct_fields.append(field)
         if metadata_fields:
-            metadata = self._mk_response_metafields_metamodel(metadata_fields, stack)
+            metadata = self._mk_response_metafields_metamodel(metadata_fields, s)
             required = any(field.required for field in metadata_fields)
             direct_fields.append(
                 python.Parameter(
                     name='meta',
-                    typ=metadata if required else type_hint.optional(metadata),
+                    typ=metadata if required else python.type_hint.optional(metadata),
                     required=required,
                     in_='Metadata',
                     style=None,
@@ -359,11 +351,11 @@ class OpenApi30Converter:
         return direct_fields
 
     def _mk_response_metafields_metamodel(
-        self, value: Iterable[python.Parameter], stack: Stack
+        self, value: Iterable[python.Parameter], s: stack.Stack
     ) -> python.AnnotatedType:
         fields = [field for field in value if field.in_ in ('Cookie', 'Header')]
         metadata_model = python.MetadataModel('RequestMetadata', fields)
-        typ = conv_schemamodel.resolve_type_name(str(self.root_package), stack.push('meta', 'RequestMetadata'))
+        typ = conv_schemamodel.resolve_type_name(str(self.root_package), s.push('meta', 'RequestMetadata'))
         self.target.model_modules.append(
             python.MetadataModule(
                 path=python.ModulePath(typ.typ.module, is_module=True),
@@ -372,23 +364,23 @@ class OpenApi30Converter:
         )
         return typ
 
-    def process_global_security(self, value: Iterable[openapi.SecurityRequirement] | None, stack: Stack) -> None:
-        self.process_security(value, stack)
+    def process_global_security(self, value: Iterable[openapi.SecurityRequirement] | None, s: stack.Stack) -> None:
+        self.process_security(value, s)
 
     def process_security(
-        self, value: Iterable[openapi.SecurityRequirement] | None, stack: Stack
+        self, value: Iterable[openapi.SecurityRequirement] | None, s: stack.Stack
     ) -> python.SecurityRequirements | None:
-        logger.debug('Process security %s', stack)
+        logger.debug('Process security %s', s)
         if value is None:
             return None
 
-        return [self.process_security_requirement(item, stack.push(str(idx))) for idx, item in enumerate(value)]
+        return [self.process_security_requirement(item, s.push(str(idx))) for idx, item in enumerate(value)]
 
     def process_security_requirement(
-        self, value: openapi.SecurityRequirement, stack: Stack
+        self, value: openapi.SecurityRequirement, s: stack.Stack
     ) -> Mapping[str, Iterable[str]]:
-        logger.debug('Process security requirement %s', stack)
-        schemes_root = Stack(('#', 'components', 'securitySchemes'))
+        logger.debug('Process security requirement %s', s)
+        schemes_root = stack.Stack(('#', 'components', 'securitySchemes'))
         for scheme_name, scopes in value.items():
             scheme_stack = schemes_root.push(scheme_name)
             self.process_security_scheme(
@@ -398,19 +390,19 @@ class OpenApi30Converter:
         return value
 
     # need separate method to resolve references before calling a single-dispatched method
-    @resolve_ref
-    def process_security_scheme(self, value: openapi.SecurityScheme, stack: Stack) -> None:
+    @refs.resolve_ref
+    def process_security_scheme(self, value: openapi.SecurityScheme, s: stack.Stack) -> None:
         match value.type:
             case 'apiKey':
-                self.process_security_scheme_api_key(value, stack)
+                self.process_security_scheme_api_key(value, s)
             case 'oauth2':
-                self.process_security_scheme_oauth2(value, stack)
+                self.process_security_scheme_oauth2(value, s)
             case 'http':
-                self.process_security_scheme_http(value, stack)
+                self.process_security_scheme_http(value, s)
 
-    def process_security_scheme_api_key(self, value: openapi.SecurityScheme, stack: Stack) -> None:
-        logger.debug('Process API key security scheme %s', stack)
-        auth_name = stack.top()
+    def process_security_scheme_api_key(self, value: openapi.SecurityScheme, s: stack.Stack) -> None:
+        logger.debug('Process API key security scheme %s', s)
+        auth_name = s.top()
         flow_name = f'api_key_{auth_name}'
         if flow_name in self.target.security_schemes:
             return
@@ -425,15 +417,15 @@ class OpenApi30Converter:
             format=value.format,
         )
 
-    def process_security_scheme_oauth2(self, value: openapi.SecurityScheme, stack: Stack) -> None:
-        auth_name = stack.top()
+    def process_security_scheme_oauth2(self, value: openapi.SecurityScheme, s: stack.Stack) -> None:
+        auth_name = s.top()
         if auth_name in self.target.security_schemes:
             return
 
-        logger.debug('Process OAuth2 security scheme %s', stack)
+        logger.debug('Process OAuth2 security scheme %s', s)
         map_process(
             value.flows,
-            stack.push('flows'),
+            s.push('flows'),
             {
                 'implicit': self.process_oauth2_implicit,
                 'password': self.process_oauth2_password,
@@ -443,13 +435,13 @@ class OpenApi30Converter:
             True,
         )
 
-    def process_oauth2_implicit(self, value: openapi.OAuthFlow, stack: Stack) -> None:
+    def process_oauth2_implicit(self, value: openapi.OAuthFlow, s: stack.Stack) -> None:
         if value.refreshUrl:
-            raise NotImplementedError(stack.push('refreshUrl'))
+            raise NotImplementedError(s.push('refreshUrl'))
 
         assert value.authorizationUrl
 
-        auth_name = stack[-3]
+        auth_name = s[-3]
         self.target.security_schemes[f'oauth2_implicit_{auth_name}'] = python.ImplicitOAuth2Flow(
             name=auth_name,
             python_name=names.maybe_mangle_name(auth_name),
@@ -457,13 +449,13 @@ class OpenApi30Converter:
             scopes=value.scopes,
         )
 
-    def process_oauth2_password(self, value: openapi.OAuthFlow, stack: Stack) -> None:
+    def process_oauth2_password(self, value: openapi.OAuthFlow, s: stack.Stack) -> None:
         if value.refreshUrl:
-            raise NotImplementedError(stack.push('refreshUrl'))
+            raise NotImplementedError(s.push('refreshUrl'))
 
         assert value.tokenUrl
 
-        auth_name = stack[-3]
+        auth_name = s[-3]
         self.target.security_schemes[f'oauth2_password_{auth_name}'] = python.PasswordOAuth2Flow(
             name=auth_name,
             python_name=names.maybe_mangle_name(auth_name),
@@ -471,14 +463,14 @@ class OpenApi30Converter:
             scopes=value.scopes,
         )
 
-    def process_oauth2_auth_code(self, value: openapi.OAuthFlow, stack: Stack) -> None:
+    def process_oauth2_auth_code(self, value: openapi.OAuthFlow, s: stack.Stack) -> None:
         if value.refreshUrl:
-            raise NotImplementedError(stack.push('refreshUrl'))
+            raise NotImplementedError(s.push('refreshUrl'))
 
         assert value.tokenUrl
         assert value.authorizationUrl
 
-        auth_name = stack[-3]
+        auth_name = s[-3]
         self.target.security_schemes[f'oauth2_auth_code_{auth_name}'] = python.AuthorizationCodeOAuth2Flow(
             name=auth_name,
             python_name=names.maybe_mangle_name(auth_name),
@@ -487,13 +479,13 @@ class OpenApi30Converter:
             scopes=value.scopes,
         )
 
-    def process_oauth2_client_credentials(self, value: openapi.OAuthFlow, stack: Stack) -> None:
+    def process_oauth2_client_credentials(self, value: openapi.OAuthFlow, s: stack.Stack) -> None:
         if value.refreshUrl:
-            raise NotImplementedError(stack.push('refreshUrl'))
+            raise NotImplementedError(s.push('refreshUrl'))
 
         assert value.tokenUrl
 
-        auth_name = stack[-3]
+        auth_name = s[-3]
         self.target.security_schemes[f'oauth2_client_credentials_{auth_name}'] = python.ClientCredentialsOAuth2Flow(
             name=auth_name,
             python_name=names.maybe_mangle_name(auth_name),
@@ -501,12 +493,12 @@ class OpenApi30Converter:
             scopes=value.scopes,
         )
 
-    def process_security_scheme_http(self, value: openapi.SecurityScheme, stack: Stack) -> None:
-        logger.debug('Process HTTP security scheme %s', stack)
+    def process_security_scheme_http(self, value: openapi.SecurityScheme, s: stack.Stack) -> None:
+        logger.debug('Process HTTP security scheme %s', s)
 
         assert value.scheme
 
-        auth_name = stack.top()
+        auth_name = s.top()
         flow_name = f'http_{auth_name}'
 
         if flow_name in self.target.security_schemes:
@@ -518,14 +510,14 @@ class OpenApi30Converter:
                 python_name=names.maybe_mangle_name(auth_name),
             )
         except KeyError:
-            raise NotImplementedError(stack.push('scheme'), value.scheme) from None
+            raise NotImplementedError(s.push('scheme'), value.scheme) from None
 
 
 def param_style(
     style: str | None,
     explode: bool | None,
     in_: openapi.ParameterLocation,
-    stack: Stack,
+    s: stack.Stack,
 ) -> python.ParamStyle | None:
     if style is explode is None:
         # None = Lapidary uses default
@@ -538,7 +530,7 @@ def param_style(
             case 'header' | 'path':
                 style_name = 'simple'
             case _:
-                raise ValueError('Unsupported `in`', in_, stack)
+                raise ValueError('Unsupported `in`', in_, s)
     else:
         style_name = style
 
@@ -555,7 +547,7 @@ def param_style(
     try:
         return python.ParamStyle[style_name]
     except ValueError:
-        raise ValueError('Unsupported style', style_name, stack)
+        raise ValueError('Unsupported style', style_name, s)
 
 
 def parameter_name(value: openapi.Parameter) -> str:
@@ -563,13 +555,13 @@ def parameter_name(value: openapi.Parameter) -> str:
 
 
 def map_process(
-    obj: Any, stack: Stack, processors: Mapping[str, Callable[[Any, Stack], Any]], warn: bool = False
+    obj: Any, s: stack.Stack, processors: Mapping[str, Callable[[Any, stack.Stack], Any]], warn: bool = False
 ) -> None:
     for key, process in processors.items():
         try:
             if value := getattr(obj, key, None):
                 alias = type(obj).model_fields[key].alias
-                substack = stack.push(alias or key)
+                substack = s.push(alias or key)
                 process(value, substack)
         except NotImplementedError as e:
             if warn:

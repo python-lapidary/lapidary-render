@@ -10,7 +10,7 @@ from typing import Any, Self
 from openapi_pydantic.v3.v3_1 import schema as schema31
 from pydantic.alias_generators import to_pascal
 
-from .stack import Stack
+from . import stack as stack_
 
 JSON_TYPE_TO_PY_TYPE: dict[schema31.DataType, type] = {
     schema31.DataType.ARRAY: list,
@@ -69,7 +69,7 @@ class SchemaModel:
     """
 
     # used to generate package, module and class name
-    stack: Stack
+    stack: stack_.Stack
 
     title: str | None = None
     description: str | None = None
@@ -143,7 +143,9 @@ class SchemaModel:
                 continue
             items = []
             for idx, sub in enumerate(subc):
-                nsub = model_no_any.intersect(sub, Stack((*model.stack.path[:-1], f'{to_pascal(sub_name)}{idx}')))
+                nsub = model_no_any.intersect(
+                    sub, stack_.Stack((*model.stack.path[:-1], f'{to_pascal(sub_name)}{idx}'))
+                )
                 if nsub is None:
                     # ignore bottom types
                     continue
@@ -161,7 +163,7 @@ class SchemaModel:
                     filter(
                         None,
                         [
-                            a.intersect(b, Stack((*model.stack.path[:-1], f'AnyOneOf{idx}')))
+                            a.intersect(b, stack_.Stack((*model.stack.path[:-1], f'AnyOneOf{idx}')))
                             for idx, (a, b) in enumerate(itertools.product(self.any_of, self.one_of))
                         ],
                     )
@@ -185,14 +187,14 @@ class SchemaModel:
             return NotImplemented
         return self.intersect(other, self.stack)
 
-    def intersect(self, other: SchemaModel | bool, stack: Stack) -> SchemaModel | None:
+    def intersect(self, other: SchemaModel | bool, s: stack_.Stack) -> SchemaModel | None:
         if other is None or other is False:
             return None
         if other is True:
             return self
         assert isinstance(other, SchemaModel)
 
-        model = dc.replace(self, stack=stack)
+        model = dc.replace(self, stack=s)
 
         model.type_ = not_none_or(self.type_, other.type_, operator.and_)
         model.enum = not_none_or(self.enum, other.enum, operator.and_)
@@ -228,7 +230,7 @@ class SchemaModel:
             )
             model.additional_props = self_schema & other_schema or False
 
-        # determine stack (resulting class name) based on the presence of properties in both models
+        # determine s (resulting class name) based on the presence of properties in both models
 
         model.items = not_none_or(self.items, other.items, operator.and_)
 
@@ -328,7 +330,7 @@ class SchemaModel:
 
     def _comparable(self) -> Self:
         """Return a copy without anotations, useful for comparing."""
-        return dc.replace(self, description=None, title=None, stack=Stack())
+        return dc.replace(self, description=None, title=None, stack=stack_.Stack())
 
 
 def set_multi(model: SchemaModel | None, *models: SchemaModel) -> SchemaModel | None:
