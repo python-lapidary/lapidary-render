@@ -4,6 +4,7 @@ from typing import Union
 import pytest
 from openapi_pydantic.v3.v3_1 import DataType
 
+from lapidary_render.model import conv_schemamodel
 from lapidary_render.model.conv_schema import OpenApi30SchemaConverter
 from lapidary_render.model.openapi import Schema
 from lapidary_render.model.python import (
@@ -28,7 +29,7 @@ def test_additional_properties_schema():
         ),
     )
     converter = OpenApi30SchemaConverter(schema, Stack(('#', 'schemas', 'model')), ModulePath('root'), None)
-    annotation = converter.process_schema().as_annotation('root')
+    annotation = conv_schemamodel.as_annotation(converter.process_schema(), 'root')
     expected = AnnotatedType(
         NameRef.from_type(dict),
         (
@@ -50,7 +51,7 @@ def test_properties_and_additional_properties_schema():
         ),
     )
     converter = OpenApi30SchemaConverter(schema, Stack(('#', 'schemas', 'model')), ModulePath('root'), None)
-    typ = converter.process_schema().as_type('root')
+    typ = conv_schemamodel.as_type(converter.process_schema(), 'root')
     assert '__pydantic_extra__' in [field.name for field in typ.fields]
 
 
@@ -64,7 +65,7 @@ def test_doesnt_make_nullable_with_enum():
         ]
     )
     converter = OpenApi30SchemaConverter(schema, Stack(('#', 'schemas', 'model')), ModulePath('root'), None)
-    typ = converter.process_schema().as_annotation('root')
+    typ = conv_schemamodel.as_annotation(converter.process_schema(), 'root')
     expected = AnnotatedType(NameRef.from_type(str))
     assert typ == expected
 
@@ -94,7 +95,7 @@ def test_read_write_property():
         ],
     )
     converter = OpenApi30SchemaConverter(schema, Stack(('#', 'schemas', 'model')), ModulePath('root'), None)
-    model = converter.process_schema().as_type('root')
+    model = conv_schemamodel.as_type(converter.process_schema(), 'root')
     expected = SchemaClass(
         name='model',
         base_type=ModelBase,
@@ -130,7 +131,8 @@ def test_anyof_nullable_is_optional():
         ],
     )
     converter = OpenApi30SchemaConverter(schema, Stack(('#', 'schemas', 'model')), ModulePath('root'), None)
-    annotation = converter.process_schema().as_annotation(
+    annotation = conv_schemamodel.as_annotation(
+        converter.process_schema(),
         'root',
         True,
     )

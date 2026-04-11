@@ -6,7 +6,15 @@ import pytest
 from openapi_pydantic.v3.v3_1 import schema as schema31
 
 from lapidary_render import runtime
-from lapidary_render.model import conv_openapi, conv_schema, openapi, python, schemamodel, stack
+from lapidary_render.model import (
+    conv_openapi,
+    conv_schema,
+    conv_schemamodel as cshm,
+    openapi,
+    python,
+    schemamodel,
+    stack,
+)
 from lapidary_render.model.python import NoneMetaType, union_of
 from lapidary_render.yaml import yaml
 
@@ -66,10 +74,10 @@ def test_property_schema(doc_dummy: openapi.OpenAPI) -> None:
     )
     assert schema is not None
 
-    assert schema.as_annotation('dummy') == python.AnnotatedType(
+    assert cshm.as_annotation(schema, 'dummy') == python.AnnotatedType(
         python.NameRef('dummy.paths.u_ltestu_l.get.parameters.u_n.schema.schema', 'schema')
     )
-    assert schema.as_type('package') == python.SchemaClass(
+    assert cshm.as_type(schema, 'package') == python.SchemaClass(
         name='schema',
         base_type=python.NameRef(module='lapidary', name='ModelBase'),
         allow_extra=False,
@@ -114,7 +122,7 @@ def test_int_one_of():
     )
     model = converter.process_schema()
 
-    assert model.as_annotation('root') == python.AnnotatedType(
+    assert cshm.as_annotation(model, 'root') == python.AnnotatedType(
         typ=python.NameRef(module='typing', name='Union'),
         generic_args=(
             python.AnnotatedType(typ=python.NameRef(module='builtins', name='int'), ge=20),
@@ -160,7 +168,7 @@ def test_int_one_of_recurrent():
     from pprint import pprint
 
     pprint(model)
-    pprint(model.as_annotation('root'))
+    pprint(cshm.as_annotation(model, 'root'))
 
 
 def mk_schemas_doc(title: str, **schemas: openapi.Schema) -> openapi.OpenAPI:
@@ -194,7 +202,7 @@ def test_one_of_mix():
         doc,
     )
     model = converter.process_schema()
-    anno = model.as_annotation('root')
+    anno = cshm.as_annotation(model, 'root')
     assert anno == python.AnnotatedType(
         typ=python.NameRef(module='typing', name='Union'),
         generic_args=(
@@ -303,14 +311,14 @@ def test_process_anyof_objects():
         ],
     )
 
-    assert model.as_annotation('package') == union_of(
+    assert cshm.as_annotation(model, 'package') == union_of(
         python.AnnotatedType(python.NameRef.from_type(int), le=20),
         python.AnnotatedType(python.NameRef('package.components.schemas.object1.schema', 'object1')),
         python.AnnotatedType(python.NameRef('package.components.schemas.object2.schema', 'object2')),
         NoneMetaType,
     )
 
-    assert [t for sub in model.dependencies() if (t := sub.as_type('root')) is not None] == [
+    assert [t for sub in model.dependencies() if (t := cshm.as_type(sub, 'root')) is not None] == [
         python.SchemaClass(
             'object1',
             runtime.ModelBase,
@@ -360,7 +368,7 @@ def test_process_default_object():
         doc,
     )
     model = converter.process_schema()
-    assert model.as_annotation('package') == runtime.JsonObject
+    assert cshm.as_annotation(model, 'package') == runtime.JsonObject
 
 
 def test_process_default_schema():
@@ -376,8 +384,8 @@ def test_process_default_schema():
     )
     model = converter.process_schema()
     assert model is not None
-    assert model.as_type('package') is None
-    assert model.as_annotation('package') == runtime.JsonValue
+    assert cshm.as_type(model, 'package') is None
+    assert cshm.as_annotation(model, 'package') == runtime.JsonValue
 
 
 def test_process_union_object_int():
@@ -408,7 +416,8 @@ def test_process_union_object_int():
         doc,
     )
     model = converter.process_schema()
-    assert [t for sub in model.dependencies() if (t := sub.as_type('package')) is not None][0] == python.SchemaClass(
+    class_ = [t for sub in model.dependencies() if (t := cshm.as_type(sub, 'package')) is not None][0]
+    assert class_ == python.SchemaClass(
         'schema1',
         python.NameRef('lapidary', 'ModelBase'),
         True,
@@ -422,7 +431,7 @@ def test_process_union_object_int():
         ],
     )
 
-    assert model.as_annotation('package') == python.AnnotatedType(
+    assert cshm.as_annotation(model, 'package') == python.AnnotatedType(
         python.NameRef('typing', 'Union'),
         (
             python.AnnotatedType(python.NameRef('builtins', 'int')),

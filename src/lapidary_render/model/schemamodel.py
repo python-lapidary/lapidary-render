@@ -10,8 +10,6 @@ from typing import Any, Self
 from openapi_pydantic.v3.v3_1 import schema as schema31
 from pydantic.alias_generators import to_pascal
 
-from .. import json_pointer, names, runtime
-from . import python
 from .stack import Stack
 
 JSON_TYPE_TO_PY_TYPE: dict[schema31.DataType, type] = {
@@ -125,7 +123,7 @@ class SchemaModel:
                 self.all_of = [*(self.all_of or ()), items[0]]
                 setattr(self, attr, None)
 
-        if self.all_of and len(self.all_of) == 1 and not self._has_annotations(excluding=('all_of',)):
+        if self.all_of and len(self.all_of) == 1 and not self.has_annotations(excluding=('all_of',)):
             return self.all_of[0].normalize_model()
 
         # merge allOf
@@ -277,7 +275,7 @@ class SchemaModel:
 
         return new_properties
 
-    def _is_any_obj(self) -> bool:
+    def is_any_obj(self) -> bool:
         """True when this schema describes object without any properties or additional properties."""
         assert self.type_ is not None
         return (
@@ -287,30 +285,6 @@ class SchemaModel:
             and all(not sub.properties and sub.additional_props is True for sub in (self.any_of or ()))
             and all(not sub.properties and sub.additional_props is True for sub in (self.one_of or ()))
         )
-
-    def _as_type(self, package: str) -> python.SchemaClass | None:
-        """convert current schema model, excluding any sub-schemas"""
-        # name = value.lapidary_name or stack.top()
-        name = self.stack.top()  # TODO
-        fields = [
-            _as_class_field(
-                model.as_annotation(package, name in self.props_required), name, name in self.props_required
-            )
-            for name, model in self.properties.items()
-        ]
-
-        return python.SchemaClass(
-            name=names.maybe_mangle_name(name),
-            base_type=runtime.ModelBase,
-            allow_extra=self.additional_props is not False,
-            fields=fields,
-            docstr=self.description or None,
-        )
-
-    def as_type(self, root_package: str) -> python.SchemaClass | None:
-        if not self.any_of and self.type_ and schema31.DataType.OBJECT in self.type_ and not self._is_any_obj():
-            return self._as_type(root_package)  # type: ignore[misc]
-        return None
 
     def dependencies(self) -> Iterable[SchemaModel]:
         yield from self.any_of or ()
@@ -324,90 +298,7 @@ class SchemaModel:
         # if self.additional_props:
         #     yield self.additional_props
 
-    def as_annotation(
-        self, root_package: str, required: bool = True, include_object: bool = True
-    ) -> python.AnnotatedType:
-        """
-        Create type hint for the type represented by the source schema.
-
-        In case where object schema with oneOf or anyOf is used, a type hint for the parent schema is created, and the
-        items are rendered in as_type() as a synthetic class field.
-
-        :param root_package: root python package for object models
-        :param required: if false, make the type a Union with None
-        :param include_object: if true and the model type includes schema, include the class FQN in the resulting type hint
-        """
-
-        if not self._has_annotations():
-            return runtime.JsonValue
-
-        if self.any_of:
-            return python.union_of(*[t.as_annotation(root_package, required) for t in self.any_of])
-
-        else:
-            types: set[python.AnnotatedType] = set()
-            for schema_type in self.type_ or ():
-                if include_object is False and schema_type == schema31.DataType.OBJECT:
-                    continue
-
-                match schema_type:
-                    case schema31.DataType.STRING:
-                        try:
-                            typ = python.AnnotatedType(FORMAT_ENCODERS[(schema_type, self.format)])  # type: ignore[index]
-                        except KeyError:
-                            typ = self._as_str_anno()
-                    case schema31.DataType.BOOLEAN:
-                        typ = python.AnnotatedType.from_type(bool)
-                    case schema31.DataType.NUMBER:
-                        typ = self._as_numeric_anno(float)
-                    case schema31.DataType.INTEGER:
-                        typ = self._as_numeric_anno(int)
-                    case schema31.DataType.NULL:
-                        typ = python.NoneMetaType
-                    case schema31.DataType.OBJECT:
-                        typ = self._as_object_anno(root_package)
-                    case schema31.DataType.ARRAY:
-                        typ = python.list_of(
-                            self.items.as_annotation(root_package) if self.items else runtime.JsonValue,
-                        )
-                    case _:
-                        raise TypeError(schema_type)
-                types.add(typ)
-
-        if not required:
-            types.add(python.NoneMetaType)
-
-        return python.union_of(*types)
-
-    def _as_numeric_anno(self, typ: type) -> python.AnnotatedType:
-        num_constraints = {'lt', 'gt', 'ge', 'le', 'multiple_of'}
-        constraints = {}
-        for key in num_constraints:
-            if (value := getattr(self, key)) is not None:
-                constraints[key] = typ(value)
-        return python.AnnotatedType(
-            python.NameRef.from_type(typ),
-            **constraints,  # type: ignore[arg-type]
-        )
-
-    def _as_str_anno(self) -> python.AnnotatedType:
-        str_constraints = {'max_length', 'min_length', 'pattern'}
-        constraints = {key: value for key in str_constraints if (value := getattr(self, key)) is not None}
-        return python.AnnotatedType(
-            python.NameRef('builtins', 'str'),
-            **constraints,  # type: ignore[arg-type]
-        )
-
-    def _as_object_anno(self, root_package: str) -> python.AnnotatedType:
-        if not self.properties and not (
-            any(sub.properties for sub in self.any_of or () if schema31.DataType.OBJECT in (sub.type_ or ()))
-            and any(sub.properties for sub in self.one_of or () if schema31.DataType.OBJECT in (sub.type_ or ()))
-        ):
-            return runtime.JsonObject
-        else:
-            return resolve_type_name(root_package, self.stack)
-
-    def _has_annotations(self, excluding: Container[str] = ()) -> bool:
+    def has_annotations(self, excluding: Container[str] = ()) -> bool:
         return (
             any(
                 getattr(self, key) is not None
@@ -438,34 +329,6 @@ class SchemaModel:
     def _comparable(self) -> Self:
         """Return a copy without anotations, useful for comparing."""
         return dc.replace(self, description=None, title=None, stack=Stack())
-
-
-def _as_class_field(anno: python.AnnotatedType, name: str, required: bool) -> python.AnnotatedVariable:
-    python_name = names.maybe_mangle_name(name)
-    return python.AnnotatedVariable(
-        name=python_name,
-        typ=anno,
-        alias=name if name != python_name else None,
-        required=required,
-    )
-
-
-def resolve_type_name(root_package: str, pointer: Stack) -> python.AnnotatedType:
-    # FIXME all fields should be saved as json ref; all schemas saved in a map with json ref as a key
-
-    parts = [names.maybe_mangle_name(json_pointer.decode_json_pointer(part)) for part in pointer.path[1:]]
-    module_name = '.'.join([root_package, *(part for part in parts[:-1])])
-    top = parts[-1]
-    return python.AnnotatedType(python.NameRef(module_name, top))
-
-
-FORMAT_ENCODERS = {
-    (schema31.DataType.STRING, 'uuid'): python.NameRef(module='uuid', name='UUID'),
-    (schema31.DataType.STRING, 'date'): python.NameRef(module='datetime', name='date'),
-    (schema31.DataType.STRING, 'date-time'): python.NameRef(module='datetime', name='datetime'),
-    (schema31.DataType.STRING, 'time'): python.NameRef(module='datetime', name='time'),
-    (schema31.DataType.STRING, 'decimal'): python.NameRef(module='decimal', name='Decimal'),
-}
 
 
 def set_multi(model: SchemaModel | None, *models: SchemaModel) -> SchemaModel | None:
