@@ -82,11 +82,8 @@ class OpenApi30Converter:
     def _collect_schema_models(
         self, model: schemamodel.SchemaModel, models: MutableMapping[stack.Stack, python.SchemaClass]
     ) -> None:
-        try:
-            if class_ := conv_schemamodel.as_type(model, str(self.root_package)):
-                models[model.stack] = class_
-        except Exception:
-            raise
+        if class_ := conv_schemamodel.as_type(model, str(self.root_package)):
+            models[model.stack] = class_
         for submodel in model.dependencies():
             self._collect_schema_models(submodel, models)
 

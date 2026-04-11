@@ -32,7 +32,6 @@ from .model import (
 )
 from .module import (
     AbstractModule,
-    AuthModule,
     ClientModule,
     EmptyModule,
     MetadataModule,

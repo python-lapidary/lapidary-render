@@ -40,13 +40,6 @@ class AbstractModule[Body](abc.ABC):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class AuthModule(AbstractModule[Mapping[str, NameRef]]):
-    @property
-    def dependencies(self) -> Iterable[NameRef]:  # type: ignore[override]
-        return self.body.values()
-
-
-@dc.dataclass(frozen=True, kw_only=True)
 class ClientModule(AbstractModule[ClientClass]):
     def dependencies(self) -> Iterable[NameRef]:
         return self.body.dependencies()
