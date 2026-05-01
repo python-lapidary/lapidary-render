@@ -7,7 +7,7 @@ from typing import Any
 from mimeparse import parse_media_range
 
 from .. import json_pointer, names
-from . import conv_schema, conv_schemamodel, openapi, python, refs, schemamodel, stack
+from . import conv_schema, openapi, python, refs, schemamodel, stack
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +64,7 @@ class OpenApi30Converter:
 
         modules: Mapping[python.ModulePath, list[python.SchemaClass]] = defaultdict(list)
         for s, class_ in models.items():
-            mod_name = conv_schemamodel.resolve_type_name(str(self.root_package), s).typ.module
+            mod_name = conv_schema.resolve_type_name(str(self.root_package), s).typ.module
             modules[python.ModulePath(mod_name)].append(class_)
 
         self.target.model_modules.extend(
@@ -82,7 +82,7 @@ class OpenApi30Converter:
     def _collect_schema_models(
         self, model: schemamodel.SchemaModel, models: MutableMapping[stack.Stack, python.SchemaClass]
     ) -> None:
-        if class_ := conv_schemamodel.as_type(model, str(self.root_package)):
+        if class_ := conv_schema.as_type(model, str(self.root_package)):
             models[model.stack] = class_
         for submodel in model.dependencies():
             self._collect_schema_models(submodel, models)
@@ -135,7 +135,7 @@ class OpenApi30Converter:
         if value.param_schema:
             model = self._process_schema(value.param_schema, s.push('schema'))
             assert model
-            return conv_schemamodel.as_annotation(model, str(self.root_package), value.required), None
+            return conv_schema.as_annotation(model, str(self.root_package), value.required), None
         elif value.content:
             media_type, media_type_obj = next(iter(value.content.items()))
             # encoding = media_type_obj.encoding
@@ -143,7 +143,7 @@ class OpenApi30Converter:
                 media_type_obj.media_type_schema or openapi.Schema(), s.push('content', media_type)
             )
             assert model
-            return conv_schemamodel.as_annotation(model, str(self.root_package), value.required), media_type
+            return conv_schema.as_annotation(model, str(self.root_package), value.required), media_type
         else:
             raise TypeError(f'{s}: schema or content is required')
 
@@ -224,7 +224,7 @@ class OpenApi30Converter:
             return python.NoneMetaType
         headers = [self.process_header(header, s.push(name)) for name, header in value.items()]
         model = python.MetadataModel('ResponseMetadata', headers)
-        annotation = conv_schemamodel.resolve_type_name(str(self.root_package), s.push('ResponseMetadata'))
+        annotation = conv_schema.resolve_type_name(str(self.root_package), s.push('ResponseMetadata'))
 
         self.target.model_modules.append(
             python.MetadataModule(
@@ -261,7 +261,7 @@ class OpenApi30Converter:
                 continue
             model = self._process_schema(media_type.media_type_schema or openapi.Schema(), s.push(mime, 'schema'))
             assert model
-            types[mime] = conv_schemamodel.as_annotation(model, str(self.root_package))
+            types[mime] = conv_schema.as_annotation(model, str(self.root_package))
         return types
 
     @refs.resolve_ref
@@ -352,7 +352,7 @@ class OpenApi30Converter:
     ) -> python.AnnotatedType:
         fields = [field for field in value if field.in_ in ('Cookie', 'Header')]
         metadata_model = python.MetadataModel('RequestMetadata', fields)
-        typ = conv_schemamodel.resolve_type_name(str(self.root_package), s.push('meta', 'RequestMetadata'))
+        typ = conv_schema.resolve_type_name(str(self.root_package), s.push('meta', 'RequestMetadata'))
         self.target.model_modules.append(
             python.MetadataModule(
                 path=python.ModulePath(typ.typ.module, is_module=True),
