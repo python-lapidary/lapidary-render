@@ -101,14 +101,17 @@ class SchemaModel:
 
     any_of: list[SchemaModel] | None = None
     one_of: list[SchemaModel] | None = None
-    all_of: list[SchemaModel] | None = None
+    all_of: list[SchemaModel | None] | None = None
 
     def normalize_model(self) -> SchemaModel | None:
         if self.type_ is None:
             self.type_ = _all_types()
+        assert self.type_ is not None
 
         # limit types and enum values to intersection of types
         if self.enum is not None:
+            if len(self.enum) == 0:
+                return None
             enum_types = {PY_TYPE_TO_JSON_TYPE[type(v)] for v in self.enum}
             self.type_ = self.type_ & enum_types
             if not self.type_:
@@ -123,18 +126,24 @@ class SchemaModel:
                 self.all_of = [*(self.all_of or ()), items[0]]
                 setattr(self, attr, None)
 
-        if self.all_of and len(self.all_of) == 1 and not self.has_annotations(excluding=('all_of',)):
-            return self.all_of[0].normalize_model()
-
-        # merge allOf
-        model: SchemaModel | None = self
-        for schema in self.all_of or ():
-            if model is None:
+        model = self
+        if self.all_of:
+            # bottom type in allOf => self is the bottom type
+            if None in self.all_of:
                 return None
-            model &= schema.normalize_model()
+            all_of = cast(list[SchemaModel], self.all_of)
+            if len(all_of) == 1 and not self.has_annotations(excluding=('all_of',)):
+                return all_of[0].normalize_model()
 
-        assert model is not None
-        model.all_of = None
+            opt_model: SchemaModel | None = self
+            # merge allOf
+            for schema in all_of:
+                assert opt_model is not None
+                opt_model &= schema.normalize_model()
+                if opt_model is None:
+                    return None
+            model = cast(SchemaModel, opt_model)
+            model.all_of = None
 
         # push annotations down to anyOf and oneOf
         model_no_any = dc.replace(model, any_of=None, one_of=None)
@@ -172,6 +181,9 @@ class SchemaModel:
                 self.any_of = self.one_of
             self.one_of = None
 
+        if (len(self.type_) == 0) or (self.enum is not None and len(self.enum) == 0):
+            return None
+
         return model
 
     def _only_constraints(self) -> Self:
@@ -183,21 +195,28 @@ class SchemaModel:
         )
 
     def __and__(self, other) -> SchemaModel | None:
-        if not isinstance(other, SchemaModel | bool):
+        if not isinstance(other, SchemaModel | None):
             return NotImplemented
         return self.intersect(other, self.stack)
 
-    def intersect(self, other: SchemaModel | bool, s: stack_.Stack) -> SchemaModel | None:
-        if other is None or other is False:
+    def intersect(self, other: SchemaModel | None, s: stack_.Stack) -> SchemaModel | None:
+        if other is None:
             return None
-        if other is True:
-            return self
+
         assert isinstance(other, SchemaModel)
+        assert self.type_ is not None and other.type_ is not None
 
         model = dc.replace(self, stack=s)
 
-        model.type_ = not_none_or(self.type_, other.type_, operator.and_)
+        model.type_ = self.type_ & other.type_
+        assert model.type_ is not None
+        if len(model.type_) == 0:
+            return None
+
         model.enum = not_none_or(self.enum, other.enum, operator.and_)
+        if model.enum is not None and len(model.enum) == 0:
+            return None
+
         model.gt = not_none_or(self.gt, other.gt, max)
         model.ge = not_none_or(self.ge, other.ge, max)
         model.lt = not_none_or(self.lt, other.lt, min)

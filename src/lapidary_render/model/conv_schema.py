@@ -44,10 +44,11 @@ class OpenApi30SchemaConverter:
 
         logger.debug('Processing schema %s', self.stack)
 
-        if self.schema is False or (
-            isinstance(self.schema, openapi.Schema) and self.schema.enum and len(self.schema.enum) == 0
-        ):
+        if self.schema is False:
             return None
+
+        if self.schema is True or self.schema is None:
+            return self.model
 
         assert isinstance(self.schema, openapi.Schema)
         for field_name in self.schema.model_fields_set:
@@ -151,22 +152,28 @@ class OpenApi30SchemaConverter:
     def process_schema_required(self, value: list[str], _) -> None:
         self.model.props_required = set(value)
 
-    def _process_subschemas(self, value: list[openapi.Schema], s: stack.Stack) -> list[schemamodel.SchemaModel]:
-        return list(
+    def process_schema_oneOf(self, value: list[openapi.Schema], s: stack.Stack) -> None:
+        self.model.one_of = list(
             filter(
-                None,
+                # mypy bug #12682
+                lambda x: x is not None,  # type: ignore[arg-type]
                 [self._process_subschema(item_schema, s.push(str(idx))) for idx, item_schema in enumerate(value)],
             )
         )
 
-    def process_schema_oneOf(self, value: list[openapi.Schema], s: stack.Stack) -> None:
-        self.model.one_of = self._process_subschemas(value, s)
-
     def process_schema_anyOf(self, value: list[openapi.Schema], s: stack.Stack) -> None:
-        self.model.any_of = self._process_subschemas(value, s)
+        self.model.any_of = list(
+            filter(
+                # mypy bug #12682
+                lambda x: x is not None,  # type: ignore[arg-type]
+                [self._process_subschema(item_schema, s.push(str(idx))) for idx, item_schema in enumerate(value)],
+            )
+        )
 
     def process_schema_allOf(self, value: list[openapi.Schema], s: stack.Stack) -> None:
-        self.model.all_of = self._process_subschemas(value, s)
+        self.model.all_of = [
+            self._process_subschema(item_schema, s.push(str(idx))) for idx, item_schema in enumerate(value)
+        ]
 
     def process_schema_xml(self, *_) -> None:
         pass

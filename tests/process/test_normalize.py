@@ -123,3 +123,35 @@ def test_normalize_single_anyof():
     )
 
     assert schema == expected
+
+
+def test_normalize_allof_bottom_type_member_returns_none():
+    # If any allOf member is a bottom type (None), the whole schema is unsatisfiable
+    schema = SchemaModel(
+        stack=Stack.from_str('#/components/schemas/obj'),
+        all_of=[
+            SchemaModel(
+                stack=Stack.from_str('#/components/schemas/obj/allOf/0'),
+                type_={DataType.INTEGER},
+            ),
+            None,
+        ],
+    )
+
+    assert schema.normalize_model() is None
+
+
+def test_normalize_allof_contradicting_return_none():
+    # If any allOf member is a bottom type (None), the whole schema is unsatisfiable
+    schema = SchemaModel(
+        stack=Stack.from_str('#/components/schemas/obj'),
+        type_={DataType.STRING},
+        all_of=[
+            SchemaModel(
+                stack=Stack.from_str('#/components/schemas/obj/allOf/0'),
+                type_={DataType.INTEGER},
+            ),
+        ],
+    )
+
+    assert schema.normalize_model() is None
