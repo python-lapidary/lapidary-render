@@ -4,8 +4,8 @@ import dataclasses as dc
 import itertools
 import operator
 import types
-from collections.abc import Callable, Container, Iterable, Set
-from typing import Any, Self
+from collections.abc import Callable, Container, Iterable, Mapping, Set
+from typing import Any, Self, cast
 
 from openapi_pydantic.v3.v3_1 import schema as schema31
 from pydantic.alias_generators import to_pascal
@@ -51,7 +51,7 @@ def _all_types() -> set[schema31.DataType]:
     return {typ for typ in schema31.DataType}
 
 
-def diff_dicts(dict1, dict2):
+def diff_dicts(dict1: Mapping[str, Any], dict2: Mapping[str, Any]) -> tuple[Mapping[str, Any], Mapping[str, Any]]:
     # Keys unique to dict1
     unique_to_dict1 = {key: dict1[key] for key in dict1 if key not in dict2 or dict1[key] != dict2[key]}
 
@@ -331,27 +331,6 @@ class SchemaModel:
     def _comparable(self) -> Self:
         """Return a copy without anotations, useful for comparing."""
         return dc.replace(self, description=None, title=None, stack=stack_.Stack())
-
-
-def set_multi(model: SchemaModel | None, *models: SchemaModel) -> SchemaModel | None:
-    result = model
-    for item in models:
-        result = not_none_or(result, item, operator.and_)
-    return result
-
-
-def set_intersection[T](a: Set[T] | bool, b: Set[T] | bool) -> Set[T] | bool:
-    """
-    Variant of set intersection that considers True to mean a set with all possible elements and False an empty set.
-    """
-
-    if a is False or b is False:
-        return False
-    if a is True:
-        return b
-    if b is True:
-        return a
-    return a & b
 
 
 def merge(a, b, key: str, op: Callable) -> None:

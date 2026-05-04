@@ -59,9 +59,7 @@ class OpenApi30SchemaConverter:
             except AttributeError:
                 logger.debug('Unsupported property %s', field_stack)
 
-        if model_ := self.model.normalize_model():
-            return model_
-        return None
+        return self.model.normalize_model()
 
     def process_schema_title(self, value: str, _: stack.Stack) -> None:
         self.model.title = value
