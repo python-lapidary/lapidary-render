@@ -20,7 +20,11 @@ class OpenApi30SchemaConverter:
         s: stack.Stack,
         root_package: python.ModulePath,
         source: openapi.OpenAPI,
+        schemas: dict[stack.Stack, schemamodel.SchemaModel | None] | None = None,
     ) -> None:
+        """
+        :param schemas: schared cache
+        """
         self.schema = schema
         self.stack = s
         self.root_package = root_package
@@ -31,6 +35,7 @@ class OpenApi30SchemaConverter:
 
         # source is needed by @resolve_ref mechanism
         self.source = source
+        self._schemas = schemas or {}
 
     def process_schema(
         self,
@@ -133,7 +138,14 @@ class OpenApi30SchemaConverter:
 
     @refs.resolve_ref
     def _process_subschema(self, value: openapi.Schema | bool, s: stack.Stack) -> schemamodel.SchemaModel | None:
-        return OpenApi30SchemaConverter(value, s, self.root_package, self.source).process_schema()
+        try:
+            return self._schemas[s]
+        except KeyError:
+            model = OpenApi30SchemaConverter(
+                value, s, self.root_package, self.source, schemas=self._schemas
+            ).process_schema()
+            self._schemas[s] = model
+            return model
 
     def process_schema_additionalProperties(self, value: openapi.Schema | bool, s: stack.Stack) -> None:
         self.model.additional_props = self._process_subschema(value, s) or False
